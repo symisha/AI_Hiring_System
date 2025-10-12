@@ -3,6 +3,8 @@ from fastapi import FastAPI                             # Main FastAPI class use
 from fastapi.middleware.cors import CORSMiddleware      # Middleware to handle CORS (Cross-Origin Resource Sharing) — allows frontend (React, etc.) to communicate with backend
 from pydantic import BaseModel                          # Used to define and validate data models (for requests/responses) with type checking
 from typing import List                                 # Used to define lists and type hints, e.g., List[str], List[int], etc.
+from app.core.config import Settings  # Import the Settings class from the config module to access environment variables
+from app.api import rating_resume
 
 
 app = FastAPI()  # Create FastAPI app instance, This line creates the main application object that will handle all incoming HTTP requests
@@ -11,6 +13,10 @@ orgins =[
 
     "http://localhost:8000"  # Frontend URL, This is the URL of the frontend application (React, etc.) that will communicate with this backend
 ]
+
+
+# Include your endpoints
+app.include_router(rating_resume.router, prefix="/api", tags=["rating"])
 
 app.add_middleware(
     CORSMiddleware,            # Add CORS middleware to the FastAPI app, This middleware allows the backend to accept requests from the specified origins
