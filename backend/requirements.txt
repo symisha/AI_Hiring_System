@@ -1,4 +1,6 @@
 fastapi
-uvicorn 
+uvicorn
 pydantic
-typing
+pydantic-settings
+openai
+python-dotenv
