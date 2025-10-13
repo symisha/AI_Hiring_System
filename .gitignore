@@ -7,9 +7,9 @@ __pycache__/
 *.pdb
 
 # --- Virtual environment ---
-venv/
-.env/
-*.env
+backend/venv/
+backend/.env/
+backend/*.env
 
 # --- FastAPI / Uvicorn ---
 *.log
