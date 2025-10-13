@@ -12,6 +12,8 @@ venv/
 *.env
 backend/.env
 backend/*.env
+backend/venv/
+backend/__pycache__/    
 
 # --- FastAPI / Uvicorn ---
 *.log
