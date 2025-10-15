@@ -4,6 +4,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from app.core import config
+
 router = APIRouter()
 
 load_dotenv()  # Load environment variables from .env file
@@ -60,3 +61,7 @@ async def rate_text(data: TextRatingRequest):
             rating=0.0,
             feedback=f"Error while rating text: {str(e)}"
         )
+
+
+#rating still has to be saved in the database 
+# this is just the API call to get the rating from openAI
