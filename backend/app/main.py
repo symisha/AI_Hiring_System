@@ -3,20 +3,22 @@ from fastapi import FastAPI                             # Main FastAPI class use
 from fastapi.middleware.cors import CORSMiddleware      # Middleware to handle CORS (Cross-Origin Resource Sharing) — allows frontend (React, etc.) to communicate with backend
 from pydantic import BaseModel                          # Used to define and validate data models (for requests/responses) with type checking
 from typing import List                                 # Used to define lists and type hints, e.g., List[str], List[int], etc.
-from app.core.config import Settings  # Import the Settings class from the config module to access environment variables
-from app.api import rating_resume
+from app.config.config import Settings                    # Import the Settings class from the config module to access environment variables
+from app.routes import rating_resume
+from app.database.db_queries import supabase         # Import the Supabase client instance to interact with the database
+from app.database import db_queries
 
 
 app = FastAPI()  # Create FastAPI app instance, This line creates the main application object that will handle all incoming HTTP requests
 
 orgins =[
-
     "http://localhost:8000"  # Frontend URL, This is the URL of the frontend application (React, etc.) that will communicate with this backend
 ]
 
 
 # Include your endpoints
-app.include_router(rating_resume.router, prefix="/api", tags=["rating"])
+app.include_router(rating_resume.router, prefix="/routes", tags=["rating"])
+app.include_router(db_queries.router, prefix="/database/", tags=["database"])
 
 app.add_middleware(
     CORSMiddleware,            # Add CORS middleware to the FastAPI app, This middleware allows the backend to accept requests from the specified origins
@@ -33,6 +35,13 @@ async def read_root():  # Async function to handle requests to the root URL
 @app.post("/")
 async def create_item(item: dict):  # Async function to handle POST requests to the root URL, expects a JSON body parsed into a dictionary
     return {"item_received": item}  # Return the received item in the response
+
+# TEST endpoint to verify environment variable loading
+@app.get("/info")
+async def info():
+    return {
+        "admin": Settings.ADMIN_EMAIL,
+    }
 
 if __name__ == "__main__": # If this script is run directly (not imported as a module)
     uvicorn.run(app, host="0.0.0.0", port=8000)  # Start the Uvicorn server to run the FastAPI app on all interfaces at port 8000(default FastAPI port)

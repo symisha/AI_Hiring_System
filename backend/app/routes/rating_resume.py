@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
-from app.core import config
+from app.config import config
 
 router = APIRouter()
 
