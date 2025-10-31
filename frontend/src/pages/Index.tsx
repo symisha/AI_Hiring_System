@@ -65,13 +65,8 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up">
               <Link to="/hr-login">
                 <Button variant="hero" size="lg" className="w-full sm:w-auto">
-                  For HR Managers
+                  Get Started Today
                   {/* <ArrowRight className="ml-2 h-5 w-5" /> */}
-                </Button>
-              </Link>
-              <Link to="/candidate-login">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  For Candidates
                 </Button>
               </Link>
             </div>
@@ -157,7 +152,7 @@ const Index = () => {
           <Link to="/contact">
             <Button variant="hero" size="lg">
               Get Started Today
-              <ArrowRight className="ml-2 h-5 w-5" />
+              {/* <ArrowRight className="ml-2 h-5 w-5" /> */}
             </Button>
           </Link>
         </div>

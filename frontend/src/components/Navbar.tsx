@@ -23,25 +23,19 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-8">
             <Link
               to="/"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/') ? 'text-primary' : 'text-white'
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-primary text-white ${isActive('/') ? 'underline decoration-primary decoration-2 underline-offset-8' : ''}`}
             >
               Home
             </Link>
             <Link
               to="/about"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/about') ? 'text-primary' : 'text-white'
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-primary text-white ${isActive('/about') ? 'underline decoration-primary decoration-2 underline-offset-8' : ''}`}
             >
               About
             </Link>
             <Link
               to="/contact"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/contact') ? 'text-primary' : 'text-white'
-              }`}
+              className={`text-sm font-medium transition-colors hover:text-primary text-white ${isActive('/contact') ? 'underline decoration-primary decoration-2 underline-offset-8' : ''}`}
             >
               Contact
             </Link>
@@ -49,10 +43,7 @@ const Navbar = () => {
           
           <div className="flex items-center gap-3">
             <Link to="/hr-login">
-              <Button variant="ghost" size="sm">HR Login</Button>
-            </Link>
-            <Link to="/candidate-login">
-              <Button variant="hero" size="sm">Candidate Login</Button>
+              <Button variant="ghost" size="sm">Join Now</Button>
             </Link>
           </div>
         </div>
