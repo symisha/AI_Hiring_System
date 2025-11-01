@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 // removed Card components to use plain layout (no card)
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
  import logo from "@/assets/logo-purple.svg";
 
 const HRLogin = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -15,6 +16,8 @@ const HRLogin = () => {
     e.preventDefault();
     // Authentication logic will be implemented later
     console.log("HR Login:", { email, password });
+    // Navigate to dashboard after successful login
+    navigate("/dashboard");
   };
 
   return (
