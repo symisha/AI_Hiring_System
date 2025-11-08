@@ -11,7 +11,7 @@ import HRSignup from "./pages/HRSignup";
 import CandidateLogin from "./pages/CandidateLogin";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
-
+import ProtectedRoutes from "./components/ProtectedRoutes";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -27,9 +27,7 @@ const App = () => (
           <Route path="/hr-login" element={<HRLogin />} />
           <Route path="/hr-signup" element={<HRSignup />} />
           <Route path="/candidate-login" element={<CandidateLogin />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          <Route path="/dashboard" element={<ProtectedRoutes><Dashboard /></ProtectedRoutes>} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

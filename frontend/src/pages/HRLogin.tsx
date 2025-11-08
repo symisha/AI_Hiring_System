@@ -2,23 +2,46 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-// removed Card components to use plain layout (no card)
- import { Mail, Lock } from "lucide-react";
- import image1 from "@/assets/1.jpg";
- import logo from "@/assets/logo-purple.svg";
+import { Mail, Lock } from "lucide-react";
+import image1 from "@/assets/1.jpg";
+import logo from "@/assets/logo-purple.svg";
+import { supabase } from "@/supabaseClient";
+
 
 const HRLogin = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate();   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Authentication logic will be implemented later
-    console.log("HR Login:", { email, password });
-    // Navigate to dashboard after successful login
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+
+  const { data, error: supabaseError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (supabaseError) {
+    setError(supabaseError.message);
+    setLoading(false);
+    return;
+  }
+
+  const token = data.session?.access_token;
+  console.log("Supabase JWT:", token);
+
+  if (token) {
+    localStorage.setItem("token", token);
     navigate("/dashboard");
-  };
+  }
+
+  setLoading(false);
+};
 
   return (
   <div className="min-h-screen bg-background flex items-center justify-center md:justify-start p-6">
