@@ -1,11 +1,4 @@
-Perfect! Here’s a polished, GitHub-ready version of your FYP README with a sleek, professional style including badges and visual appeal:
-
----
-
 # 🚀 AI-Powered Automated Hiring System
-
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/) [![React](https://img.shields.io/badge/React-18-blue)](https://reactjs.org/)
-
 ---
 
 ## 🎯 Overview
