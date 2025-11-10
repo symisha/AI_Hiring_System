@@ -32,7 +32,7 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await fetch(import.meta.env.VITE_APP_NAME + "/routes/dashboard-info", {
+      const response = await fetch(import.meta.env.VITE_BACKEND_URL + "/routes/dashboard-info", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
