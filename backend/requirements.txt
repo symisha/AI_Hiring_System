@@ -5,3 +5,7 @@ pydantic-settings
 openai
 python-dotenv
 supabase 
+jose 
+requests
+pyjwt
+httpx
