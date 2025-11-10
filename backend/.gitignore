@@ -1,0 +1,39 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+
+# --- Environment and venv ---
+venv/
+.env
+*.env
+backend/.env
+backend/*.env
+backend/venv/
+backend/__pycache__/    
+
+# --- FastAPI / Uvicorn ---
+*.log
+
+# --- Node / React ---
+frontend/node_modules/
+frontend/build/
+frontend/.env
+
+# --- OS-specific ---
+.DS_Store
+Thumbs.db
+
+# --- VS Code / IDE ---
+.vscode/
+.idea/
+
+# --- Cache / temp ---
+*.sqlite3
+*.db
+*.bak
+*.swp
+*.tmp

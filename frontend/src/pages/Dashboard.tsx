@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LayoutDashboard, Users, Briefcase, Settings, HelpCircle, LogOut } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import DashboardTopbar from "@/components/DashboardTopbar";
 
 const Dashboard = () => {
   const stats = [
@@ -50,6 +51,7 @@ const Dashboard = () => {
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
+<<<<<<< Updated upstream
       <div className="w-64 bg-card border-r border-border">
         <div className="p-4">
           <div className="flex items-center gap-2 mb-6">
@@ -82,31 +84,68 @@ const Dashboard = () => {
                         {option.title}
                       </Button>
                     ))}
-                  </div>
-                </div>
-              ))}
-            </ScrollArea>
-          </div>
+=======
+        <div className="w-80">
+        <div className="h-full p-4">
+          <div className="rounded-3xl bg-card p-4 shadow-sm h-full">
+            <div className="flex items-center gap-2 mb-6">
+              <img src="/src/assets/logo-purple.svg" alt="AI Hiring" className="h-8 w-8" />
+              <span className="font-bold text-xl bg-gradient-primary bg-clip-text text-transparent">AI Hiring</span>
+            </div>
+            <Separator className="my-2" />
 
-          {/* General Section */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-2">GENERAL</h3>
-            {generalOptions.map((option) => (
-              <Button
-                key={option.title}
-                variant="ghost"
-                className="w-full justify-start mb-1 hover:bg-secondary hover:text-primary"
-              >
-                <option.icon className="mr-2 h-4 w-4" />
-                {option.title}
-              </Button>
-            ))}
+            {/* Active Jobs Section */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-2">ACTIVE JOBS</h3>
+              <ScrollArea className="h-[200px]">
+                {activeJobs.map((job: any) => (
+                  <div key={job.id} className="group">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-left mb-1 px-2 hover:bg-secondary"
+                    >
+                      {job.title}
+                    </Button>
+
+                    <div className="hidden group-hover:block pl-4 space-y-1">
+                      {jobOptions.map((option) => (
+                        <Button
+                          key={option.title}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-sm text-muted-foreground hover:text-primary hover:bg-secondary/80"
+                        >
+                          {option.title}
+                        </Button>
+                      ))}
+                    </div>
+>>>>>>> Stashed changes
+                  </div>
+                ))}
+              </ScrollArea>
+            </div>
+
+            {/* General Section */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 mb-2">GENERAL</h3>
+              {generalOptions.map((option) => (
+                <Button
+                  key={option.title}
+                  variant="ghost"
+                  className="w-full justify-start mb-1 hover:bg-secondary hover:text-primary"
+                >
+                  <option.icon className="mr-2 h-4 w-4" />
+                  {option.title}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
+        <div className="flex-1 p-4">
+        <DashboardTopbar />
         <h1 className="text-3xl font-bold mb-2">Welcome back, HR Manager</h1>
         <p className="text-muted-foreground mb-8">Here's what's happening with your recruitment pipeline.</p>
         

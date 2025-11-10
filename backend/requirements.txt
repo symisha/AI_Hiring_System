@@ -3,4 +3,13 @@ uvicorn
 pydantic
 pydantic-settings
 openai
+<<<<<<< Updated upstream
 python-dotenv
+=======
+python-dotenv
+supabase 
+jose 
+requests
+pyjwt
+httpx
+>>>>>>> Stashed changes
