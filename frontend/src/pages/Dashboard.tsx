@@ -1,46 +1,15 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  LayoutDashboard,
-  Users,
-  Briefcase,
-  Settings,
-  HelpCircle,
-  LogOut,
-} from "lucide-react";
+import { LayoutDashboard, Users, Briefcase, Settings, HelpCircle, LogOut } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import DashboardTopbar from "@/components/DashboardTopbar";
 
 const Dashboard = () => {
-  const stats = [
-    {
-      title: "Total Jobs Posted",
-      value: "12",
-      icon: Briefcase,
-      gradient: "from-blue-600 to-blue-400",
-    },
-    {
-      title: "Total Recruited",
-      value: "48",
-      icon: Users,
-      gradient: "from-purple-600 to-purple-400",
-    },
-    {
-      title: "Active Jobs",
-      value: "5",
-      icon: LayoutDashboard,
-      gradient: "from-pink-600 to-pink-400",
-    },
-  ];
-
-  const activeJobs = [
-    { id: 1, title: "Senior Frontend Developer" },
-    { id: 2, title: "DevOps Engineer" },
-    { id: 3, title: "UI/UX Designer" },
-    { id: 4, title: "Product Manager" },
-    { id: 5, title: "Software Engineer" },
-  ];
+  // State for stats and jobs
+  const [stats, setStats] = useState([]);
+  const [activeJobs, setActiveJobs] = useState([]);
 
   const jobOptions = [
     { title: "Resume Screening", path: "/screening" },
@@ -54,6 +23,70 @@ const Dashboard = () => {
     { title: "Help", icon: HelpCircle, path: "/help" },
     { title: "Logout", icon: LogOut, path: "/logout" },
   ];
+
+  useEffect(() => {
+  const fetchDashboard = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found in localStorage");
+        return;
+      }
+
+      const response = await fetch(import.meta.env.BACKEND_URL + "/routes/dashboard-info", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Read body once as text
+      const text = await response.text();
+
+      let data;
+      try {
+        data = JSON.parse(text); // parse JSON manually
+      } catch (jsonError) {
+        console.error("Response is not valid JSON:", text, jsonError);
+        return;
+      }
+
+      if (!response.ok) {
+        console.error(`Failed to fetch: status=${response.status}`, data);
+        return;
+      }
+
+      // Update stats
+      setStats([
+        {
+          title: "Total Jobs Posted",
+          value: data.total_job_postings || 0,
+          icon: Briefcase,
+          gradient: "from-blue-600 to-blue-400",
+        },
+        {
+          title: "Total Recruited",
+          value: "48",
+          icon: Users,
+          gradient: "from-purple-600 to-purple-400",
+        },
+        {
+          title: "Active Jobs",
+          value: data.jobs?.filter((job: any) => job.status === "open").length || 0,
+          icon: LayoutDashboard,
+          gradient: "from-pink-600 to-pink-400",
+        },
+      ]);
+
+      setActiveJobs(data.jobs || []);
+
+    } catch (error) {
+      console.error("Unexpected error fetching dashboard data:", error);
+    }
+  };
+
+  fetchDashboard();
+}, []);
 
   return (
     <div className="flex h-screen bg-background">
