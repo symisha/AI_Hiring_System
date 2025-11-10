@@ -128,75 +128,72 @@ const Dashboard = () => {
         {/* Top Bar (Search, Profile, etc.) */}
         <DashboardTopbar />
 
-        {/* Welcome Message */}
-        <h1 className="text-3xl font-bold mb-2">Welcome back, HR Manager</h1>
-        <p className="text-muted-foreground mb-8">
-          Here's what's happening with your recruitment pipeline.
-        </p>
+        {/* Dashboard Overview Section */}
+        <div className="rounded-2xl bg-card p-6 shadow-sm mt-3">
+          {/* Welcome Message */}
+          <h1 className="text-3xl font-bold mb-2">Welcome back, HR Manager</h1>
+          <p className="text-muted-foreground mb-8">
+            Here's what's happening with your recruitment pipeline.
+          </p>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          {stats.map((stat) => (
-            <Card key={stat.title} className="relative overflow-hidden">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {stats.map((stat) => (
               <div
-                className={`absolute inset-0 opacity-10 bg-gradient-to-br ${stat.gradient}`}
-              />
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon
-                  className={`h-5 w-5 bg-gradient-to-br ${stat.gradient} bg-clip-text text-transparent`}
+                key={stat.title}
+                className="relative overflow-hidden rounded-xl bg-muted/30 p-4"
+              >
+                <div
+                  className={`absolute inset-0 opacity-10 bg-gradient-to-br ${stat.gradient}`}
                 />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                <div className="relative flex flex-row items-center justify-between pb-2">
+                  <span className="text-sm font-medium">{stat.title}</span>
+                  <stat.icon
+                    className={`h-5 w-5 bg-gradient-to-br ${stat.gradient} bg-clip-text text-transparent`}
+                  />
+                </div>
+                <div className="relative text-3xl font-bold">{stat.value}</div>
+              </div>
+            ))}
+          </div>
 
-        {/* Recent Activity */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-purple-600 to-blue-600" />
-          <CardHeader>
-            <CardTitle className="text-xl">Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
-                <p className="text-sm">
-                  <span className="font-medium">Senior Frontend Developer</span>
-                  <span className="text-muted-foreground">
-                    {" "}
-                    - New candidate applied 2 hours ago
-                  </span>
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-2 w-2 rounded-full bg-blue-500" />
-                <p className="text-sm">
-                  <span className="font-medium">DevOps Engineer</span>
-                  <span className="text-muted-foreground">
-                    {" "}
-                    - Interview scheduled for tomorrow
-                  </span>
-                </p>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-2 w-2 rounded-full bg-purple-500" />
-                <p className="text-sm">
-                  <span className="font-medium">UI/UX Designer</span>
-                  <span className="text-muted-foreground">
-                    {" "}
-                    - Assessment completed by 3 candidates
-                  </span>
-                </p>
+          {/* Recent Activity */}
+          <div className="relative overflow-hidden rounded-xl bg-muted/30 p-5">
+            <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-purple-600 to-blue-600" />
+            <div className="relative">
+              <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                  <p className="text-sm">
+                    <span className="font-medium">Senior Frontend Developer</span>
+                    <span className="text-muted-foreground">
+                      {" "} - New candidate applied 2 hours ago
+                    </span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="h-2 w-2 rounded-full bg-blue-500" />
+                  <p className="text-sm">
+                    <span className="font-medium">DevOps Engineer</span>
+                    <span className="text-muted-foreground">
+                      {" "} - Interview scheduled for tomorrow
+                    </span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="h-2 w-2 rounded-full bg-purple-500" />
+                  <p className="text-sm">
+                    <span className="font-medium">UI/UX Designer</span>
+                    <span className="text-muted-foreground">
+                      {" "} - Assessment completed by 3 candidates
+                    </span>
+                  </p>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
