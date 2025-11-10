@@ -124,7 +124,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 p-4 overflow-y-auto">
         {/* Top Bar (Search, Profile, etc.) */}
         <DashboardTopbar />
 
