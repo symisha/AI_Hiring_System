@@ -33,7 +33,7 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await fetch(import.meta.env.BACKEND_URL + "/routes/dashboard-info", {
+      const response = await fetch(import.meta.env.VITE_BACKEND_URL + "/routes/dashboard-info", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -88,7 +88,8 @@ const Dashboard = () => {
   fetchDashboard();
 }, []);
 
-  return (
+
+return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <div className="w-80 p-4">
