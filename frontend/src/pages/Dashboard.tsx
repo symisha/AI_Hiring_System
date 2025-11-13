@@ -1,99 +1,309 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LayoutDashboard, Users, Briefcase, Settings, HelpCircle, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  Briefcase,
+  Settings,
+  HelpCircle,
+  LogOut,
+  ChevronRight,
+  ChevronDown,
+  Plus,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import DashboardTopbar from "@/components/DashboardTopbar";
+import { Card } from "@/components/ui/card";
 
 const Dashboard = () => {
-  // State for stats and jobs
-  const [stats, setStats] = useState([]);
-  const [activeJobs, setActiveJobs] = useState([]);
+  // States
+  const [stats, setStats] = useState<any[]>([]);
+  const [activeJobs, setActiveJobs] = useState<any[]>([]);
+  const [expandedJob, setExpandedJob] = useState<number | null>(null);
+  const [showJobs, setShowJobs] = useState<boolean>(true);
+  const [activeSection, setActiveSection] = useState<string>("dashboard"); // 👈 controls which main section is visible
+  const [selectedJob, setSelectedJob] = useState<any | null>(null);
 
   const jobOptions = [
-    { title: "Resume Screening", path: "/screening" },
-    { title: "Assessments", path: "/assessments" },
-    { title: "AI Interviews", path: "/interviews" },
-    { title: "Reports", path: "/reports" },
+    { title: "Resume Screening", key: "screening" },
+    { title: "Assessments", key: "assessments" },
+    { title: "AI Interviews", key: "interviews" },
+    { title: "Reports", key: "reports" },
   ];
 
   const generalOptions = [
-    { title: "Settings", icon: Settings, path: "/settings" },
-    { title: "Help", icon: HelpCircle, path: "/help" },
-    { title: "Logout", icon: LogOut, path: "/logout" },
+    { title: "Settings", icon: Settings, key: "settings" },
+    { title: "Help", icon: HelpCircle, key: "help" },
+    { title: "Logout", icon: LogOut, key: "logout" },
   ];
 
   useEffect(() => {
-  const fetchDashboard = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("No token found in localStorage");
-        return;
-      }
-
-      const response = await fetch(import.meta.env.VITE_BACKEND_URL + "/routes/dashboard-info", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      // Read body once as text
-      const text = await response.text();
-
-      let data;
+    const fetchDashboard = async () => {
       try {
-        data = JSON.parse(text); // parse JSON manually
-      } catch (jsonError) {
-        console.error("Response is not valid JSON:", text, jsonError);
-        return;
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await fetch(
+          import.meta.env.VITE_BACKEND_URL + "/routes/dashboard-info",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const text = await response.text();
+        const data = JSON.parse(text);
+
+        setStats([
+          {
+            title: "Total Jobs Posted",
+            value: data.total_job_postings || 0,
+            icon: Briefcase,
+            gradient: "from-blue-600 to-blue-400",
+          },
+          {
+            title: "Total Recruited",
+            value: "48",
+            icon: Users,
+            gradient: "from-purple-600 to-purple-400",
+          },
+          {
+            title: "Active Jobs",
+            value:
+              data.jobs?.filter((job: any) => job.status === "open").length || 0,
+            icon: LayoutDashboard,
+            gradient: "from-pink-600 to-pink-400",
+          },
+        ]);
+
+        setActiveJobs(data.jobs || []);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
       }
+    };
 
-      if (!response.ok) {
-        console.error(`Failed to fetch: status=${response.status}`, data);
-        return;
-      }
+    fetchDashboard();
+  }, []);
 
-      // Update stats
-      setStats([
-        {
-          title: "Total Jobs Posted",
-          value: data.total_job_postings || 0,
-          icon: Briefcase,
-          gradient: "from-blue-600 to-blue-400",
-        },
-        {
-          title: "Total Recruited",
-          value: "48",
-          icon: Users,
-          gradient: "from-purple-600 to-purple-400",
-        },
-        {
-          title: "Active Jobs",
-          value: data.jobs?.filter((job: any) => job.status === "open").length || 0,
-          icon: LayoutDashboard,
-          gradient: "from-pink-600 to-pink-400",
-        },
-      ]);
+  // 👇 Helper function for rendering the main section
+  const renderMainContent = () => {
+    switch (activeSection) {
+      case "dashboard":
+        return (
+          <div className="rounded-2xl bg-card p-6 shadow-sm mt-3">
+            {/* Header with Add Job button */}
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">Welcome back, HR Manager</h1>
+                <p className="text-muted-foreground">
+                  Here's what's happening with your recruitment pipeline.
+                </p>
+              </div>
 
-      setActiveJobs(data.jobs || []);
+              {/* Add Job Button */}
+              <Button
+                onClick={() => console.log("Add Job clicked")}
+                className="bg-primary text-white hover:bg-primary/90 flex items-center gap-2 rounded-md"
+              >
+                <Plus className="h-4 w-4" />
+                Add Job
+              </Button>
+            </div>
 
-    } catch (error) {
-      console.error("Unexpected error fetching dashboard data:", error);
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {stats.map((stat) => (
+                <div
+                  key={stat.title}
+                  className="relative overflow-hidden rounded-xl bg-muted/30 p-4"
+                >
+                  <div
+                    className={`absolute inset-0 opacity-10 bg-gradient-to-br ${stat.gradient}`}
+                  />
+                  <div className="relative flex flex-row items-center justify-between pb-2">
+                    <span className="text-sm font-medium">{stat.title}</span>
+                    <stat.icon
+                      className={`h-5 w-5 bg-gradient-to-br ${stat.gradient} bg-clip-text text-transparent`}
+                    />
+                  </div>
+                  <div className="relative text-3xl font-bold">
+                    {stat.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Recent Activity */}
+            <div className="relative overflow-hidden rounded-xl bg-muted/30 p-5">
+              <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-purple-600 to-blue-600" />
+              <div className="relative">
+                <h2 className="text-xl font-semibold mb-4">
+                  Recent Activity
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                    <p className="text-sm">
+                      <span className="font-medium">
+                        Senior Frontend Developer
+                      </span>
+                      <span className="text-muted-foreground">
+                        {" "}
+                        - New candidate applied 2 hours ago
+                      </span>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="h-2 w-2 rounded-full bg-blue-500" />
+                    <p className="text-sm">
+                      <span className="font-medium">DevOps Engineer</span>
+                      <span className="text-muted-foreground">
+                        {" "}
+                        - Interview scheduled for tomorrow
+                      </span>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="h-2 w-2 rounded-full bg-purple-500" />
+                    <p className="text-sm">
+                      <span className="font-medium">UI/UX Designer</span>
+                      <span className="text-muted-foreground">
+                        {" "}
+                        - Assessment completed by 3 candidates
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "screening":
+        return (
+          <Card className="p-6 mt-4">
+            <h2 className="text-2xl font-semibold mb-2">Resume Screening</h2>
+            <p className="text-muted-foreground">
+              Here you can view and manage automatically screened resumes.
+            </p>
+          </Card>
+        );
+
+      case "assessments":
+        return (
+          <Card className="p-6 mt-4">
+            <h2 className="text-2xl font-semibold mb-2">Assessments</h2>
+            <p className="text-muted-foreground">
+              Manage AI-generated assessments and candidate results here.
+            </p>
+          </Card>
+        );
+
+      case "interviews":
+        return (
+          <Card className="p-6 mt-4">
+            <h2 className="text-2xl font-semibold mb-2">AI Interviews</h2>
+            <p className="text-muted-foreground">
+              Review, schedule, or trigger AI-based interviews here.
+            </p>
+          </Card>
+        );
+
+      case "reports":
+        return (
+          <Card className="p-6 mt-4">
+            <h2 className="text-2xl font-semibold mb-2">Reports</h2>
+            <p className="text-muted-foreground">
+              Access generated reports and top candidate recommendations.
+            </p>
+          </Card>
+        );
+
+      case "settings":
+        return (
+          <Card className="p-6 mt-4">
+            <h2 className="text-2xl font-semibold mb-2">Settings</h2>
+            <p className="text-muted-foreground">
+              Manage account, preferences, and system configurations.
+            </p>
+          </Card>
+        );
+
+      case "help":
+        return (
+          <Card className="p-6 mt-4">
+            <h2 className="text-2xl font-semibold mb-2">Help & Support</h2>
+            <p className="text-muted-foreground">
+              Get assistance, FAQs, and troubleshooting guides.
+            </p>
+          </Card>
+        );
+
+        case "jobDetails":
+          if (!selectedJob) return null;
+          return (
+            <Card className="p-6 mt-4">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-semibold mb-1">
+                    {selectedJob.title}
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Status: {selectedJob.status || "Unknown"}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => console.log("Edit", selectedJob.id)}
+                    className="rounded-md"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => console.log("Delete", selectedJob.id)}
+                    className="rounded-md"
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </div>
+
+              <Separator className="my-4" />
+
+              <div className="space-y-3">
+                <p>
+                  <span className="font-semibold">Description:</span>{" "}
+                  {selectedJob.description || "No description available."}
+                </p>
+                <p>
+                  <span className="font-semibold">Location:</span>{" "}
+                  {selectedJob.location || "Not specified"}
+                </p>
+                <p>
+                  <span className="font-semibold">Posted On:</span>{" "}
+                  {selectedJob.posted_on
+                    ? new Date(selectedJob.posted_on).toLocaleDateString()
+                    : "N/A"}
+                </p>
+              </div>
+            </Card>
+          );
+
+      default:
+        return null;
     }
   };
 
-  fetchDashboard();
-}, []);
-
-
-return (
+  return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <div className="w-80 p-4">
-        <div className="h-full rounded-3xl bg-card p-4 shadow-sm ">
+        <div className="h-full rounded-3xl bg-card p-4 shadow-sm">
           {/* Logo */}
           <div className="flex items-center gap-2 mb-6">
             <img
@@ -108,126 +318,115 @@ return (
 
           <Separator className="my-2" />
 
-          {/* Active Jobs Section */}
-          <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">
-              ACTIVE JOBS
-            </h3>
-            <ScrollArea className="h-[200px]">
-              {activeJobs.map((job) => (
-                <div key={job.id} className="group">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-left mb-1 px-2 hover:bg-secondary"
-                  >
-                    {job.title}
-                  </Button>
+          <ScrollArea className="h-[85vh] pr-2">
+            {/* MENU */}
+            <h3 className="text-xs font-semibold text-gray-500 mb-2">MENU</h3>
 
-                  <div className="hidden group-hover:block pl-4 space-y-1">
-                    {jobOptions.map((option) => (
-                      <Button
-                        key={option.title}
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start text-sm text-muted-foreground hover:text-primary hover:bg-secondary/80"
-                      >
-                        {option.title}
-                      </Button>
-                    ))}
+            {/* Dashboard */}
+            <Button
+              variant="ghost"
+              className={`w-full justify-start text-left mb-1 px-3 py-2 ${
+                activeSection === "dashboard"
+                  ? "bg-secondary/60 text-white font-medium"
+                  : "hover:bg-secondary/60"
+              }`}
+              onClick={() => setActiveSection("dashboard")}
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+
+            {/* Active Jobs */}
+            <Button
+              variant="ghost"
+              onClick={() => setShowJobs(!showJobs)}
+              className="w-full justify-between text-left mb-1 px-3 py-2 hover:bg-secondary/60"
+            >
+              <div className="flex items-center">
+                <Briefcase className="mr-2 h-4 w-4" />
+                Active Jobs
+              </div>
+              {showJobs ? (
+                <ChevronDown className="h-4 w-4 opacity-60" />
+              ) : (
+                <ChevronRight className="h-4 w-4 opacity-60" />
+              )}
+            </Button>
+
+            {showJobs && (
+              <div className="pl-4">
+                {activeJobs.map((job) => (
+                  <div key={job.id} className="mb-1">
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedJob(job); // show job details in main content
+                        setExpandedJob(expandedJob === job.id ? null : job.id); // toggle sidebar expansion
+                        setActiveSection("jobDetails"); // make sure main content shows job details
+                      }}
+                      className={`w-[94%] justify-between text-left px-2 py-2 rounded-md hover:bg-secondary/70 ${
+                        selectedJob?.id === job.id ? "bg-secondary/60" : ""
+                      }`}
+                    >
+                      <span className="truncate">{job.title}</span>
+                      {expandedJob === job.id ? (
+                        <ChevronDown className="h-4 w-4 opacity-60" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 opacity-60" />
+                      )}
+                    </Button>
+
+                    {expandedJob === job.id && (
+                      <div className="pl-4 mt-1 space-y-1 animate-in fade-in-5 slide-in-from-top-1">
+                        {jobOptions.map((option) => (
+                          <Button
+                            key={option.key}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setActiveSection(option.key)}
+                            className={`w-[90%] justify-start text-sm ${
+                              activeSection === option.key
+                                ? "text-primary font-medium bg-secondary/40"
+                                : "text-muted-foreground hover:text-primary hover:bg-secondary/60"
+                            }`}
+                          >
+                            {option.title}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
-            </ScrollArea>
-          </div>
+                ))}
+              </div>
+            )}
 
-          {/* General Section */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-2">GENERAL</h3>
+            <Separator className="my-4" />
+
+            {/* GENERAL */}
+            <h3 className="text-xs font-semibold text-gray-500 mb-2">GENERAL</h3>
             {generalOptions.map((option) => (
               <Button
-                key={option.title}
+                key={option.key}
                 variant="ghost"
-                className="w-full justify-start mb-1 hover:bg-secondary hover:text-primary"
+                className={`w-full justify-start mb-1 px-3 py-2 ${
+                  activeSection === option.key
+                    ? "bg-secondary/60 text-primary font-medium"
+                    : "hover:bg-secondary/60"
+                }`}
+                onClick={() => setActiveSection(option.key)}
               >
                 <option.icon className="mr-2 h-4 w-4" />
                 {option.title}
               </Button>
             ))}
-          </div>
+          </ScrollArea>
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <div className="flex-1 p-4 overflow-y-auto">
-        {/* Top Bar (Search, Profile, etc.) */}
         <DashboardTopbar />
-
-        {/* Dashboard Overview Section */}
-        <div className="rounded-2xl bg-card p-6 shadow-sm mt-3">
-          {/* Welcome Message */}
-          <h1 className="text-3xl font-bold mb-2">Welcome back, HR Manager</h1>
-          <p className="text-muted-foreground mb-8">
-            Here's what's happening with your recruitment pipeline.
-          </p>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {stats.map((stat) => (
-              <div
-                key={stat.title}
-                className="relative overflow-hidden rounded-xl bg-muted/30 p-4"
-              >
-                <div
-                  className={`absolute inset-0 opacity-10 bg-gradient-to-br ${stat.gradient}`}
-                />
-                <div className="relative flex flex-row items-center justify-between pb-2">
-                  <span className="text-sm font-medium">{stat.title}</span>
-                  <stat.icon
-                    className={`h-5 w-5 bg-gradient-to-br ${stat.gradient} bg-clip-text text-transparent`}
-                  />
-                </div>
-                <div className="relative text-3xl font-bold">{stat.value}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Recent Activity */}
-          <div className="relative overflow-hidden rounded-xl bg-muted/30 p-5">
-            <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-purple-600 to-blue-600" />
-            <div className="relative">
-              <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
-                  <p className="text-sm">
-                    <span className="font-medium">Senior Frontend Developer</span>
-                    <span className="text-muted-foreground">
-                      {" "} - New candidate applied 2 hours ago
-                    </span>
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="h-2 w-2 rounded-full bg-blue-500" />
-                  <p className="text-sm">
-                    <span className="font-medium">DevOps Engineer</span>
-                    <span className="text-muted-foreground">
-                      {" "} - Interview scheduled for tomorrow
-                    </span>
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="h-2 w-2 rounded-full bg-purple-500" />
-                  <p className="text-sm">
-                    <span className="font-medium">UI/UX Designer</span>
-                    <span className="text-muted-foreground">
-                      {" "} - Assessment completed by 3 candidates
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {renderMainContent()}
       </div>
     </div>
   );
