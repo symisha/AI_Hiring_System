@@ -43,5 +43,5 @@ async def create_item(item: dict):  # Async function to handle POST requests to 
 async def who_am_i(user=Depends(auth_middleware)):
     return user
 
-if __name__ == "_main_": # If this script is run directly (not imported as a module)
+if __name__ == "__main__": # If this script is run directly (not imported as a module)
     uvicorn.run(app, host="0.0.0.0", port=8000)  # Start the Uvicorn server to run the FastAPI app on all interfaces at port 8000(default FastAPI port)
