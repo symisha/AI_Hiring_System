@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -6,29 +6,49 @@ import { Bell, Search, ChevronDown } from "lucide-react";
 
 const DashboardTopbar: React.FC = () => {
   const [search, setSearch] = React.useState("");
-  const [notifications] = React.useState(3); // placeholder count
+  const [notifications] = React.useState(3);
+  const [openProfileMenu, setOpenProfileMenu] = React.useState(false);
+
+  // Ref to detect clicks outside
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setOpenProfileMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
-    <div className="mb-3">
-        <div className="rounded-2xl bg-card p-3 shadow-sm">
+    <div className="mb-3 relative">
+      <div className="rounded-2xl bg-card p-3 shadow-sm">
         <div className="flex items-center justify-between gap-3">
-          {/* Left: Search */}
+
+          {/* Search */}
           <div className="flex-1 max-w-md">
             <div className="relative">
               <span className="absolute inset-y-0 left-3 flex items-center text-muted-foreground">
                 <Search className="w-4 h-4" />
               </span>
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search candidates, jobs..."
-                  className="pl-10 h-12 rounded-full border-0 focus-visible:ring-0"
-                />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search candidates, jobs..."
+                className="pl-10 h-12 rounded-full border-0 focus-visible:ring-0"
+              />
             </div>
           </div>
 
-          {/* Right: notifications + profile */}
+          {/* Right section */}
           <div className="flex items-center gap-3">
+
+            {/* Notification Icon */}
             <Button variant="ghost" className="relative p-2 rounded-full">
               <Bell className="w-5 h-5" />
               {notifications > 0 && (
@@ -38,17 +58,46 @@ const DashboardTopbar: React.FC = () => {
               )}
             </Button>
 
-            <Button variant="ghost" className="flex items-center gap-2 rounded-full px-2 py-1">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src="/src/assets/avatar-placeholder.png" alt="Profile" />
-                <AvatarFallback>MI</AvatarFallback>
-              </Avatar>
-              <div className="hidden md:flex flex-col items-start leading-tight">
-                <span className="text-sm font-medium">HR Manager</span>
-                <span className="text-xs text-muted-foreground">Admin</span>
+            {/* Profile Button */}
+            <div className="relative" ref={profileRef}>
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-transparent"
+                onClick={() => setOpenProfileMenu(!openProfileMenu)}
+              >
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src="/src/assets/avatar-placeholder.png" alt="Profile" />
+                  <AvatarFallback>MI</AvatarFallback>
+                </Avatar>
+
+                <div className="hidden md:flex flex-col items-start leading-tight">
+                  <span className="text-sm font-medium">HR Manager</span>
+                  <span className="text-xs text-muted-foreground">Admin</span>
+                </div>
+
+                <ChevronDown
+                  className={`w-4 h-4 ml-1 transition-transform ${
+                    openProfileMenu ? "rotate-180" : ""
+                  }`}
+                />
+              </Button>
+
+              {/* Dropdown Menu */}
+              <div
+                className={`absolute right-0 mt-2 w-48 bg-card border rounded-xl shadow-lg p-2 z-50
+                  transform origin-top-right transition-all duration-200 ease-out
+                  ${openProfileMenu ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0 pointer-events-none"}
+                `}
+              >
+                <button className="w-full text-left px-3 py-2 rounded-md hover:bg-secondary/50">
+                  Profile
+                </button>
+                <button className="w-full text-left px-3 py-2 rounded-md hover:bg-secondary/50 text-red-500">
+                  Logout
+                </button>
               </div>
-              <ChevronDown className="w-4 h-4 ml-1" />
-            </Button>
+            </div>
+
           </div>
         </div>
       </div>

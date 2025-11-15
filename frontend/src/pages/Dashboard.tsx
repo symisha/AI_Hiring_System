@@ -35,7 +35,7 @@ const Dashboard = () => {
   const generalOptions = [
     { title: "Settings", icon: Settings, key: "settings" },
     { title: "Help", icon: HelpCircle, key: "help" },
-    { title: "Logout", icon: LogOut, key: "logout" },
+    //{ title: "Logout", icon: LogOut, key: "logout" },
   ];
 
   useEffect(() => {
@@ -106,7 +106,7 @@ const Dashboard = () => {
               {/* Add Job Button */}
               <Button
                 onClick={() => console.log("Add Job clicked")}
-                className="bg-primary text-white hover:bg-primary/90 flex items-center gap-2 rounded-md"
+                className="bg-purple-600/50 text-white hover:bg-purple-500/70 flex items-center gap-2 rounded-md hover:shadow-none"
               >
                 <Plus className="h-4 w-4" />
                 Add Job
@@ -245,28 +245,28 @@ const Dashboard = () => {
         case "jobDetails":
           if (!selectedJob) return null;
           return (
-            <Card className="p-6 mt-4">
+            <Card className="p-6 mt-4 border-none">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-semibold mb-1">
                     {selectedJob.title}
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-blue-400">
                     Status: {selectedJob.status || "Unknown"}
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
+                    variant="destructive"
                     onClick={() => console.log("Edit", selectedJob.id)}
-                    className="rounded-md"
+                    className="rounded-md bg-green-600/60 text-white hover:bg-green-600/80"
                   >
                     Edit
                   </Button>
                   <Button
                     variant="destructive"
                     onClick={() => console.log("Delete", selectedJob.id)}
-                    className="rounded-md"
+                    className="rounded-md bg-red-600/60 text-white hover:bg-red-600/80"
                   >
                     Delete
                   </Button>
@@ -337,69 +337,79 @@ const Dashboard = () => {
             </Button>
 
             {/* Active Jobs */}
-            <Button
-              variant="ghost"
-              onClick={() => setShowJobs(!showJobs)}
-              className="w-full justify-between text-left mb-1 px-3 py-2 hover:bg-secondary/60"
-            >
-              <div className="flex items-center">
-                <Briefcase className="mr-2 h-4 w-4" />
-                Active Jobs
-              </div>
-              {showJobs ? (
-                <ChevronDown className="h-4 w-4 opacity-60" />
-              ) : (
-                <ChevronRight className="h-4 w-4 opacity-60" />
-              )}
-            </Button>
+            <div className="mb-2">
+              <Button
+                variant="ghost"
+                onClick={() => setShowJobs(!showJobs)}
+                className="w-full justify-between text-left px-3 py-2 hover:bg-secondary/60 transition-colors duration-300"
+              >
+                <div className="flex items-center">
+                  <Briefcase className="mr-2 h-4 w-4" />
+                  Active Jobs
+                </div>
+                <ChevronDown
+                  className={`h-4 w-4 opacity-60 transition-transform duration-300 ${
+                    showJobs ? "rotate-180" : "rotate-0"
+                  }`}
+                />
+              </Button>
 
-            {showJobs && (
-              <div className="pl-4">
+              {/* Smooth accordion for jobs */}
+              <div
+                className={`overflow-hidden transition-[max-height,opacity,margin] duration-300 ease-in-out
+                  ${showJobs ? "max-h-[1000px] opacity-100 mt-2" : "max-h-0 opacity-0 mt-0"}
+                `}
+              >
                 {activeJobs.map((job) => (
                   <div key={job.id} className="mb-1">
                     <Button
                       variant="ghost"
                       onClick={() => {
-                        setSelectedJob(job); // show job details in main content
-                        setExpandedJob(expandedJob === job.id ? null : job.id); // toggle sidebar expansion
-                        setActiveSection("jobDetails"); // make sure main content shows job details
+                        setSelectedJob(job);
+                        setExpandedJob(expandedJob === job.id ? null : job.id);
+                        setActiveSection("jobDetails");
                       }}
-                      className={`w-[94%] justify-between text-left px-2 py-2 rounded-md hover:bg-secondary/70 ${
-                        selectedJob?.id === job.id ? "bg-secondary/60" : ""
-                      }`}
+                      className={`w-[94%] justify-between text-left px-3 py-2 rounded-full transition-colors duration-300
+                        ${expandedJob === job.id ? "bg-secondary/60" : "hover:bg-secondary/70"}
+                      `}
                     >
                       <span className="truncate">{job.title}</span>
                       {expandedJob === job.id ? (
-                        <ChevronDown className="h-4 w-4 opacity-60" />
+                        <ChevronDown className="h-4 w-4 opacity-60 transition-transform duration-300 rotate-180" />
                       ) : (
-                        <ChevronRight className="h-4 w-4 opacity-60" />
+                        <ChevronRight className="h-4 w-4 opacity-60 transition-transform duration-300" />
                       )}
                     </Button>
 
-                    {expandedJob === job.id && (
-                      <div className="pl-4 mt-1 space-y-1 animate-in fade-in-5 slide-in-from-top-1">
-                        {jobOptions.map((option) => (
-                          <Button
-                            key={option.key}
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setActiveSection(option.key)}
-                            className={`w-[90%] justify-start text-sm ${
+                    {/* Smooth dropdown for job sub-options */}
+                    <div
+                      className={`pl-4 overflow-hidden transition-[max-height,opacity,margin] duration-300 ease-in-out
+                        ${expandedJob === job.id ? "max-h-60 opacity-100 mt-1" : "max-h-0 opacity-0 mt-0"}
+                      `}
+                    >
+                      {jobOptions.map((option) => (
+                        <Button
+                          key={option.key}
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setActiveSection(option.key)}
+                          className={`w-[90%] justify-start text-sm transition-colors duration-200
+                            ${
                               activeSection === option.key
                                 ? "text-primary font-medium bg-secondary/40"
                                 : "text-muted-foreground hover:text-primary hover:bg-secondary/60"
-                            }`}
-                          >
-                            {option.title}
-                          </Button>
-                        ))}
-                      </div>
-                    )}
+                            }
+                          `}
+                        >
+                          {option.title}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
-            )}
-
+            </div>
+          
             <Separator className="my-4" />
 
             {/* GENERAL */}
