@@ -2,6 +2,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Target, Shield, TrendingUp, Users } from "lucide-react";
+import { motion } from "framer-motion";
+
 
 const About = () => {
   return (
@@ -43,61 +45,49 @@ const About = () => {
             </h2>
             
             <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-              <Card className="border-border bg-card hover:shadow-elegant transition-all duration-300 animate-fade-in-up">
-                <CardContent className="p-8">
-                  <h3 className="text-xl font-semibold mb-4 text-destructive">Traditional Hiring</h3>
-                  <ul className="space-y-3 text-muted-foreground">
-                    <li className="flex items-start gap-2">
-                      <span className="text-destructive mt-1">•</span>
-                      <span>Weeks of manual resume screening</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-destructive mt-1">•</span>
-                      <span>Unconscious bias in evaluations</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-destructive mt-1">•</span>
-                      <span>Inconsistent interview standards</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-destructive mt-1">•</span>
-                      <span>Limited candidate insights</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-destructive mt-1">•</span>
-                      <span>High cost per hire</span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
+  
+              {/* Traditional Hiring Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 60 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                viewport={{ once: true, amount: 0.2 }}
+              >
+                <Card className="border-border bg-card hover:shadow-elegant transition-all duration-300">
+                  <CardContent className="p-8">
+                    <h3 className="text-xl font-semibold mb-4 text-destructive">Traditional Hiring</h3>
+                    <ul className="space-y-3 text-muted-foreground">
+                      <li className="flex items-start gap-2"><span className="text-destructive mt-1">•</span><span>Weeks of manual resume screening</span></li>
+                      <li className="flex items-start gap-2"><span className="text-destructive mt-1">•</span><span>Unconscious bias in evaluations</span></li>
+                      <li className="flex items-start gap-2"><span className="text-destructive mt-1">•</span><span>Inconsistent interview standards</span></li>
+                      <li className="flex items-start gap-2"><span className="text-destructive mt-1">•</span><span>Limited candidate insights</span></li>
+                      <li className="flex items-start gap-2"><span className="text-destructive mt-1">•</span><span>High cost per hire</span></li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
-              <Card className="border-primary/50 bg-gradient-hero hover:shadow-glow transition-all duration-300 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-                <CardContent className="p-8">
-                  <h3 className="text-xl font-semibold mb-4 text-primary">AI-Driven Hiring</h3>
-                  <ul className="space-y-3 text-foreground">
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">✓</span>
-                      <span>Instant automated screening</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">✓</span>
-                      <span>Objective, unbiased evaluations</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">✓</span>
-                      <span>Standardized AI interviews</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">✓</span>
-                      <span>Deep behavioral & emotional analysis</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary mt-1">✓</span>
-                      <span>Reduced time & cost to hire</span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
+              {/* AI-Driven Hiring Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 60 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                viewport={{ once: true, amount: 0.2 }}
+              >
+                <Card className="border-primary/50 bg-gradient-hero hover:shadow-glow transition-all duration-300">
+                  <CardContent className="p-8">
+                    <h3 className="text-xl font-semibold mb-4 text-primary">AI-Driven Hiring</h3>
+                    <ul className="space-y-3 text-foreground">
+                      <li className="flex items-start gap-2"><span className="text-primary mt-1">✓</span><span>Instant automated screening</span></li>
+                      <li className="flex items-start gap-2"><span className="text-primary mt-1">✓</span><span>Objective, unbiased evaluations</span></li>
+                      <li className="flex items-start gap-2"><span className="text-primary mt-1">✓</span><span>Standardized AI interviews</span></li>
+                      <li className="flex items-start gap-2"><span className="text-primary mt-1">✓</span><span>Deep behavioral & emotional analysis</span></li>
+                      <li className="flex items-start gap-2"><span className="text-primary mt-1">✓</span><span>Reduced time & cost to hire</span></li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
             </div>
           </section>
 
@@ -148,7 +138,7 @@ const About = () => {
           </section>
 
           {/* Project Info */}
-          <section className="max-w-4xl mx-auto">
+          {/* <section className="max-w-4xl mx-auto">
             <Card className="border-border bg-card/50">
               <CardContent className="p-8 md:p-12 text-center">
                 <h3 className="text-2xl font-bold mb-4">Final Year Industrial Project</h3>
@@ -163,7 +153,7 @@ const About = () => {
                 </p>
               </CardContent>
             </Card>
-          </section>
+          </section> */}
         </div>
       </main>
 
