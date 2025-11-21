@@ -5,7 +5,7 @@ from pydantic import BaseModel                          # Used to define and val
 from app.config.config import Settings                    # Import the Settings class from the config module to access environment variables
 from app.routes import rating_resume, dashboard_info
 from app.database.db_queries import supabase         # Import the Supabase client instance to interact with the database
-from app.database import db_queries
+from app.database.db_queries import dashboard_info
 from app.auth_middleware import auth_middleware         # Import the authentication middleware to protect routes
 
 

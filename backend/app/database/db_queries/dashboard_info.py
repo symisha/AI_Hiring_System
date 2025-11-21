@@ -1,12 +1,9 @@
 from app.database.db_connection import supabase         # Import the Supabase client instance to interact with the database
 from app.auth_middleware import auth_middleware         # Import the authentication middleware to protect routes
 
-
-
 class DashboardContext:
     user_email = None
     user_id = None
-
 
 #for DASHBOARD INFO
 def set_user_info(user):
