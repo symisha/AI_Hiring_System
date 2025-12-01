@@ -12,4 +12,4 @@ class Settings(BaseSettings):
 
 Settings = Settings()   # Create an instance of the Settings class to access environment variables
 
-
+print("Loaded Settings:", Settings.model_dump())  # Print loaded settings for verification (remove in production)

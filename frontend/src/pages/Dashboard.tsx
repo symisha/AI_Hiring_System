@@ -45,7 +45,7 @@ const Dashboard = () => {
         if (!token) return;
 
         const response = await fetch(
-          import.meta.env.VITE_BACKEND_URL + "/routes/dashboard-info",
+          `${import.meta.env.VITE_BACKEND_URL}/routes/dashboard_essentials/dashboard-info`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

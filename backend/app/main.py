@@ -1,11 +1,14 @@
+
 import uvicorn                                          # ASGI server used to run FastAPI apps (like "npm start" for Node)
 from fastapi import FastAPI, Depends                             # Main FastAPI class used to create the web application instance
 from fastapi.middleware.cors import CORSMiddleware      # Middleware to handle CORS (Cross-Origin Resource Sharing) — allows frontend (React, etc.) to communicate with backend
 from pydantic import BaseModel                          # Used to define and validate data models (for requests/responses) with type checking
 from app.config.config import Settings                    # Import the Settings class from the config module to access environment variables
-from app.routes import rating_resume, dashboard_info
-from app.database.db_queries import supabase         # Import the Supabase client instance to interact with the database
-from app.database.db_queries import dashboard_info
+from app.routes.dashboard_essentials import dashboard_info
+from app.routes.dashboard_essentials.profile_preview_router import router 
+
+from app.database.db_connection import supabase         # Import the Supabase client instance to interact with the database
+#from app.database.db_queries import dashboard_info
 from app.auth_middleware import auth_middleware         # Import the authentication middleware to protect routes
 
 
@@ -17,8 +20,9 @@ orgins =[
 
 
 # Include your endpoints
-app.include_router(rating_resume.router, prefix="/routes", tags=["rating"])
-app.include_router(dashboard_info.router, prefix="/routes", tags=["database"])
+#app.include_router(rating_resume.router, prefix="/routes", tags=["rating"])
+app.include_router(dashboard_info.router, prefix="/routes/dashboard_essentials", tags=["database"])
+app.include_router(router, prefix="/routes/dashboard_essentials", tags=["database"])
 
 
 app.add_middleware(
