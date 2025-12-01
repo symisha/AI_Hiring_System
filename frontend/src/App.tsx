@@ -11,6 +11,7 @@ import HRSignup from "./pages/HRSignup";
 import CandidateLogin from "./pages/CandidateLogin";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import Apply from "./pages/Apply";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/hr-login" element={<HRLogin />} />
           <Route path="/hr-signup" element={<HRSignup />} />
           <Route path="/candidate-login" element={<CandidateLogin />} />
+          <Route path="/apply" element={<Apply />} />
           <Route path="/dashboard" element={<ProtectedRoutes><Dashboard /></ProtectedRoutes>} />
         </Routes>
       </BrowserRouter>
