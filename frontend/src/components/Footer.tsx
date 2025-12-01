@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Sparkles, Mail, MapPin } from "lucide-react";
+import logo from "@/assets/logo-purple.svg"; // adjust path based on your folder
 
 const Footer = () => {
   return (
@@ -8,8 +9,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="bg-gradient-primary p-2 rounded-lg">
-                <Sparkles className="h-5 w-5 text-white" />
+              <div className="p-2 rounded-lg">
+                <img src={logo} alt="AI Hiring" className="h-8 w-8 object-contain" />
               </div>
               <span className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">
                 AI Hiring
