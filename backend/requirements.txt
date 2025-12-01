@@ -9,3 +9,4 @@ jose
 requests
 pyjwt
 httpx
+pytest
