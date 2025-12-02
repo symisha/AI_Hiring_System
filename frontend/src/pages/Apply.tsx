@@ -173,11 +173,11 @@ const Apply = () => {
 
             </form>
 
-            <div className="mt-6 text-left">
+            {/* <div className="mt-6 text-left">
               <p className="text-sm text-muted-foreground">
                 Have an account? <Link to="/candidate-login" className="text-primary hover:underline">Sign In</Link>
               </p>
-            </div>
+            </div> */}
 
           </div>
         </div>
