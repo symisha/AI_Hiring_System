@@ -4,13 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware  # Middleware to handle CORS 
 from pydantic import BaseModel  # Used to define and validate data models (for requests/responses) with type checking
 from app.config.config import Settings  # Import the Settings class to access environment variables
 
-# Import routes
-from app.routes import rating_resume, dashboard_info, apply
-from app.routes.dashboard_essentials.profile_preview_router import router
+# Import routes (import nested routers directly to avoid circular/package import issues)
+from app.routes import rating_resume, apply
+from app.routes.dashboard_essentials.dashboard_info import router as dashboard_info_router
+from app.routes.dashboard_essentials.profile_preview_router import router as profile_preview_router
 
 # Database
-from app.database.db_queries import supabase  # Supabase client instance
-from app.database import db_queries
+from app.database.db_connection import supabase  # Supabase client instance
 
 # Auth middleware
 from app.auth_middleware import auth_middleware
@@ -25,14 +25,14 @@ origins = [
 
 # Include your endpoints
 app.include_router(rating_resume.router, prefix="/routes", tags=["rating"])
-app.include_router(dashboard_info.router, prefix="/routes/dashboard_essentials", tags=["database"])
-app.include_router(router, prefix="/routes/dashboard_essentials", tags=["database"])
+app.include_router(dashboard_info_router, prefix="/routes/dashboard_essentials", tags=["database"])
+app.include_router(profile_preview_router, prefix="/routes/dashboard_essentials", tags=["database"])
 app.include_router(apply.router, prefix="/routes", tags=["apply"])
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=Settings.FRONTEND_URL,  # List of allowed origins (frontend URLs)
+    allow_origins=[Settings.FRONTEND_URL],  # List of allowed origins (frontend URLs)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
