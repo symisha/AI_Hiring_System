@@ -1,0 +1,66 @@
+Experience:
+July 2022 - Present (7  Semester)
+th
+BS Computer Science
+Iqra University
+
+Education:
+AI powered Spam Email Detection System
+Developed a machine learning based spam email detection system capable of classifying incoming
+emails as spam or legitimate (ham) using natural language processing (NLP) techniques and
+supervised learning models.
+Implemented text preprocessing (tokenization, stopword removal, lemmatization) for email content.
+Trained and evaluated multiple machine learning models (e.g., Naive Bayes, Logistic Regression,
+and Random Forest ) for classification.
+Built a Flask based web interface for users to input emails and instantly get spam/ham predictions.
+AI Powered Bug Detector for Code
+Developing an AI tool to automatically detect and classify bugs in source code using machine
+learning and NLP.
+Analyzing code syntax, semantics, and patterns to identify errors, vulnerabilities, and inefficiencies.
+Training models on open source codebases to improve accuracy and performance.
+Technologies: Python, PyTorch, NLP, Static Code Analysis, Git, Docker, FastAPI.
+PERSONAL PROJECTS
+
+
+Skills:
+Programming: Python, SQL, HTML, CSS, Node.js, Express.js.
+Machine Learning: Supervised & Unsupervised Learning, Transformers, Deep Learning, Model
+Evaluation.
+Natural Language Processing: NLTK.
+Large Language Models (LLMs): LLM, OpenAI, GPT, ChatGPT, LangChain, Ollama.
+Deployment & APIs: Flask, FastAPI, RESTful APIs.
+Frameworks & Tools: PyTorch, Tensorflow, Scikit learn, Hugging Face, Jupyter Notebook, Git.
+Data Visualization: Matplotlib, Seaborn.
+Automation & Web Scraping: Selenium, beautiful soup.
+Cloud: Firebase, AWS
+Core Competencies: Problem Solving, Critical Thinking, Communication, Time Management.
+Languages:
+1.  English | Full Professional Proficiency
+2. Urdu | Native or Bilingual Proficiency
+ADDITIONAL INFORMATION
+CI/CD Pipeline
+Set up a CI/CD pipeline to automate web deployments seamlessly.
+Integrated GitHub for version control and streamlined code management.
+Configured deployments to Firebase, ensuring fast, reliable, and efficient delivery.
+Expense Management Application
+A fullstack web application that helps users manage their financial records by tracking income and
+expenses.
+Features include user authentication, a dynamic dashboard with monthly filtering, and a Bootstrap
+based responsive design.
+Built using Node.js, Express.js, MongoDB, and Bootstrap.
+Web Scraper
+Developed a web scraper using Python libraries (Beautiful Soup, JSON) to extract comprehensive
+data from websites and save it in JSON format.
+Website Development
+Sam International WebSite (WordPress): I developed the WordPress website for
+SamInternational.online, leveraging the Kadence theme to create a user friendly and visually
+appealing platform tailored to the client's needs.
+Automobile Website (HTML CSS): I designed and developed an HTML website for an Automobile
+Service Company, focusing on a clean layout, responsive design, and user friendly navigation to
+enhance the customer experience.
+Introduction to Python | edX
+Beginning Amazon Web Services | 10 Pearl University
+
+Certifications:
+
+

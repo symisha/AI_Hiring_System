@@ -8,7 +8,7 @@ from app.config.config import Settings  # Import the Settings class to access en
 from app.routes import rating_resume, apply
 from app.routes.dashboard_essentials.dashboard_info import router as dashboard_info_router
 from app.routes.dashboard_essentials.profile_preview_router import router as profile_preview_router
-
+from app.services.resume_extractor import router as resume_extractor_router
 # Database
 from app.database.db_connection import supabase  # Supabase client instance
 
@@ -28,6 +28,7 @@ app.include_router(rating_resume.router, prefix="/routes", tags=["rating"])
 app.include_router(dashboard_info_router, prefix="/routes/dashboard_essentials", tags=["database"])
 app.include_router(profile_preview_router, prefix="/routes/dashboard_essentials", tags=["database"])
 app.include_router(apply.router, prefix="/routes", tags=["apply"])
+app.include_router(resume_extractor_router, prefix="/services", tags=["resume_extractor"])
 
 # Add CORS middleware
 app.add_middleware(
@@ -56,3 +57,102 @@ async def who_am_i(user=Depends(auth_middleware)):
 # Run the app
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+
+#submit the form for resume uplooad ------------------------
+from fastapi.responses import JSONResponse
+from fastapi import Form, File, UploadFile
+import uuid
+BUCKET_NAME = "Resumes"
+@app.post("/submit")
+async def submit_form(
+    name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(...),
+    resume: UploadFile = File(...)
+):
+    try:
+        # Generate a unique file name
+        file_ext = resume.filename.split(".")[-1]
+        file_name = f"{uuid.uuid4()}.{file_ext}"
+
+        # Read the file content
+        file_bytes = await resume.read()
+
+        # Upload file to Supabase Storage bucket
+        supabase.storage.from_(BUCKET_NAME).upload(file_name, file_bytes)
+
+        # Get the public URL of the uploaded file
+        file_url = supabase.storage.from_(BUCKET_NAME).get_public_url(file_name)
+
+        # Insert user info + resume URL into database
+        supabase.table("candidates").insert({
+            "name": name,
+            "email": email,
+            "phone": phone,
+            "resume_url": file_url
+        }).execute()
+
+        return JSONResponse({
+            "message": "Form submitted successfully!",
+            "resume_url": file_url
+        })
+    except Exception as e:
+        return JSONResponse({
+            "message": "Error submitting form",
+            "error": str(e)
+        }, status_code=500)
+    
+
+#Job description upload endpoint ------------------------
+import json
+    
+@app.post("/upload-job")
+async def upload_job(
+    BUCKET_NAME: str = "Job Description",
+    title: str = Form(...),
+    description: str = Form(...),
+    jd_file: UploadFile = File(...)
+):
+    try:
+        # Check if file is JSON
+        if jd_file.content_type != "application/json":
+            return JSONResponse({"message": "Only JSON files are allowed"}, status_code=400)
+
+        # Read file content
+        file_bytes = await jd_file.read()
+
+        # Optional: validate JSON content
+        try:
+            json.loads(file_bytes)
+        except json.JSONDecodeError:
+            return JSONResponse({"message": "Invalid JSON file"}, status_code=400)
+
+        # Generate unique file name
+        file_name = f"{uuid.uuid4()}.json"
+
+        # Upload JSON to Supabase bucket
+        supabase.storage.from_(BUCKET_NAME).upload(file_name, file_bytes)
+
+        # Get public URL
+        job_description_url = supabase.storage.from_(BUCKET_NAME).get_public_url(file_name)
+
+        # Insert metadata + file URL into database
+        supabase.table("job_descriptions").insert({
+            "title": title,
+            "description": description,
+            "job_description_url": job_description_url
+        }).execute()
+
+        return JSONResponse({
+            "message": "Job description uploaded successfully",
+            "job_description_url": job_description_url
+        })
+
+    except Exception as e:
+        return JSONResponse({"message": "Error uploading JD", "error": str(e)}, status_code=500)
+    
+
+
+    #URL NOT BEING SAVED IN THE DATABASES YET...FIGURE OUT LATER  ------------------------

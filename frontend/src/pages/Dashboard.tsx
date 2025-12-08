@@ -24,7 +24,6 @@ const Dashboard = () => {
   const [showJobs, setShowJobs] = useState<boolean>(true);
   const [activeSection, setActiveSection] = useState<string>("dashboard"); // 👈 controls which main section is visible
   const [selectedJob, setSelectedJob] = useState<any | null>(null);
-  const [applyLink, setApplyLink] = useState<string | null>(null);
 
   const jobOptions = [
     { title: "Resume Screening", key: "screening" },
@@ -272,44 +271,6 @@ const Dashboard = () => {
                     Delete
                   </Button>
                 </div>
-              </div>
-
-              {/* Apply link generation */}
-              <div className="mb-4">
-                <button
-                  onClick={async () => {
-                    try {
-                      const token = localStorage.getItem("token");
-                      if (!token) return alert("Not authenticated");
-                      const res = await fetch(
-                        import.meta.env.VITE_BACKEND_URL + "/routes/job/" + selectedJob.id + "/generate-link",
-                        {
-                          method: "POST",
-                          headers: { Authorization: `Bearer ${token}` },
-                        }
-                      );
-                      const json = await res.json();
-                      if (res.ok) {
-                        setApplyLink(json.apply_link);
-                        navigator.clipboard?.writeText(json.apply_link);
-                        alert("Apply link copied to clipboard");
-                      } else {
-                        alert(json.detail || "Could not generate link");
-                      }
-                    } catch (err) {
-                      console.error(err);
-                      alert("Error generating link");
-                    }
-                  }}
-                  className="rounded bg-indigo-600 text-white px-3 py-1 mr-2"
-                >
-                  Generate Apply Link
-                </button>
-                {applyLink && (
-                  <a href={applyLink} target="_blank" rel="noreferrer" className="text-sm text-blue-500">
-                    Open apply page
-                  </a>
-                )}
               </div>
 
               <Separator className="my-4" />
