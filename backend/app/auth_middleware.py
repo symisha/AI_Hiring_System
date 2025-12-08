@@ -24,4 +24,3 @@ async def auth_middleware(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
         )
-

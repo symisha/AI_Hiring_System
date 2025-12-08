@@ -13,6 +13,8 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Apply from "./pages/Apply";
 import ProtectedRoutes from "./components/ProtectedRoutes";
+import FormPage from "./pages/form";
+import JobForm from "./pages/JobForm";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -30,6 +32,8 @@ const App = () => (
           <Route path="/candidate-login" element={<CandidateLogin />} />
           <Route path="/apply" element={<Apply />} />
           <Route path="/dashboard" element={<ProtectedRoutes><Dashboard /></ProtectedRoutes>} />
+          <Route path="/form" element={<FormPage />} />  
+          <Route path="/upload-job" element={<JobForm />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

@@ -11,5 +11,3 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")  #ignore evrthing else in .env file except defined variables
 
 Settings = Settings()   # Create an instance of the Settings class to access environment variables
-
-print("Loaded Settings:", Settings.model_dump())  # Print loaded settings for verification (remove in production)

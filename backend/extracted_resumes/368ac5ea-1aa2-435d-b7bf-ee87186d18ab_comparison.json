@@ -1,0 +1,33 @@
+{
+  "Overall Relevance": "The candidate has experience in machine learning, NLP, and data science, but the job description requires specific experience in data science and analytics.",
+  "Education Match": "The candidate's degree in Computer Science meets the minimum qualification requirement.",
+  "Years of Experience Match": "Insufficient evidence to determine the exact number of years of experience, but the candidate has some relevant experience.",
+  "Strengths / Matches": [
+    "Developed a machine learning based spam email detection system capable of classifying incoming emails as spam or legitimate (ham) using natural language processing (NLP) techniques and supervised learning models.",
+    "Implemented text preprocessing (tokenization, stopword removal, lemmatization) for email content.",
+    "Trained and evaluated multiple machine learning models (e.g., Naive Bayes, Logistic Regression, and Random Forest ) for classification.",
+    "Built a Flask based web interface for users to input emails and instantly get spam/ham predictions.",
+    "Developing an AI tool to automatically detect and classify bugs in source code using machine learning and NLP.",
+    "Technologies: Python, PyTorch, NLP, Static Code Analysis, Git, Docker, FastAPI.",
+    "Programming: Python, SQL, HTML, CSS, Node.js, Express.js.",
+    "Machine Learning: Supervised & Unsupervised Learning, Transformers, Deep Learning, Model Evaluation.",
+    "Natural Language Processing: NLTK.",
+    "Deployment & APIs: Flask, FastAPI, RESTful APIs.",
+    "Frameworks & Tools: PyTorch, Tensorflow, Scikit learn, Hugging Face, Jupyter Notebook, Git.",
+    "Data Visualization: Matplotlib, Seaborn.",
+    "Automation & Web Scraping: Selenium, beautiful soup.",
+    "Cloud: Firebase, AWS"
+  ],
+  "Gaps / Missing Requirements": [
+    "Experience with scikit-learn, pandas, and data visualization (Matplotlib/Plotly).",
+    "Solid grasp of statistics: hypothesis testing, confidence intervals, experimentation basics, and evaluation metrics.",
+    "Familiarity with Git/GitHub and collaborative workflows.",
+    "Experience with PyTorch/TensorFlow, XGBoost/LightGBM, Spark/Databricks, Airflow, dbt.",
+    "Exposure to cloud data stacks (AWS/GCP/Azure) and warehouses (Snowflake/BigQuery/Redshift).",
+    "Practical understanding of model monitoring, data/label drift, and feature stores.",
+    "Domain exposure to personalization, recommendations, fraud/risk, marketing attribution, NLP, or time series.",
+    "Strong communication skills; ability to simplify technical findings for non-technical audiences."
+  ],
+  "Fit Assessment": "moderate fit",
+  "Similarity Score": 55
+}

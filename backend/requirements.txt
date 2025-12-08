@@ -10,3 +10,7 @@ requests
 pyjwt
 httpx
 pytest
+groq
+PyMuPDF
+Pillow
+python-multipart
