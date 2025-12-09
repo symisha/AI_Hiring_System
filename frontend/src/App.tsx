@@ -15,6 +15,7 @@ import Apply from "./pages/Apply";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import FormPage from "./pages/form";
 import JobForm from "./pages/JobForm";
+import ResumeScreening from "./pages/ResumeScreening";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/dashboard" element={<ProtectedRoutes><Dashboard /></ProtectedRoutes>} />
           <Route path="/form" element={<FormPage />} />  
           <Route path="/upload-job" element={<JobForm />} />
+          <Route path="/resume-screening" element={<ProtectedRoutes><ResumeScreening /></ProtectedRoutes>} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
