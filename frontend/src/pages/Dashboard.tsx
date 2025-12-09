@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import ResumeScreening from "./ResumeScreening";
+import Assessments from "./Assessments";
+import AIInterviews from "./AIInterviews";
+import Reports from "./Reports";
 import {
   LayoutDashboard,
   Users,
@@ -187,34 +190,13 @@ const Dashboard = () => {
         return <ResumeScreening jobId={selectedJob?.id} job={selectedJob} />;
 
       case "assessments":
-        return (
-          <Card className="p-6 mt-4">
-            <h2 className="text-2xl font-semibold mb-2">Assessments</h2>
-            <p className="text-muted-foreground">
-              Manage AI-generated assessments and candidate results here.
-            </p>
-          </Card>
-        );
+        return <Assessments jobId={selectedJob?.id} job={selectedJob} />;
 
       case "interviews":
-        return (
-          <Card className="p-6 mt-4">
-            <h2 className="text-2xl font-semibold mb-2">AI Interviews</h2>
-            <p className="text-muted-foreground">
-              Review, schedule, or trigger AI-based interviews here.
-            </p>
-          </Card>
-        );
+        return <AIInterviews jobId={selectedJob?.id} job={selectedJob} />;
 
       case "reports":
-        return (
-          <Card className="p-6 mt-4">
-            <h2 className="text-2xl font-semibold mb-2">Reports</h2>
-            <p className="text-muted-foreground">
-              Access generated reports and top candidate recommendations.
-            </p>
-          </Card>
-        );
+        return <Reports jobId={selectedJob?.id} job={selectedJob} />;
 
       case "settings":
         return (
