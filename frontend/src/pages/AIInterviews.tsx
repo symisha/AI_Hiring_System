@@ -1,9 +1,9 @@
 import { useState } from "react";
 import AIInterviewJobHeader from "@/components/AIInterviews/AIInterviewJobHeader";
-import AIInterviewOverview from "@/components/AIInterviews/AIInterviewOverview";
-import AIInterviewFilters from "@/components/AIInterviews/AIInterviewFilters";
-import CandidateInterviewList from "@/components/AIInterviews/CandidateInterviewList";
-import CandidateInterviewDetail from "@/components/AIInterviews/CandidateInterviewDetail";
+import AIInterviewOverview from "@/components/AIInterviews/AIInterviewOverview.tsx";
+import AIInterviewFilters from "@/components/AIInterviews/AIInterviewFilters.tsx";
+import CandidateInterviewList from "@/components/AIInterviews/CandidateInterviewList.tsx";
+import CandidateInterviewDetail from "@/components/AIInterviews/CandidateInterviewDetail.tsx";
 import { Card } from "@/components/ui/card";
 
 const mockCandidates = [

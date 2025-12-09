@@ -1,8 +1,8 @@
 import { useState } from "react";
 import ReportsJobHeader from "@/components/Reports/ReportsJobHeader";
-import ReportsSummary from "@/components/Reports/ReportsSummary";
-import TopCandidates from "@/components/Reports/TopCandidates";
-import CandidatesTable from "@/components/Reports/CandidatesTable";
+import ReportsSummary from "@/components/Reports/ReportsSummary.tsx";
+import TopCandidates from "@/components/Reports/TopCandidates.tsx";
+import CandidatesTable from "@/components/Reports/CandidatesTable.tsx";
 import { Card } from "@/components/ui/card";
 import ReportsCharts from "@/components/Reports/ReportsCharts";
 

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import AssessmentJobHeader from "@/components/Assessments/AssessmentJobHeader";
-import AssessmentOverview from "@/components/Assessments/AssessmentOverview";
-import AssessmentFilters from "@/components/Assessments/AssessmentFilters";
-import CandidateAssessmentList from "@/components/Assessments/CandidateAssessmentList";
-import CandidateAssessmentDetail from "@/components/Assessments/CandidateAssessmentDetail";
+import AssessmentOverview from "@/components/Assessments/AssessmentOverview.tsx";
+import AssessmentFilters from "@/components/Assessments/AssessmentFilters.tsx";
+import CandidateAssessmentList from "@/components/Assessments/CandidateAssessmentList.tsx";
+import CandidateAssessmentDetail from "@/components/Assessments/CandidateAssessmentDetail.tsx";
 import { Card } from "@/components/ui/card";
 
 const mockCandidates = [
