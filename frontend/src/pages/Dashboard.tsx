@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import ResumeScreening from "./ResumeScreening";
 import {
   LayoutDashboard,
   Users,
@@ -183,14 +184,7 @@ const Dashboard = () => {
         );
 
       case "screening":
-        return (
-          <Card className="p-6 mt-4">
-            <h2 className="text-2xl font-semibold mb-2">Resume Screening</h2>
-            <p className="text-muted-foreground">
-              Here you can view and manage automatically screened resumes.
-            </p>
-          </Card>
-        );
+        return <ResumeScreening jobId={selectedJob?.id} job={selectedJob} />;
 
       case "assessments":
         return (
@@ -392,7 +386,11 @@ const Dashboard = () => {
                           key={option.key}
                           variant="ghost"
                           size="sm"
-                          onClick={() => setActiveSection(option.key)}
+                          onClick={() => {
+                            // ensure selected job is set, then switch section
+                            setSelectedJob(job);
+                            setActiveSection(option.key);
+                          }}
                           className={`w-[90%] justify-start text-sm transition-colors duration-200
                             ${
                               activeSection === option.key
