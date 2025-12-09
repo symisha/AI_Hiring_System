@@ -1,31 +1,4 @@
-const Donut = ({ parts }: { parts: { label: string; value: number; color: string }[] }) => {
-  const total = parts.reduce((s, p) => s + p.value, 0) || 1;
-  let angle = 0;
-  const radius = 36;
-  const cx = 40;
-  const cy = 40;
-
-  return (
-    <svg width="120" height="120" viewBox="0 0 80 80">
-      {parts.map((p, i) => {
-        const frac = p.value / total;
-        const start = angle;
-        const end = angle + frac * Math.PI * 2;
-        angle = end;
-
-        const x1 = cx + radius * Math.cos(start - Math.PI / 2);
-        const y1 = cy + radius * Math.sin(start - Math.PI / 2);
-        const x2 = cx + radius * Math.cos(end - Math.PI / 2);
-        const y2 = cy + radius * Math.sin(end - Math.PI / 2);
-        const large = frac > 0.5 ? 1 : 0;
-        const d = `M ${x1} ${y1} A ${radius} ${radius} 0 ${large} 1 ${x2} ${y2} L ${cx} ${cy} Z`;
-
-        return <path key={i} d={d} fill={p.color} opacity={0.95} />;
-      })}
-      <circle cx={cx} cy={cy} r={radius - 16} fill="transparent" />
-    </svg>
-  );
-};
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
 const AssessmentOverview = ({ candidates }: any) => {
   const total = candidates.length;
@@ -58,7 +31,18 @@ const AssessmentOverview = ({ candidates }: any) => {
       </div>
 
       <div className="flex items-center gap-4">
-        <Donut parts={parts} />
+        <div style={{ width: 120, height: 120 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={parts} dataKey="value" nameKey="label" innerRadius={28} outerRadius={48} paddingAngle={4} isAnimationActive={true} animationDuration={800}>
+                {parts.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
         <div className="text-sm">
           {parts.map((p) => (
             <div key={p.label} className="flex items-center gap-2">
