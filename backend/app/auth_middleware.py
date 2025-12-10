@@ -24,3 +24,10 @@ async def auth_middleware(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
         )
+
+
+def get_current_user_id(user=Depends(auth_middleware)) -> str:
+    """
+    Returns only the user ID from the authenticated Supabase user
+    """
+    return user.id    

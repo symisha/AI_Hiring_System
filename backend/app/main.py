@@ -13,7 +13,7 @@ from app.services.resume_extractor import router as resume_extractor_router
 from app.database.db_connection import supabase  # Supabase client instance
 
 # Auth middleware
-from app.auth_middleware import auth_middleware
+from app.auth_middleware import auth_middleware, get_current_user_id
 
 # Create FastAPI app instance
 app = FastAPI()
@@ -113,8 +113,10 @@ async def upload_job(
     BUCKET_NAME: str = "Job Description",
     title: str = Form(...),
     description: str = Form(...),
-    jd_file: UploadFile = File(...)
+    jd_file: UploadFile = File(...),
+    user=Depends(auth_middleware)
 ):
+    #print(get_current_user_id(user))
     try:
         # Check if file is JSON
         if jd_file.content_type != "application/json":
@@ -139,10 +141,12 @@ async def upload_job(
         job_description_url = supabase.storage.from_(BUCKET_NAME).get_public_url(file_name)
 
         # Insert metadata + file URL into database
-        supabase.table("job_descriptions").insert({
+        supabase.table("jobs").insert({
+            "company_id": user.user.id,
             "title": title,
             "description": description,
-            "job_description_url": job_description_url
+            "job_description_url": job_description_url,
+            "status": "open"
         }).execute()
 
         return JSONResponse({
