@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Bell, Search, ChevronDown } from "lucide-react";
 
-const DashboardTopbar: React.FC = () => {
+type DashboardTopbarProps = {
+  onMenuSelect?: (key: string) => void;
+};
+
+const DashboardTopbar: React.FC<DashboardTopbarProps> = ({ onMenuSelect }) => {
   const [search, setSearch] = React.useState("");
   const [notifications] = React.useState(3);
   const [openProfileMenu, setOpenProfileMenu] = React.useState(false);
@@ -89,10 +93,22 @@ const DashboardTopbar: React.FC = () => {
                   ${openProfileMenu ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0 pointer-events-none"}
                 `}
               >
-                <button className="w-full text-left px-3 py-2 rounded-md hover:bg-secondary/50">
+                <button
+                  className="w-full text-left px-3 py-2 rounded-md hover:bg-secondary/50"
+                  onClick={() => {
+                    setOpenProfileMenu(false);
+                    onMenuSelect && onMenuSelect("profile");
+                  }}
+                >
                   Profile
                 </button>
-                <button className="w-full text-left px-3 py-2 rounded-md hover:bg-secondary/50 text-red-500">
+                <button
+                  className="w-full text-left px-3 py-2 rounded-md hover:bg-secondary/50 text-red-500"
+                  onClick={() => {
+                    setOpenProfileMenu(false);
+                    onMenuSelect && onMenuSelect("logout");
+                  }}
+                >
                   Logout
                 </button>
               </div>
