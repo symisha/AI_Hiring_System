@@ -97,6 +97,23 @@ const Dashboard = () => {
   }, []);
 
   // 👇 Helper function for rendering the main section
+  const handleGenerateApplyLink = (job: any) => {
+    if (!job) return;
+    try {
+      const token = job.apply_token || job.id;
+      const link = `${window.location.origin}/apply?token=${encodeURIComponent(token)}`;
+      if (navigator && (navigator as any).clipboard && (navigator as any).clipboard.writeText) {
+        (navigator as any).clipboard.writeText(link);
+        alert("Apply link copied to clipboard:\n" + link);
+      } else {
+        // fallback
+        window.prompt("Copy this link:", link);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Could not generate link");
+    }
+  };
   const renderMainContent = () => {
     switch (activeSection) {
       case "dashboard":
@@ -113,10 +130,14 @@ const Dashboard = () => {
 
               {/* Add Job Button */}
               <Link to="/upload-job">
-                <button className="px-4 py-2 bg-blue-500 text-white rounded">
-                  Add Job
-                </button>
+                <Button
+                className="bg-purple-600/50 text-white hover:bg-purple-500/70 flex items-center gap-2 rounded-md hover:shadow-none"
+              >
+                <Plus className="h-4 w-4" />
+                Add Job
+              </Button>
               </Link>
+              
             </div>
 
             {/* Stats Cards */}
@@ -215,14 +236,16 @@ const Dashboard = () => {
             <Card className="p-6 mt-4 border-none">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-semibold mb-1">
-                    {selectedJob.title}
-                  </h2>
-                  <p className="text-blue-400">
-                    Status: {selectedJob.status || "Unknown"}
-                  </p>
+                  <h2 className="text-2xl font-semibold mb-1">{selectedJob.title}</h2>
+                  <p className="text-blue-400">Status: {selectedJob.status || "Unknown"}</p>
                 </div>
                 <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleGenerateApplyLink(selectedJob)}
+                    className="rounded-md bg-indigo-600/60 text-white hover:bg-indigo-600/80"
+                  >
+                    Generate Apply Link
+                  </Button>
                   <Button
                     variant="destructive"
                     onClick={() => console.log("Edit", selectedJob.id)}
@@ -253,9 +276,7 @@ const Dashboard = () => {
                 </p>
                 <p>
                   <span className="font-semibold">Posted On:</span>{" "}
-                  {selectedJob.posted_on
-                    ? new Date(selectedJob.posted_on).toLocaleDateString()
-                    : "N/A"}
+                  {selectedJob.posted_on ? new Date(selectedJob.posted_on).toLocaleDateString() : "N/A"}
                 </p>
               </div>
             </Card>
