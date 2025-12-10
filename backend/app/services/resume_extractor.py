@@ -14,6 +14,7 @@ import re
 import requests
 from app.database.db_connection import supabase         # Import the Supabase client instance to interact with the database
 from fastapi import APIRouter, Depends                     # Import FastAPI class to create the web
+from app.auth_middleware import auth_middleware         # Import the authentication middleware to protect routes
 
 
 def get_jd_from_supabase(bucket: str, filename: str):
@@ -415,7 +416,7 @@ router = APIRouter()
 
 
 @router.get("/process-uploads")
-def process_uploads_endpoint():
+def process_uploads_endpoint(user=Depends(auth_middleware)):
     logs = []   # store all messages for response
 
     def log(msg):

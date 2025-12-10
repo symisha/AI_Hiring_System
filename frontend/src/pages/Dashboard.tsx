@@ -22,6 +22,7 @@ import Settings from "./Settings";
 import Help from "./Help";
 import Profile from "./Profile";
 import { Card } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   // States
@@ -111,13 +112,11 @@ const Dashboard = () => {
               </div>
 
               {/* Add Job Button */}
-              <Button
-                onClick={() => console.log("Add Job clicked")}
-                className="bg-purple-600/50 text-white hover:bg-purple-500/70 flex items-center gap-2 rounded-md hover:shadow-none"
-              >
-                <Plus className="h-4 w-4" />
-                Add Job
-              </Button>
+              <Link to="/upload-job">
+                <button className="px-4 py-2 bg-blue-500 text-white rounded">
+                  Add Job
+                </button>
+              </Link>
             </div>
 
             {/* Stats Cards */}
