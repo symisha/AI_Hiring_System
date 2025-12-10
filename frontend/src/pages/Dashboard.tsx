@@ -4,6 +4,7 @@ import ResumeScreening from "./ResumeScreening";
 import Assessments from "./Assessments";
 import AIInterviews from "./AIInterviews";
 import Reports from "./Reports";
+import JobForm from "./JobForm";
 import {
   LayoutDashboard,
   Users,
@@ -129,14 +130,14 @@ const Dashboard = () => {
               </div>
 
               {/* Add Job Button */}
-              <Link to="/upload-job">
-                <Button
+              <Button
+                onClick={() => setActiveSection("uploadJob")}
                 className="bg-purple-600/50 text-white hover:bg-purple-500/70 flex items-center gap-2 rounded-md hover:shadow-none"
               >
                 <Plus className="h-4 w-4" />
                 Add Job
               </Button>
-              </Link>
+
               
             </div>
 
@@ -208,6 +209,8 @@ const Dashboard = () => {
             </div>
           </div>
         );
+      case "uploadJob":
+        return <JobForm token={localStorage.getItem("token") || ""} />;
 
       case "screening":
         return <ResumeScreening jobId={selectedJob?.id} job={selectedJob} />;
