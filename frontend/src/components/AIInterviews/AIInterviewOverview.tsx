@@ -7,9 +7,9 @@ const AIInterviewOverview = ({ candidates }: any) => {
   const notStarted = candidates.filter((c: any) => c.interviewStatus === "Not Started").length;
 
   const parts = [
-    { label: "Completed", value: completed, color: "#10b981" },
-    { label: "In Progress", value: inProgress, color: "#3b82f6" },
-    { label: "Not Started", value: notStarted, color: "#ef4444" },
+    { label: "Completed", value: completed, color: "#8610b9ff" },
+    { label: "In Progress", value: inProgress, color: "#d348d3ff" },
+    { label: "Not Started", value: notStarted, color: "#dfa0eaff" },
   ];
 
   const avgAiScore = Math.round(candidates.filter((c: any) => c.aiScore != null).reduce((s: number, c: any) => s + (c.aiScore || 0), 0) / (candidates.filter((c:any)=>c.aiScore!=null).length || 1));

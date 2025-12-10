@@ -8,7 +8,7 @@ import {
   LayoutDashboard,
   Users,
   Briefcase,
-  Settings,
+  Settings as SettingsIcon,
   HelpCircle,
   LogOut,
   ChevronRight,
@@ -18,6 +18,9 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import DashboardTopbar from "@/components/DashboardTopbar";
+import Settings from "./Settings";
+import Help from "./Help";
+import Profile from "./Profile";
 import { Card } from "@/components/ui/card";
 
 const Dashboard = () => {
@@ -37,7 +40,7 @@ const Dashboard = () => {
   ];
 
   const generalOptions = [
-    { title: "Settings", icon: Settings, key: "settings" },
+    { title: "Settings", icon: SettingsIcon, key: "settings" },
     { title: "Help", icon: HelpCircle, key: "help" },
     //{ title: "Logout", icon: LogOut, key: "logout" },
   ];
@@ -199,24 +202,13 @@ const Dashboard = () => {
         return <Reports jobId={selectedJob?.id} job={selectedJob} />;
 
       case "settings":
-        return (
-          <Card className="p-6 mt-4">
-            <h2 className="text-2xl font-semibold mb-2">Settings</h2>
-            <p className="text-muted-foreground">
-              Manage account, preferences, and system configurations.
-            </p>
-          </Card>
-        );
+        return <Settings />;
 
       case "help":
-        return (
-          <Card className="p-6 mt-4">
-            <h2 className="text-2xl font-semibold mb-2">Help & Support</h2>
-            <p className="text-muted-foreground">
-              Get assistance, FAQs, and troubleshooting guides.
-            </p>
-          </Card>
-        );
+        return <Help />;
+
+      case "profile":
+        return <Profile />;
 
         case "jobDetails":
           if (!selectedJob) return null;
@@ -415,7 +407,10 @@ const Dashboard = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 p-4 overflow-y-auto">
-        <DashboardTopbar />
+        <DashboardTopbar onMenuSelect={(key) => {
+          if (key === 'profile') setActiveSection('profile');
+          if (key === 'logout') console.log('logout requested');
+        }} />
         {renderMainContent()}
       </div>
     </div>

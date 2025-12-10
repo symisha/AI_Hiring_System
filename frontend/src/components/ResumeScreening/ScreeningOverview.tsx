@@ -12,11 +12,14 @@ const ScreeningOverview = ({ candidates }: { candidates: Candidate[] }) => {
   candidates.forEach((c) => { statuses[c.status] = (statuses[c.status] || 0) + 1; });
 
   const parts = [
-    { label: "New", value: statuses["New"] || 0, color: "#3b82f6" },
-    { label: "Shortlisted", value: statuses["Shortlisted"] || 0, color: "#10b981" },
-    { label: "Rejected", value: statuses["Rejected"] || 0, color: "#ef4444" },
-    { label: "Review", value: statuses["Needs HR Review"] || 0, color: "#f59e0b" },
-  ];
+  { label: "New", value: statuses["New"] || 0, color: "#6366F1" },
+  { label: "Shortlisted", value: statuses["Shortlisted"] || 0, color: "#22C55E" },
+  { label: "Rejected", value: statuses["Rejected"] || 0, color: "#EF4444" },
+  { label: "Review", value: statuses["Needs HR Review"] || 0, color: "#f9cb16ff" },
+];
+
+
+
 
   const parsedCount = candidates.filter(c => c.aiScore !== undefined).length;
   const shortlisted = statuses["Shortlisted"] || 0;
