@@ -1,33 +1,174 @@
+### JSON Assessment
+
+```json
 {
-  "Overall Relevance": "The candidate has experience in machine learning, NLP, and data science, but the job description requires specific experience in data science and analytics.",
-  "Education Match": "The candidate's degree in Computer Science meets the minimum qualification requirement.",
-  "Years of Experience Match": "Insufficient evidence to determine the exact number of years of experience, but the candidate has some relevant experience.",
-  "Strengths / Matches": [
-    "Developed a machine learning based spam email detection system capable of classifying incoming emails as spam or legitimate (ham) using natural language processing (NLP) techniques and supervised learning models.",
-    "Implemented text preprocessing (tokenization, stopword removal, lemmatization) for email content.",
-    "Trained and evaluated multiple machine learning models (e.g., Naive Bayes, Logistic Regression, and Random Forest ) for classification.",
-    "Built a Flask based web interface for users to input emails and instantly get spam/ham predictions.",
-    "Developing an AI tool to automatically detect and classify bugs in source code using machine learning and NLP.",
-    "Technologies: Python, PyTorch, NLP, Static Code Analysis, Git, Docker, FastAPI.",
-    "Programming: Python, SQL, HTML, CSS, Node.js, Express.js.",
-    "Machine Learning: Supervised & Unsupervised Learning, Transformers, Deep Learning, Model Evaluation.",
-    "Natural Language Processing: NLTK.",
-    "Deployment & APIs: Flask, FastAPI, RESTful APIs.",
-    "Frameworks & Tools: PyTorch, Tensorflow, Scikit learn, Hugging Face, Jupyter Notebook, Git.",
-    "Data Visualization: Matplotlib, Seaborn.",
-    "Automation & Web Scraping: Selenium, beautiful soup.",
-    "Cloud: Firebase, AWS"
+  "education": {
+    "required": "Bachelor’s degree in Computer Science, Statistics, Data Science, Math, or related field (or equivalent practical experience).",
+    "candidate": "BS Computer Science, Iqra University",
+    "match": "yes",
+    "notes": ""
+  },
+  "skills": {
+    "required": [
+      "Python",
+      "SQL",
+      "pandas",
+      "scikit-learn",
+      "PyTorch",
+      "Git",
+      "GitHub Actions",
+      "Docker",
+      "Tableau/Looker/Power BI"
+    ],
+    "candidate": [
+      "Python",
+      "SQL",
+      "HTML",
+      "CSS",
+      "Node.js",
+      "Express.js",
+      "PyTorch",
+      "NLP",
+      "Static Code Analysis",
+      "Git",
+      "Docker",
+      "FastAPI",
+      "Flask",
+      "Matplotlib",
+      "Seaborn",
+      "Selenium",
+      "Beautiful Soup",
+      "Firebase",
+      "AWS",
+      "Jupyter Notebook",
+      "Hugging Face",
+      "Transformers",
+      "Deep Learning",
+      "Model Evaluation",
+      "NLTK",
+      "LLM",
+      "OpenAI",
+      "GPT",
+      "ChatGPT",
+      "LangChain",
+      "Ollama",
+      "Scikit learn",
+      "Jupyter Notebook"
+    ],
+    "match": [
+      "Python",
+      "SQL",
+      "PyTorch",
+      "Git",
+      "GitHub Actions",
+      "Docker",
+      "Tableau/Looker/Power BI",
+      "Matplotlib",
+      "Seaborn",
+      "Flask",
+      "FastAPI",
+      "Hugging Face",
+      "Transformers",
+      "Deep Learning",
+      "Model Evaluation",
+      "NLTK",
+      "LLM",
+      "OpenAI",
+      "GPT",
+      "ChatGPT",
+      "LangChain",
+      "Ollama",
+      "Scikit learn"
+    ],
+    "gap": [
+      "pandas",
+      "scikit-learn",
+      "Jupyter Notebook"
+    ]
+  },
+  "projects": [
+    {
+      "title": "AI powered Spam Email Detection System",
+      "tools_methods": [
+        "Python",
+        "PyTorch",
+        "NLP",
+        "Supervised Learning",
+        "Flask"
+      ],
+      "relevance_to_JD": "high"
+    },
+    {
+      "title": "AI Powered Bug Detector for Code",
+      "tools_methods": [
+        "Python",
+        "PyTorch",
+        "NLP",
+        "Static Code Analysis",
+        "Git",
+        "Docker",
+        "FastAPI"
+      ],
+      "relevance_to_JD": "high"
+    },
+    {
+      "title": "Expense Management Application",
+      "tools_methods": [
+        "Node.js",
+        "Express.js",
+        "MongoDB",
+        "Bootstrap"
+      ],
+      "relevance_to_JD": "low"
+    },
+    {
+      "title": "Web Scraper",
+      "tools_methods": [
+        "Python",
+        "Beautiful Soup",
+        "JSON"
+      ],
+      "relevance_to_JD": "low"
+    },
+    {
+      "title": "Website Development",
+      "tools_methods": [
+        "WordPress",
+        "Kadence theme",
+        "HTML",
+        "CSS"
+      ],
+      "relevance_to_JD": "low"
+    }
   ],
-  "Gaps / Missing Requirements": [
-    "Experience with scikit-learn, pandas, and data visualization (Matplotlib/Plotly).",
-    "Solid grasp of statistics: hypothesis testing, confidence intervals, experimentation basics, and evaluation metrics.",
-    "Familiarity with Git/GitHub and collaborative workflows.",
-    "Experience with PyTorch/TensorFlow, XGBoost/LightGBM, Spark/Databricks, Airflow, dbt.",
-    "Exposure to cloud data stacks (AWS/GCP/Azure) and warehouses (Snowflake/BigQuery/Redshift).",
-    "Practical understanding of model monitoring, data/label drift, and feature stores.",
-    "Domain exposure to personalization, recommendations, fraud/risk, marketing attribution, NLP, or time series.",
-    "Strong communication skills; ability to simplify technical findings for non-technical audiences."
+  "experience": [
+    {
+      "title": "BS Computer Science, Iqra University",
+      "domain_relevance": "relevant",
+      "start_date": "July 2022",
+      "end_date": "Present",
+      "duration_years": "1.5"
+    }
   ],
-  "Fit Assessment": "moderate fit",
-  "Similarity Score": 55
+  "overall_fit_score": "70",
+  "strengths": [
+    "Experience with PyTorch and NLP",
+    "Development of machine learning based projects",
+    "Proficiency in Python and SQL",
+    "Familiarity with Git and Docker"
+  ],
+  "weaknesses": [
+    "Limited experience with scikit-learn and pandas",
+    "No experience with Tableau/Looker/Power BI",
+    "Limited experience with cloud data stacks and warehouses"
+  ]
 }
+```
+
+### Notes
+
+* The candidate has a relevant degree in Computer Science and has developed machine learning based projects, which demonstrates their potential as an Associate Data Scientist.
+* The candidate has a good understanding of Python, SQL, and PyTorch, which are essential skills for the role.
+* However, the candidate lacks experience with scikit-learn and pandas, which are required skills for the role.
+* The candidate has limited experience with cloud data stacks and warehouses, which is a preferred qualification for the role.
+* The candidate's overall fit score is 70, indicating that they have some relevant experience and skills, but may require additional training or experience to meet the requirements of the role.

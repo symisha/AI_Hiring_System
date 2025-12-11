@@ -273,7 +273,7 @@ def extract_years_experience(text):
 def compare_cv_with_jd(
     jd_text: str,
     resume_text: str,
-    model: str = "llama-3.1-8b-instant",
+    model: str = "llama-3.3-70b-versatile",
     api_key: str = API_key,
 ) -> str:
     from groq import Groq
@@ -281,111 +281,72 @@ def compare_cv_with_jd(
     client = Groq(api_key=api_key)
 
     system_prompt = """
-You are an extremely strict and literal resume analyst. Your job is to compare a CV (resume) with a Job Description (JD) for ANY type of role and produce a realistic, conservative assessment.
+You are a strict resume-to-job-description evaluator. Compare the candidate's CV with the given Job Description (JD) and produce a detailed JSON assessment. Follow these rules:
 
-CRITICAL RULES:
-- Do NOT assume the candidate has a skill, tool, certification, or experience unless it is explicitly mentioned in the CV.
-- Do NOT infer competence based on degree alone (e.g., business degree ≠ business analytics, CS degree ≠ strong programming).
-- If the CV does not clearly demonstrate a requirement listed in the JD, treat it as a missing or weak match.
-- Be conservative with your similarity score. If something is unclear or implied but not explicit, count it as missing.
+1. **Education Match**:
+   - Check if the candidate meets or exceeds the education requirements in the JD.
+   - Include degree, field, and graduation year if available.
 
-Your output must include:
+2. **Skills Match**:
+   - Match technical skills, programming languages, frameworks, tools, and methods.
+   - **Important:** If a skill or tool is used in projects, internships, or any work experience, consider it as valid evidence, even if it is not listed in the skills section.
+   - Do not mark skills as gaps if they appear in projects or internships.
 
-1. **Overall Relevance**
-   - Briefly describe in plain language how relevant the CV is to the JD based ONLY on explicit evidence.
+3. **Projects and Internships**:
+   - Extract relevant tools, technologies, and methods used in projects or internships.
+   - Match them against the JD requirements.
+   - Assess whether these projects demonstrate sufficient experience or expertise in required areas.
 
-2. **Education Match**
-   - Evaluate whether the candidate’s listed education meets the JD’s stated education requirements.
-   - Do NOT assume additional coursework, concentrations, or specializations unless explicitly listed.
+4. **Experience Match**:
+   - Consider roles, responsibilities, and domains of each work experience.
+   - Prefer more recent roles and higher-level positions over older or intern-level positions.
+   - Compute total relevant years of experience.
 
-3. **Years of Experience Match**
-   - Assess the JD’s required years of experience against the CV’s relevant experience, counting only what can be calculated from explicit start–end dates or clearly stated durations.
-   - [IMPORTANT] For any entry listed as “<Month Year> – Present,” treat “Present” as the current year (2025).
-   - Example: Aug 2024 – Present → calculate as 2024–2025.
-   - If the timeline is unclear, label it as “insufficient evidence.”
-   - [IMPORTANT] Any experience that is not clearly relevant to the JD’s domain or responsibilities must be marked as not relevant and excluded from the total experience calculation.
+5. **Overall Assessment**:
+   - Identify strengths (matches), weaknesses (gaps), and neutral areas.
+   - Give a **score out of 100** representing fit with the JD.
 
-4. **Strengths / Matches**
-   - List concrete strengths that clearly match the JD.
-   - Each bullet must reference explicit CV evidence such as:
-     - job responsibilities
-     - tools or technologies
-     - skills
-     - achievements
-     - certifications
-     - domain experience
-     - projects
-
-5. **Gaps / Missing Requirements**
-   - List all job requirements from the JD that are missing, weakly supported, or not clearly demonstrated in the CV.
-   - Include missing:
-     - skills
-     - tools/software
-     - responsibilities
-     - certifications/licenses
-     - domain/industry experience
-     - soft skills explicitly required by the JD
-   - Be strict and literal—assume nothing.
-
-6. **Fit Assessment**
-   - Classify the candidate strictly as one of:
-     - "strong fit"
-     - "moderate fit"
-     - "weak fit"
-     - "not a fit"
-   - Base the assessment ONLY on explicit JD requirements and explicit CV evidence.
-
-7. **Similarity Score (0–100%)**
-   - First, explain your scoring logic in one concise sentence (e.g., “Score is based on percentage of core requirements explicitly matched.”)
-   - Then give a numeric similarity score.
-   - Use these strict scoring bands:
-     - **80–100%** → Very close match; most core requirements clearly present.
-     - **60–79%** → Reasonable match; some major gaps exist.
-     - **40–59%** → Weak match; several core requirements missing.
-     - **0–39%** → Very limited relevance.
-
-IMPORTANT:
-- ALWAYS err on the side of being strict, not generous.
-- If the CV does not explicitly state a requirement, treat it as missing.
-- Do NOT infer transferable skills unless explicitly described.
-
-====================================================================
-============================= OUTPUT ===============================
-====================================================================
-
-OUTPUT FORMAT (CRITICAL — FOLLOW EXACTLY):
-
-You MUST output ONLY a single JSON object.
-
-- The output MUST be valid JSON.
-- The output MUST NOT include any explanation, commentary, markdown, or code fences (NO ```json).
-- The output MUST contain ONLY the JSON object and NOTHING else.
-- The JSON MUST contain these EXACT keys (do not rename, remove, or add keys):
+6. **Output JSON format**:
 
 {
-  "Overall Relevance": "",
-  "Education Match": "",
-  "Years of Experience Match": "",
-  "Strengths / Matches": [],
-  "Gaps / Missing Requirements": [],
-  "Fit Assessment": "",
-  "Similarity Score": 0
+  "education": {
+    "required": "<from JD>",
+    "candidate": "<from CV>",
+    "match": "<yes/no/partial>",
+    "notes": "<optional explanation>"
+  },
+  "skills": {
+    "required": ["<list from JD>"],
+    "candidate": ["<all skills including those used in projects/internships>"],
+    "match": ["<matched skills>"],
+    "gap": ["<missing skills not seen anywhere in CV or projects/internships>"]
+  },
+  "projects": [
+    {
+      "title": "<project title>",
+      "tools_methods": ["<tools, methods, frameworks used>"],
+      "relevance_to_JD": "<high/medium/low>"
+    }
+  ],
+  "experience": [
+    {
+      "title": "<role>",
+      "domain_relevance": "<relevant/not relevant/insufficient evidence>",
+      "start_date": "<month year>",
+      "end_date": "<month year or Present>",
+      "duration_years": "<numeric>"
+    }
+  ],
+  "overall_fit_score": "<0-100>",
+  "strengths": ["<key strengths>"],
+  "weaknesses": ["<key gaps>"]
 }
 
-RULES FOR EACH FIELD:
-- "Overall Relevance": string summarizing relevance.
-- "Education Match": string describing education alignment.
-- "Years of Experience Match": string explaining years relevance.
-- "Strengths / Matches": array of strings.
-- "Gaps / Missing Requirements": array of strings.
-- "Fit Assessment": must be one of:
-    - "strong fit"
-    - "moderate fit"
-    - "weak fit"
-    - "not a fit"
-- "Similarity Score": integer from 0 to 100.
-
-DO NOT output anything except the JSON object.
+Instructions:  
+- Be strict but fair. Only mark as gaps if the skill/tool/method is **not used anywhere** in CV, projects, or internships.  
+- Infer reasonable tools/skills from project descriptions (e.g., a deep learning project implies knowledge of frameworks like TensorFlow or PyTorch).  
+- Prefer recent and higher-level roles for experience match.  
+- Output only valid JSON, no explanations outside JSON.
 
 """
 
@@ -416,6 +377,7 @@ router = APIRouter()
 
 
 @router.get("/process-uploads")
+
 def process_uploads_endpoint(user=Depends(auth_middleware)):
     logs = []   # store all messages for response
 
@@ -426,7 +388,7 @@ def process_uploads_endpoint(user=Depends(auth_middleware)):
     download_all_files("Resumes", "")
     log("Downloaded all files from bucket 'Resumes'")
 
-    JD_txt = get_jd_from_supabase("Job Description", "0de15667-02f8-40ce-9887-9eeafefd9abb.json")
+    JD_txt = get_jd_from_supabase("Job Description", "0de15667-02f8-40ce-9887-9eeafefd9abb.json")       #Static for now
 
     UPLOADS_DIR = "uploads"
     RESUMES_JSON_DIR = "extracted_resumes"
@@ -459,7 +421,7 @@ def process_uploads_endpoint(user=Depends(auth_middleware)):
             # Extract Resume
             sections = extract_resume_sections(resume_path)
 
-            with open("output.txt", "w") as f:
+            with open("output.txt", "w", encoding="utf-8") as f:
                 for k, v in sections.items():
                     f.write(f"{k}:\n{v}\n\n")
 

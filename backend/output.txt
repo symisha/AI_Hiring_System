@@ -1,66 +1,40 @@
-Experience:
-July 2022 - Present (7  Semester)
-th
-BS Computer Science
-Iqra University
+Skills:
+Technologies: React, Flutter, Node JS, Express JS, SQL, MySQL Workbench, .NET, SKlearn, Bootstrap.
+
+Programming Languages: Python, C/C++, JavaScript, dart, C#.
+
+Artificial Intelligence: Natural Language Processing, Neural Networks (LSTM, Transformers, etc.),
+Machine Learning Models, Data Preprocessing and Handling.
 
 Education:
-AI powered Spam Email Detection System
-Developed a machine learning based spam email detection system capable of classifying incoming
-emails as spam or legitimate (ham) using natural language processing (NLP) techniques and
-supervised learning models.
-Implemented text preprocessing (tokenization, stopword removal, lemmatization) for email content.
-Trained and evaluated multiple machine learning models (e.g., Naive Bayes, Logistic Regression,
-and Random Forest ) for classification.
-Built a Flask based web interface for users to input emails and instantly get spam/ham predictions.
-AI Powered Bug Detector for Code
-Developing an AI tool to automatically detect and classify bugs in source code using machine
-learning and NLP.
-Analyzing code syntax, semantics, and patterns to identify errors, vulnerabilities, and inefficiencies.
-Training models on open source codebases to improve accuracy and performance.
-Technologies: Python, PyTorch, NLP, Static Code Analysis, Git, Docker, FastAPI.
-PERSONAL PROJECTS
+BS in Computer Science | 2021-2025 | National University of Computer & Emerging Sciences –
+FAST, Karachi.
+Inter [Pre-Engineering] | 82% | 2019-2021 | Adamjee Govt. Science College- Karachi
+Matric [Science] | 86.6% | 2017-2019 | Federal Secondary School, Karachi.
 
+Experience:
+· Artificial Intelligence Intern at DataCrumbs (Jan, 2025 – Feb,2025 ):
+ Worked on Machine learning models by training and testing some Machine Leaning models
+including Linear regression, LSTM and XG boost.
+ Worked with OpenAI LLMs and embeddings, implementing Retrieval-Augmented Generation
+(RAG) for efficient data retrieval and response generation.
 
-Skills:
-Programming: Python, SQL, HTML, CSS, Node.js, Express.js.
-Machine Learning: Supervised & Unsupervised Learning, Transformers, Deep Learning, Model
-Evaluation.
-Natural Language Processing: NLTK.
-Large Language Models (LLMs): LLM, OpenAI, GPT, ChatGPT, LangChain, Ollama.
-Deployment & APIs: Flask, FastAPI, RESTful APIs.
-Frameworks & Tools: PyTorch, Tensorflow, Scikit learn, Hugging Face, Jupyter Notebook, Git.
-Data Visualization: Matplotlib, Seaborn.
-Automation & Web Scraping: Selenium, beautiful soup.
-Cloud: Firebase, AWS
-Core Competencies: Problem Solving, Critical Thinking, Communication, Time Management.
-Languages:
-1.  English | Full Professional Proficiency
-2. Urdu | Native or Bilingual Proficiency
-ADDITIONAL INFORMATION
-CI/CD Pipeline
-Set up a CI/CD pipeline to automate web deployments seamlessly.
-Integrated GitHub for version control and streamlined code management.
-Configured deployments to Firebase, ensuring fast, reliable, and efficient delivery.
-Expense Management Application
-A fullstack web application that helps users manage their financial records by tracking income and
-expenses.
-Features include user authentication, a dynamic dashboard with monthly filtering, and a Bootstrap
-based responsive design.
-Built using Node.js, Express.js, MongoDB, and Bootstrap.
-Web Scraper
-Developed a web scraper using Python libraries (Beautiful Soup, JSON) to extract comprehensive
-data from websites and save it in JSON format.
-Website Development
-Sam International WebSite (WordPress): I developed the WordPress website for
-SamInternational.online, leveraging the Kadence theme to create a user friendly and visually
-appealing platform tailored to the client's needs.
-Automobile Website (HTML CSS): I designed and developed an HTML website for an Automobile
-Service Company, focusing on a clean layout, responsive design, and user friendly navigation to
-enhance the customer experience.
-Introduction to Python | edX
-Beginning Amazon Web Services | 10 Pearl University
-
-Certifications:
-
+Projects:
+.    H.Y.D.R.A Financial forecasting in Supermarkets (Machine learning, Deep learning):
+ Collected and analyzed data, identified key features, and conducted feature engineering.
+ Preprocessed 100,000+ data points, tuned hyperparameters, and trained models using SARIMA,
+XGBoost, LSTM, and Transformers to identify the optimal approach for large-scale datasets.
+·  Doctor Appointment Booking System (Full-Stack Development):
+ Developed a .NET Web API for managing appointment bookings, including scheduling, retrieval,
+and updates for doctors and patients, and integrated authentication for secure access control.
+ Integrated the backend with a React frontend, enabling seamless interaction for users to book and
+manage appointments.
+· Chat with PDF (Basic RAG integration):
+ Developed a PDF-based conversational AI using Streamlit and OpenAI LLMs, enabling contextual
+Q&A from uploaded documents by integrated advanced search and retrieval techniques
+· Selling Point (Full Stack Development):
+ Developed a point-of-sale software with a debt tracking system using Node.js for the backend,
+allowing storage and management of debt records for each customer and vendor, also Implemented
+features for managing normal and debt-based purchases and inventory management.
+Asim Khan
 
