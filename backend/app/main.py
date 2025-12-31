@@ -65,45 +65,53 @@ from fastapi.responses import JSONResponse
 from fastapi import Form, File, UploadFile
 import uuid
 BUCKET_NAME = "Resumes"
+
+
 @app.post("/submit")
+
 async def submit_form(
     name: str = Form(...),
     email: str = Form(...),
     phone: str = Form(...),
-    resume: UploadFile = File(...)
-):
+    resume: UploadFile = File(...),
+    cover_letter: str = Form(""),
+    job_id: str = Form(...)
+    ):
     try:
-        # Generate a unique file name
+        # Generate unique file name
         file_ext = resume.filename.split(".")[-1]
         file_name = f"{uuid.uuid4()}.{file_ext}"
 
-        # Read the file content
+        # Read file
         file_bytes = await resume.read()
 
-        # Upload file to Supabase Storage bucket
+        # Upload to Supabase
         supabase.storage.from_(BUCKET_NAME).upload(file_name, file_bytes)
 
-        # Get the public URL of the uploaded file
+        # Public URL
         file_url = supabase.storage.from_(BUCKET_NAME).get_public_url(file_name)
 
-        # Insert user info + resume URL into database
-        supabase.table("candidates").insert({
+        # Insert into applicants table
+        applicant_res = supabase.table("applicants").insert({
             "name": name,
             "email": email,
             "phone": phone,
+            #"cover_letter": cover_letter,
             "resume_url": file_url
         }).execute()
 
-        return JSONResponse({
-            "message": "Form submitted successfully!",
-            "resume_url": file_url
-        })
+        applicant_id = applicant_res.data[0]["id"]
+
+        # Insert into job_applications table
+        supabase.table("job_applications").insert({
+            "job_id": job_id,
+            "applicant_id": applicant_id
+        }).execute()
+
+        return {"message": "Application submitted!", "file": file_url}
+
     except Exception as e:
-        return JSONResponse({
-            "message": "Error submitting form",
-            "error": str(e)
-        }, status_code=500)
-    
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 #Job description upload endpoint ------------------------
 import json

@@ -34,7 +34,7 @@ const App = () => (
           <Route path="/apply" element={<Apply />} />
           <Route path="/dashboard" element={<ProtectedRoutes><Dashboard /></ProtectedRoutes>} />
           <Route path="/form" element={<FormPage />} />  
-          <Route path="/upload-job" element={<JobForm />} />
+          <Route path="/upload-job" element={<JobForm token={""} />} />
           <Route path="/resume-screening" element={<ProtectedRoutes><ResumeScreening /></ProtectedRoutes>} />
         </Routes>
       </BrowserRouter>
