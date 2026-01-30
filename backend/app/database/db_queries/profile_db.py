@@ -20,5 +20,6 @@ def update_username(user_id: str, new_username: str):
     supabase.table("companies").update({"name": new_username}).eq("id", user_id).execute()
 
 
+#delete the profile
 
 #more profile stuff

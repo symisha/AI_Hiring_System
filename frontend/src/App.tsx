@@ -16,6 +16,7 @@ import ProtectedRoutes from "./components/ProtectedRoutes";
 import FormPage from "./pages/form";
 import JobForm from "./pages/JobForm";
 import ResumeScreening from "./pages/ResumeScreening";
+import ForgotPassword from "./pages/forgot-password";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/form" element={<FormPage />} />  
           <Route path="/upload-job" element={<JobForm token={""} />} />
           <Route path="/resume-screening" element={<ProtectedRoutes><ResumeScreening /></ProtectedRoutes>} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

@@ -28,6 +28,8 @@ const Help = () => {
         </div> */}
       </Card>
 
+          {/*subject must not be empty*/}
+          
       <Card className="p-4 mb-4">
         <h3 className="font-semibold">Contact Support</h3>
         <p className="text-sm text-muted-foreground mt-1">Submit a ticket</p>

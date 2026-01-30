@@ -33,7 +33,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 
   const token = data.session?.access_token;
-  console.log("Supabase JWT:", token);
+  console.log("Supabase JWT:", token);  //remove this, i think
 
   if (token) {
     localStorage.setItem("token", token);
@@ -42,6 +42,29 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   setLoading(false);
 };
+
+// Google OAuth login (also handles signup automatically)
+const handleGoogleLogin = async () => {
+  setError("");
+  setLoading(true);
+
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+
+    if (error) throw error;
+    // Redirect is handled by Supabase
+
+  } catch (err: any) {
+    setError(err.message || "Google login failed");
+    setLoading(false);
+  }
+};
+
 
   return (
   <div className="min-h-screen bg-background flex items-center justify-center md:justify-start p-6">
@@ -106,9 +129,13 @@ const handleSubmit = async (e: React.FormEvent) => {
                     <input type="checkbox" className="rounded border-border" />
                     <span className="text-muted-foreground">Remember me</span>
                   </label>
-                  <a href="#" className="text-primary hover:underline">
-                    Forgot password?
-                  </a>
+                <Link
+                  to="/forgot-password"
+                  className="text-primary hover:underline"
+                >
+                Forgot password?
+                </Link>
+
                 </div>
 
                 <Button type="submit" variant="hero" size="lg" className="w-full">
@@ -125,6 +152,28 @@ const handleSubmit = async (e: React.FormEvent) => {
               </p>
             </div>
           </div>
+
+          <div className="flex items-center my-4 gap-4">
+              <hr className="flex-1 border-border" />
+              <span className="text-muted-foreground text-sm">OR</span>
+              <hr className="flex-1 border-border" />
+            </div> 
+           {/* Google Signup */}
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="w-full flex items-center justify-center gap-2"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+            >
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+                alt="Google"
+                className="h-5 w-5"
+              />
+              {loading ? "Redirecting..." : "Sign in with Google"}
+            </Button>
 
           {/* <div className="mt-8 text-left">
             <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -146,3 +195,6 @@ const handleSubmit = async (e: React.FormEvent) => {
 };
 
 export default HRLogin;
+
+
+ 

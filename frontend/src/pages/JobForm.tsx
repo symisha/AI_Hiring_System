@@ -17,7 +17,7 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
     const formData = new FormData(e.currentTarget);
 
     try {
-      const res = await fetch("http://localhost:8000/upload-job", {
+      const res = await fetch("http://localhost:8000/upload-job", { //replace with your backend URL
         method: "POST",
         body: formData,
         headers: {

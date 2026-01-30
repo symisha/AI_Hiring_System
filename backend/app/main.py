@@ -9,6 +9,7 @@ from app.routes import rating_resume, apply
 from app.routes.dashboard_essentials.dashboard_info import router as dashboard_info_router
 from app.routes.dashboard_essentials.profile_preview_router import router as profile_preview_router
 from app.services.resume_extractor import router as resume_extractor_router
+from app.routes.specific_job_routes import delRouter
 # Database
 from app.database.db_connection import supabase  # Supabase client instance
 
@@ -28,7 +29,9 @@ app.include_router(rating_resume.router, prefix="/routes", tags=["rating"])
 app.include_router(dashboard_info_router, prefix="/routes/dashboard_essentials", tags=["database"])
 app.include_router(profile_preview_router, prefix="/routes/dashboard_essentials", tags=["database"])
 app.include_router(apply.router, prefix="/routes", tags=["apply"])
+app.include_router(delRouter, prefix="/routes", tags=["delete_job"])
 app.include_router(resume_extractor_router, prefix="/services", tags=["resume_extractor"])
+app.include_router(dashboard_info_router, prefix="/routes/dashboard_essentials", tags=["complaints"])
 
 # Add CORS middleware
 app.add_middleware(

@@ -46,6 +46,31 @@ const Dashboard = () => {
     { title: "Help", icon: HelpCircle, key: "help" },
     //{ title: "Logout", icon: LogOut, key: "logout" },
   ];
+  
+  //This is the fuction to delete the job
+
+  const deleteJob = async (jobId, token) => {
+  try {
+      if (!token) return;
+
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/routes/delete-job/${jobId}`, { 
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+  },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete job");
+    }
+
+    const data = await response.json();
+    console.log(data.message);
+
+  } catch (error) {
+    console.error("Error deleting job:", error);
+  }
+  };
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -256,11 +281,21 @@ const Dashboard = () => {
                   >
                     Edit
                   </Button>
+
+                  {/* Zoha please redo this, this looks ugly */}
                   <Button
                     variant="destructive"
-                    onClick={() => console.log("Delete", selectedJob.id)}
+                    onClick={() => {
+                      const confirmed = window.confirm(
+                        "Are you sure you want to delete this job?"
+                      );
+
+                    if (confirmed) {
+                      deleteJob(selectedJob.id, localStorage.getItem("token"));
+                    }
+                    }}
                     className="rounded-md bg-red-600/60 text-white hover:bg-red-600/80"
-                  >
+                    >
                     Delete
                   </Button>
                 </div>
