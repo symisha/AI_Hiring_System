@@ -1,0 +1,42 @@
+{
+    "job_title": "Software Engineer \u2013 Backend",
+    "alternate_titles": "Backend Developer, API Engineer",
+    "department": "Platform Engineering",
+    "industry": "SaaS",
+    "employment_type": "Full-time",
+    "work_model": "Hybrid",
+    "seniority": "Mid",
+    "role_problem": "Designs, builds, and maintains scalable backend services that support core product functionality and ensure system reliability.",
+    "success_6_months": "Independently delivers backend features, fixes production bugs, and contributes to system design discussions.",
+    "success_12_months": "Owns major backend components, mentors junior developers, and improves system performance and reliability.",
+    "responsibilities": [
+        "- Develop RESTful APIs for core product features",
+        "- Maintain and optimize existing backend services",
+        "- Collaborate with frontend and DevOps teams",
+        "- Write unit and integration tests",
+        "- Debug and resolve production issues"
+    ],
+    "languages": [],
+    "frameworks": "",
+    "databases": [],
+    "cloud": [],
+    "domain_expertise": "Yes",
+    "domains": [],
+    "min_experience_years": "3",
+    "education_required": "Bachelor",
+    "problem_solving_level": "High",
+    "soft_skills": [
+        "Communication",
+        "Teamwork",
+        "Communication",
+        "Communication",
+        "Communication"
+    ],
+    "decision_authority": "Low",
+    "performance_metrics": "Feature delivery timelines, code quality, system uptime, and incident resolution speed.",
+    "must_haves": "",
+    "dealbreakers": "No production experience, inability to work collaboratively",
+    "growth_path": "Technical",
+    "interview_focus": [],
+    "interview_difficulty": "Medium"
+}
