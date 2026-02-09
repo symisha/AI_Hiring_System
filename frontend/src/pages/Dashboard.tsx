@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ResumeScreening from "./ResumeScreening";
 import Assessments from "./Assessments";
@@ -26,6 +27,7 @@ import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   // States
   const [stats, setStats] = useState<any[]>([]);
   const [activeJobs, setActiveJobs] = useState<any[]>([]);
@@ -465,10 +467,29 @@ const Dashboard = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 p-4 overflow-y-auto">
-        <DashboardTopbar onMenuSelect={(key) => {
-          if (key === 'profile') setActiveSection('profile');
-          if (key === 'logout') console.log('logout requested');
-        }} />
+        <DashboardTopbar
+          jobs={activeJobs}
+          hideSearch={activeSection === "settings" || activeSection === "help"}
+          onJobSelect={(job) => {
+            setSelectedJob(job);
+            setActiveSection("jobDetails");
+          }}
+          onMenuSelect={(key) => {
+            if (key === 'profile') setActiveSection('profile');
+            if (key === 'logout') {
+              (async () => {
+                try {
+                  const { supabase } = await import("@/supabaseClient");
+                  await supabase.auth.signOut();
+                } catch (err) {
+                  console.error("Logout error:", err);
+                }
+                localStorage.removeItem("token");
+                navigate("/hr-login");
+              })();
+            }
+          }}
+        />
         {renderMainContent()}
       </div>
     </div>
