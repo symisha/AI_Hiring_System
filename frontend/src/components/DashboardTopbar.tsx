@@ -6,10 +6,14 @@ import { Bell, Search, ChevronDown } from "lucide-react";
 
 type DashboardTopbarProps = {
   onMenuSelect?: (key: string) => void;
+  hideSearch?: boolean;
+  jobs?: any[];
+  onJobSelect?: (job: any) => void;
 };
 
-const DashboardTopbar: React.FC<DashboardTopbarProps> = ({ onMenuSelect }) => {
+const DashboardTopbar: React.FC<DashboardTopbarProps> = ({ onMenuSelect, hideSearch = false, jobs = [], onJobSelect }) => {
   const [search, setSearch] = React.useState("");
+  const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [notifications] = React.useState(3);
   const [openProfileMenu, setOpenProfileMenu] = React.useState(false);
 
@@ -34,20 +38,59 @@ const DashboardTopbar: React.FC<DashboardTopbarProps> = ({ onMenuSelect }) => {
       <div className="rounded-2xl bg-card p-3 shadow-sm">
         <div className="flex items-center justify-between gap-3">
 
-          {/* Search */}
-          <div className="flex-1 max-w-md">
-            <div className="relative">
-              <span className="absolute inset-y-0 left-3 flex items-center text-muted-foreground">
-                <Search className="w-4 h-4" />
-              </span>
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search candidates, jobs..."
-                className="pl-10 h-12 rounded-full border-0 focus-visible:ring-0"
-              />
+          {/* Search (hidden on some pages) */}
+          {!hideSearch ? (
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <span className="absolute inset-y-0 left-3 flex items-center text-muted-foreground">
+                  <Search className="w-4 h-4" />
+                </span>
+                <Input
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setShowSuggestions(Boolean(e.target.value));
+                  }}
+                  onFocus={() => setShowSuggestions(Boolean(search))}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  placeholder="Search candidates, jobs..."
+                  className="pl-10 h-12 rounded-full border-0 focus-visible:ring-0"
+                />
+
+                {/* Suggestions dropdown */}
+                {showSuggestions && search.trim().length > 0 && (
+                  <div className="absolute left-0 right-0 mt-2 bg-card border rounded-lg shadow-lg z-50 max-h-60 overflow-auto">
+                    {jobs && jobs.length > 0 ? (
+                      jobs
+                        .filter((j: any) =>
+                          (j.title || "").toLowerCase().includes(search.toLowerCase())
+                        )
+                        .slice(0, 8)
+                        .map((job: any) => (
+                          <button
+                            key={job.id || job.title}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => {
+                              setSearch("");
+                              setShowSuggestions(false);
+                              onJobSelect && onJobSelect(job);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-secondary/40"
+                          >
+                            <div className="font-medium">{job.title}</div>
+                            <div className="text-xs text-muted-foreground">{job.location || ""}</div>
+                          </button>
+                        ))
+                    ) : (
+                      <div className="px-4 py-2 text-sm text-muted-foreground">No jobs available</div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex-1" />
+          )}
 
           {/* Right section */}
           <div className="flex items-center gap-3">
