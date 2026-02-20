@@ -264,7 +264,7 @@ const Dashboard = () => {
             <Card className="p-6 mt-4 border-none">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-semibold mb-1">{selectedJob.title}</h2>
+                  <h2 className="text-2xl font-semibold mb-1">{selectedJob.job_title}</h2>
                   <p className="text-blue-400">Status: {selectedJob.status || "Unknown"}</p>
                 </div>
                 <div className="flex gap-2">
@@ -399,7 +399,7 @@ const Dashboard = () => {
                         ${expandedJob === job.id ? "bg-secondary/60" : "hover:bg-secondary/70"}
                       `}
                     >
-                      <span className="truncate">{job.title}</span>
+                      <span className="truncate">{job.job_title}</span>
                       {expandedJob === job.id ? (
                         <ChevronDown className="h-4 w-4 opacity-60 transition-transform duration-300 rotate-180" />
                       ) : (

@@ -32,16 +32,18 @@
       "Natural Language Processing",
       "Neural Networks (LSTM, Transformers, etc.)",
       "Machine Learning Models",
-      "Data Preprocessing and Handling"
+      "Data Preprocessing and Handling",
+      "Git/GitHub"
     ],
     "match": [
       "Python",
       "SQL",
-      "SKlearn"
+      "SKlearn",
+      "Git/GitHub"
     ],
     "gap": [
       "pandas",
-      "Git/GitHub"
+      "scikit-learn"
     ]
   },
   "projects": [
@@ -51,7 +53,9 @@
         "SARIMA",
         "XGBoost",
         "LSTM",
-        "Transformers"
+        "Transformers",
+        "pandas",
+        "scikit-learn"
       ],
       "relevance_to_JD": "high"
     },
@@ -62,7 +66,7 @@
         "React",
         "SQL"
       ],
-      "relevance_to_JD": "medium"
+      "relevance_to_JD": "low"
     },
     {
       "title": "Chat with PDF",
@@ -90,23 +94,23 @@
       "duration_years": "0.5"
     }
   ],
-  "overall_fit_score": "60",
   "strengths": [
     "Experience with machine learning models, including Linear regression, LSTM, and XG boost.",
     "Familiarity with OpenAI LLMs and embeddings.",
-    "Experience with full-stack development using .NET, React, and Node.js."
+    "Experience with full-stack development using React, Node.js, and .NET."
   ],
   "weaknesses": [
-    "Lack of experience with scikit-learn, pandas, and Git/GitHub.",
-    "Limited experience with data visualization and dashboarding tools."
-  ]
+    "Lack of experience with scikit-learn and pandas.",
+    "Limited experience with data visualization tools like Matplotlib/Plotly."
+  ],
+  "overall_fit_score": "60"
 }
 ```
 
 ### Notes
 
-* The candidate's education matches the required education in the JD.
-* The candidate has some matching skills, but lacks experience with scikit-learn, pandas, and Git/GitHub.
-* The candidate has relevant experience with machine learning models and full-stack development.
-* The candidate's projects demonstrate some relevance to the JD, but most are not directly related to data science or machine learning.
-* The overall fit score is 60, indicating a moderate fit with the JD.
+- The candidate has a relevant degree in Computer Science and has gained some experience in machine learning and full-stack development.
+- The candidate has some gaps in skills, particularly with scikit-learn and pandas, but has shown experience with similar tools like SKlearn.
+- The projects demonstrate some relevance to the JD, particularly the H.Y.D.R.A Financial forecasting in Supermarkets project, which involves machine learning and data preprocessing.
+- The experience section is limited, but the Artificial Intelligence Intern at DataCrumbs role is relevant to the JD.
+- The overall fit score is 60, indicating a moderate fit with the JD.

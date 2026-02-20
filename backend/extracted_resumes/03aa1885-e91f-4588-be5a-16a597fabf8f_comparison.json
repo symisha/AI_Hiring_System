@@ -25,23 +25,28 @@
       "Flutter",
       "Node JS",
       "Express JS",
-      "C/C++",
       "JavaScript",
       "dart",
       "C#",
-      "Natural Language Processing",
-      "Neural Networks (LSTM, Transformers, etc.)",
-      "Machine Learning Models",
-      "Data Preprocessing and Handling"
+      "Jupyter",
+      "pandas",
+      "scikit-learn",
+      "PyTorch",
+      "MySQL Workbench",
+      "GitHub Actions",
+      "Docker",
+      "Tableau/Looker/Power BI"
     ],
     "match": [
       "Python",
       "SQL",
       "SKlearn",
+      "pandas",
+      "scikit-learn",
       "Git/GitHub"
     ],
     "gap": [
-      "pandas"
+      "Jupyter"
     ]
   },
   "projects": [
@@ -92,24 +97,25 @@
       "duration_years": "0.5"
     }
   ],
-  "overall_fit_score": "60",
   "strengths": [
     "Experience with machine learning models, including Linear regression, LSTM, and XG boost.",
     "Familiarity with OpenAI LLMs and embeddings.",
-    "Relevant project experience with H.Y.D.R.A Financial forecasting in Supermarkets."
+    "Proficiency in Python, SQL, and pandas."
   ],
   "weaknesses": [
-    "Limited experience with scikit-learn, which is a required skill.",
+    "Limited experience with data visualization tools (Matplotlib/Plotly).",
     "No experience with cloud data stacks (AWS/GCP/Azure) and warehouses (Snowflake/BigQuery/Redshift).",
     "No experience with model monitoring, data/label drift, and feature stores."
-  ]
+  ],
+  "overall_fit_score": "60"
 }
 ```
 
-### Notes:
+### Notes
 
-* The candidate has a relevant degree in Computer Science.
-* The candidate has some relevant skills, but lacks experience with scikit-learn and some other required tools and technologies.
-* The candidate has relevant project experience with H.Y.D.R.A Financial forecasting in Supermarkets, which demonstrates experience with machine learning models and large-scale datasets.
-* The candidate's experience as an Artificial Intelligence Intern at DataCrumbs is relevant, but the duration is short.
-* The candidate lacks experience with cloud data stacks, warehouses, model monitoring, data/label drift, and feature stores, which are preferred qualifications.
+- The candidate has a relevant degree in Computer Science and has completed an internship in Artificial Intelligence.
+- The candidate has experience with machine learning models, including Linear regression, LSTM, and XG boost, which is relevant to the JD.
+- The candidate has proficiency in Python, SQL, and pandas, which are required skills.
+- However, the candidate lacks experience with data visualization tools (Matplotlib/Plotly), cloud data stacks (AWS/GCP/Azure) and warehouses (Snowflake/BigQuery/Redshift), and model monitoring, data/label drift, and feature stores.
+- The candidate's projects, such as H.Y.D.R.A Financial forecasting in Supermarkets, demonstrate relevant skills and experience, but the other projects (Doctor Appointment Booking System, Chat with PDF, and Selling Point) are less relevant to the JD.
+- The candidate's overall fit score is 60, indicating a moderate fit with the JD.

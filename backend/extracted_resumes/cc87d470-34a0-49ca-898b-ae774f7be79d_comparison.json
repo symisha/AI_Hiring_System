@@ -14,7 +14,9 @@
       "SQL",
       "pandas",
       "scikit-learn",
-      "Git/GitHub"
+      "PyTorch",
+      "Git/GitHub",
+      "data visualization (Matplotlib/Plotly)"
     ],
     "candidate": [
       "Python",
@@ -32,16 +34,22 @@
       "Natural Language Processing",
       "Neural Networks (LSTM, Transformers, etc.)",
       "Machine Learning Models",
-      "Data Preprocessing and Handling"
+      "Data Preprocessing and Handling",
+      "Git/GitHub",
+      "Tableau/Looker/Power BI"
     ],
     "match": [
       "Python",
       "SQL",
-      "SKlearn"
+      "SKlearn",
+      "Git/GitHub",
+      "Tableau/Looker/Power BI"
     ],
     "gap": [
       "pandas",
-      "Git/GitHub"
+      "scikit-learn",
+      "PyTorch",
+      "data visualization (Matplotlib/Plotly)"
     ]
   },
   "projects": [
@@ -92,25 +100,17 @@
       "duration_years": "0.5"
     }
   ],
-  "overall_fit_score": "60",
   "strengths": [
-    "Experience with machine learning models (Linear regression, LSTM, XG boost)",
-    "Familiarity with OpenAI LLMs and embeddings",
-    "Relevant project experience with H.Y.D.R.A Financial forecasting in Supermarkets"
+    "Experience with machine learning models, including Linear regression, LSTM, and XG boost.",
+    "Familiarity with OpenAI LLMs and embeddings.",
+    "Experience with full-stack development using .NET, React, and Node.js."
   ],
   "weaknesses": [
-    "Limited experience with scikit-learn",
-    "No experience with Git/GitHub",
-    "Low relevance of some projects (Doctor Appointment Booking System, Chat with PDF, Selling Point)"
-  ]
+    "Lack of direct experience with scikit-learn, PyTorch, and data visualization tools.",
+    "Insufficient experience with Git/GitHub and collaborative workflows."
+  ],
+  "overall_fit_score": "60"
 }
 ```
 
-### Notes
-
-- The candidate has a relevant degree in Computer Science.
-- The candidate has some relevant skills, but lacks experience with pandas and Git/GitHub.
-- The candidate has relevant project experience with H.Y.D.R.A Financial forecasting in Supermarkets, which demonstrates experience with machine learning models and large-scale datasets.
-- The candidate's experience as an Artificial Intelligence Intern at DataCrumbs is relevant, but the duration is short.
-- Some projects (Doctor Appointment Booking System, Chat with PDF, Selling Point) are not highly relevant to the job description.
-- The candidate's overall fit score is 60, indicating a moderate fit with the job description.
+Note: The overall fit score is 60, indicating that the candidate has some relevant skills and experience, but lacks direct experience with some of the required tools and technologies.
