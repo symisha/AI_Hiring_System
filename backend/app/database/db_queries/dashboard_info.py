@@ -26,7 +26,7 @@ def get_total_job_postings():
             "email": DashboardContext.user_email,
             "total_job_postings": total_jobs,
             "jobs": jobs,
-            "job_title": [job['title'] for job in jobs] if jobs else []
+            "job_title": [job['job_title'] for job in jobs] if jobs else []
         }
 
     except Exception as e:
@@ -87,3 +87,27 @@ def search_applicants(
     )
 
     return response.data
+
+
+
+
+#applicants details
+
+def get_applicant_details(job_id: str):
+    try:
+        response = (
+            supabase.table("job_applications")
+            .select("*")            # get all columns
+            .eq("job_id", job_id)  
+            .execute()
+        )
+        applicants = response.data
+        total_applicants = len(applicants) if applicants else 0
+
+        return {
+            "total_applicants": total_applicants, 
+            "applicants": applicants
+        }      
+    except Exception as e:
+        print("Error in get_applicant_details:", e)
+        return {"error": str(e)}

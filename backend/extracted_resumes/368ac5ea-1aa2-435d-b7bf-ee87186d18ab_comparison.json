@@ -15,10 +15,9 @@
       "pandas",
       "scikit-learn",
       "PyTorch",
-      "Git",
-      "GitHub Actions",
-      "Docker",
-      "Tableau/Looker/Power BI"
+      "Git/GitHub",
+      "data visualization (Matplotlib/Plotly)",
+      "statistics: hypothesis testing, confidence intervals, experimentation basics, and evaluation metrics"
     ],
     "candidate": [
       "Python",
@@ -27,21 +26,7 @@
       "CSS",
       "Node.js",
       "Express.js",
-      "PyTorch",
-      "NLP",
-      "Static Code Analysis",
-      "Git",
-      "Docker",
-      "FastAPI",
-      "Flask",
-      "Matplotlib",
-      "Seaborn",
-      "Selenium",
-      "Beautiful Soup",
-      "Firebase",
-      "AWS",
-      "Jupyter Notebook",
-      "Hugging Face",
+      "Supervised & Unsupervised Learning",
       "Transformers",
       "Deep Learning",
       "Model Evaluation",
@@ -52,38 +37,34 @@
       "ChatGPT",
       "LangChain",
       "Ollama",
+      "Flask",
+      "FastAPI",
+      "RESTful APIs",
+      "PyTorch",
+      "Tensorflow",
       "Scikit learn",
-      "Jupyter Notebook"
+      "Hugging Face",
+      "Jupyter Notebook",
+      "Git",
+      "Matplotlib",
+      "Seaborn",
+      "Selenium",
+      "beautiful soup",
+      "Firebase",
+      "AWS"
     ],
     "match": [
       "Python",
       "SQL",
-      "PyTorch",
-      "Git",
-      "GitHub Actions",
-      "Docker",
-      "Tableau/Looker/Power BI",
-      "Matplotlib",
-      "Seaborn",
-      "Flask",
-      "FastAPI",
-      "Hugging Face",
-      "Transformers",
-      "Deep Learning",
-      "Model Evaluation",
-      "NLTK",
-      "LLM",
-      "OpenAI",
-      "GPT",
-      "ChatGPT",
-      "LangChain",
-      "Ollama",
-      "Scikit learn"
-    ],
-    "gap": [
       "pandas",
       "scikit-learn",
-      "Jupyter Notebook"
+      "PyTorch",
+      "Git/GitHub",
+      "Matplotlib/Plotly",
+      "statistics: hypothesis testing, confidence intervals, experimentation basics, and evaluation metrics"
+    ],
+    "gap": [
+      "data visualization (Matplotlib/Plotly)"
     ]
   },
   "projects": [
@@ -131,10 +112,16 @@
       "relevance_to_JD": "low"
     },
     {
-      "title": "Website Development",
+      "title": "Sam International WebSite",
       "tools_methods": [
         "WordPress",
-        "Kadence theme",
+        "Kadence theme"
+      ],
+      "relevance_to_JD": "low"
+    },
+    {
+      "title": "Automobile Website",
+      "tools_methods": [
         "HTML",
         "CSS"
       ],
@@ -147,28 +134,18 @@
       "domain_relevance": "relevant",
       "start_date": "July 2022",
       "end_date": "Present",
-      "duration_years": "1.5"
+      "duration_years": "1"
     }
   ],
-  "overall_fit_score": "70",
   "strengths": [
-    "Experience with PyTorch and NLP",
-    "Development of machine learning based projects",
-    "Proficiency in Python and SQL",
-    "Familiarity with Git and Docker"
+    "Experience with PyTorch, scikit-learn, and data visualization",
+    "Familiarity with Git/GitHub and collaborative workflows",
+    "Strong understanding of machine learning and NLP"
   ],
   "weaknesses": [
-    "Limited experience with scikit-learn and pandas",
-    "No experience with Tableau/Looker/Power BI",
-    "Limited experience with cloud data stacks and warehouses"
-  ]
+    "Limited experience with cloud data stacks and warehouses",
+    "No experience with model monitoring, data/label drift, and feature stores"
+  ],
+  "overall_fit_score": "80"
 }
 ```
-
-### Notes
-
-* The candidate has a relevant degree in Computer Science and has developed machine learning based projects, which demonstrates their potential as an Associate Data Scientist.
-* The candidate has a good understanding of Python, SQL, and PyTorch, which are essential skills for the role.
-* However, the candidate lacks experience with scikit-learn and pandas, which are required skills for the role.
-* The candidate has limited experience with cloud data stacks and warehouses, which is a preferred qualification for the role.
-* The candidate's overall fit score is 70, indicating that they have some relevant experience and skills, but may require additional training or experience to meet the requirements of the role.

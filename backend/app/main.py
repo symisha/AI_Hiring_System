@@ -2,7 +2,7 @@ import uvicorn  # ASGI server used to run FastAPI apps (like "npm start" for Nod
 from fastapi import FastAPI, Depends  # Main FastAPI class used to create the web application instance
 from fastapi.middleware.cors import CORSMiddleware  # Middleware to handle CORS (Cross-Origin Resource Sharing)
 from pydantic import BaseModel  # Used to define and validate data models (for requests/responses) with type checking
-from app.config.config import Settings  # Import the Settings class to access environment variables
+from app.config.config import Settings # Import the settingsclass to access environment variables
 
 # Import routes (import nested routers directly to avoid circular/package import issues)
 from app.routes import rating_resume, apply

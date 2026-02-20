@@ -15,14 +15,20 @@ import requests
 from app.database.db_connection import supabase         # Import the Supabase client instance to interact with the database
 from fastapi import APIRouter, Depends                     # Import FastAPI class to create the web
 from app.auth_middleware import auth_middleware         # Import the authentication middleware to protect routes
-
+from app.config.config import Settings
 
 def get_jd_from_supabase(bucket: str, filename: str):
     data = supabase.storage.from_(bucket).download(filename)
     return data.decode("utf-8")  # JSON text
 
 
-
+def fit_score(text, applicant_id: str):
+    match = re.search(r'"overall_fit_score"\s*:\s*"(\d{1,3})"', text)
+    fit = int(match.group(1)) if match else None
+    supabase.table("job_applications").update({"resume_score": fit}).eq("applicant_id", applicant_id).execute()
+    return fit
+    #put it in supabase
+    
 
 
 # Local directory to save files
@@ -80,7 +86,8 @@ EVALS_DIR = "evaluations"                # individual evaluation JSON files
 
 
 model_id = "llama-3.1-8b-instant"
-API_key = "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"
+API_key = Settings.LLAMA_API_KEY
+
 
 def save_json_result(result_text, filename) -> bool:
     if result_text:
@@ -337,9 +344,9 @@ You are a strict resume-to-job-description evaluator. Compare the candidate's CV
       "duration_years": "<numeric>"
     }
   ],
-  "overall_fit_score": "<0-100>",
   "strengths": ["<key strengths>"],
-  "weaknesses": ["<key gaps>"]
+  "weaknesses": ["<key gaps>"],
+  "overall_fit_score": "<0-100>"
 }
 
 Instructions:  
@@ -371,7 +378,7 @@ Instructions:
     # This should now be a pure JSON string
     return response.choices[0].message.content
 
-# ------------------------- MAIN -------------------------
+# ------------------------- MAIN ---------------------F----
 
 router = APIRouter()
 
@@ -445,13 +452,15 @@ def process_uploads_endpoint(user=Depends(auth_middleware)):
                 f.write(comparison_result)
 
             log(f"✅ Comparison result saved to: {result_path}")
-            processed += 1
-
+            processed += 1   
+            log(fit_score(comparison_result, "bce77a80-ce81-4d79-8c48-706dd271b473"))        
         except Exception as e:
             err = f"Error processing resume {resume_path}: {e}"
             log(err)
             errors.append(err)
 
+        #update in the database and store the resume_score 
+        
     # ----- RETURN EVERYTHING -----
     return {
         "status": "completed",
