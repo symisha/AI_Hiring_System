@@ -12,12 +12,11 @@ const HRSignup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-// <<<<<<< Updated upstream
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-// >>>>>>> Stashed changes
+
 
   // Email/password signup
   const handleSubmit = async (e: React.FormEvent) => {

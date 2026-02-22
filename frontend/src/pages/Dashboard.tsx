@@ -95,24 +95,25 @@ const Dashboard = () => {
 
         setStats([
           {
-            title: "Total Jobs Posted",
-            value: data.total_job_postings || 0,
-            icon: Briefcase,
-            gradient: "from-blue-600 to-blue-400",
-          },
-          {
-            title: "Total Recruited",
-            value: "48",
-            icon: Users,
-            gradient: "from-purple-600 to-purple-400",
-          },
-          {
             title: "Active Jobs",
             value:
               data.jobs?.filter((job: any) => job.status === "open").length || 0,
             icon: LayoutDashboard,
             gradient: "from-pink-600 to-pink-400",
           },
+          {
+            title: "Total Jobs Posted",
+            value: data.total_job_postings || 0,
+            icon: Briefcase,
+            gradient: "from-blue-600 to-blue-400",
+          },
+          // {
+          //   title: "Total Recruited",
+          //   value: "48",
+          //   icon: Users,
+          //   gradient: "from-purple-600 to-purple-400",
+          // },
+          
         ]);
 
         setActiveJobs(data.jobs || []);
@@ -192,7 +193,7 @@ const Dashboard = () => {
             </div>
 
             {/* Recent Activity */}
-            <div className="relative overflow-hidden rounded-xl bg-muted/30 p-5">
+            {/* <div className="relative overflow-hidden rounded-xl bg-muted/30 p-5">
               <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-purple-600 to-blue-600" />
               <div className="relative">
                 <h2 className="text-xl font-semibold mb-4">
@@ -233,7 +234,7 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         );
       case "uploadJob":

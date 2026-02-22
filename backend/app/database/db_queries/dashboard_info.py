@@ -7,8 +7,30 @@ class DashboardContext:
 
 #for DASHBOARD INFO
 def set_user_info(user):
-    DashboardContext.user_email = user.user.user_metadata["email"]
-    DashboardContext.user_id = user.user.id
+    # supabase.auth.get_user may return different shapes depending on client
+    # Try several common shapes: object with .user, dict with ['data']['user'],
+    # or a direct user dict/object.
+    try:
+        if hasattr(user, "user"):
+            u = user.user
+        elif isinstance(user, dict) and user.get("data") and isinstance(user.get("data"), dict) and user.get("data").get("user"):
+            u = user.get("data").get("user")
+        elif isinstance(user, dict) and user.get("user"):
+            u = user.get("user")
+        else:
+            u = user
+
+        # extract email
+        if isinstance(u, dict):
+            DashboardContext.user_email = (u.get("user_metadata") or {}).get("email")
+            DashboardContext.user_id = u.get("id")
+        else:
+            DashboardContext.user_email = getattr(u, "user_metadata", {}).get("email") if getattr(u, "user_metadata", None) else None
+            DashboardContext.user_id = getattr(u, "id", None)
+    except Exception as e:
+        print("Error parsing user info in set_user_info:", e)
+        DashboardContext.user_email = None
+        DashboardContext.user_id = None
 
 def get_total_job_postings():
     try:
@@ -26,7 +48,8 @@ def get_total_job_postings():
             "email": DashboardContext.user_email,
             "total_job_postings": total_jobs,
             "jobs": jobs,
-            "job_title": [job['job_title'] for job in jobs] if jobs else []
+            # Some job records use 'title' while older code referenced 'job_title'
+            "job_title": [job.get('job_title') or job.get('title') for job in jobs] if jobs else []
         }
 
     except Exception as e:
