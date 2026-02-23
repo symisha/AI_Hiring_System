@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AIInterviewJobHeader from "@/components/AIInterviews/AIInterviewJobHeader";
 import AIInterviewOverview from "@/components/AIInterviews/AIInterviewOverview.tsx";
 import AIInterviewFilters from "@/components/AIInterviews/AIInterviewFilters.tsx";
@@ -52,8 +52,39 @@ const mockCandidates = [
 ];
 
 const AIInterviews = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
-  const [candidates] = useState(mockCandidates);
+  const [candidates, setCandidates] = useState<any[]>(mockCandidates);
   const [selected, setSelected] = useState<any | null>(null);
+
+  useEffect(() => {
+    const fetchApps = async () => {
+      if (!jobId && !job?.id) return;
+      const id = job?.id ?? jobId;
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/routes/dashboard_essentials/job/${id}/get-applicants`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!res.ok) throw new Error("Failed to fetch applications");
+        const data = await res.json();
+        const apps = data.applicants || data || [];
+        const normalized = apps.map((a: any) => ({
+          id: a.id || a.applicant_id,
+          name: a.name || (a.applicant && a.applicant.name) || "Unknown",
+          email: a.email || (a.applicant && a.applicant.email) || "",
+          invitedDate: a.invited_on || a.created_at || null,
+          interviewStatus: a.interview_status || a.status || "Not Started",
+          aiScore: a.ai_score || a.resume_score || null,
+          transcript: a.transcript || null,
+          media: a.media || null,
+        }));
+        setCandidates(normalized.length ? normalized : mockCandidates);
+      } catch (e) {
+        console.error("AIInterviews fetch error:", e);
+        setCandidates(mockCandidates);
+      }
+    };
+    fetchApps();
+  }, [jobId, job]);
 
   return (
     <div>

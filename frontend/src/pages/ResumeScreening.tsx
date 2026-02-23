@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import JobHeader from "@/components/ResumeScreening/JobHeader";
 import ScreeningOverview from "@/components/ResumeScreening/ScreeningOverview";
@@ -50,11 +50,47 @@ const mockCandidates = [
 ];
 
 const ResumeScreening = ({ jobId: propJobId, job }: { jobId?: string; job?: any } = {}) => {
-  const [candidates] = useState(mockCandidates);
+  const [candidates, setCandidates] = useState<any[]>(mockCandidates);
   const [searchParams] = useSearchParams();
   const jobId = propJobId ?? searchParams.get("jobId") ?? undefined;
   const [selected, setSelected] = useState<any | null>(null);
   const title = job?.title ?? (jobId ? `Job ${jobId}` : "Backend Developer");
+
+  useEffect(() => {
+    const fetchApps = async () => {
+      if (!jobId) return;
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/routes/dashboard_essentials/job/${jobId}/get-applicants`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!res.ok) throw new Error("Failed to fetch applications");
+        const data = await res.json();
+        // backend returns { total_applicants, applicants }
+        const apps = data.applicants || data || [];
+        // normalize to expected candidate shape when possible
+        const normalized = apps.map((a: any) => ({
+          id: a.id || a.applicant_id || a.applicant?.id,
+          name: a.name || a.applicant_name || (a.applicant && a.applicant.name) || "Unknown",
+          email: a.email || a.applicant_email || (a.applicant && a.applicant.email) || "",
+          appliedDate: a.applied_on || a.created_at || null,
+          experience: a.experience || null,
+          education: a.education || null,
+          skills: a.skills || [],
+          aiScore: a.resume_score || a.score || null,
+          status: a.status || "New",
+          resume: a.resume_url || a.resume_path || (a.applicant && a.applicant.resume_url) || null,
+          reasons: a.reasons || [],
+        }));
+        setCandidates(normalized.length ? normalized : mockCandidates);
+      } catch (e) {
+        console.error("ResumeScreening fetch error:", e);
+        setCandidates(mockCandidates);
+      }
+    };
+
+    fetchApps();
+  }, [jobId]);
 
   return (
     <div>
