@@ -65,7 +65,8 @@ def get_job_for_apply(token: str):
         raise HTTPException(status_code=400, detail="Invalid or expired token")
 
     try:
-        res = supabase.table("jobs").select("id,title,description,location,posted_on").eq("id", job_id).single().execute()
+        # Not all schemas include a `description` column. Prefer returning structured `job_metadata` and `job_description_url`.
+        res = supabase.table("jobs").select("id,title,job_metadata,job_description_url,location,posted_on").eq("id", job_id).single().execute()
         if not res.data:
             raise HTTPException(status_code=404, detail="Job not found")
         return res.data

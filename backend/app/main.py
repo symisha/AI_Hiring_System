@@ -152,11 +152,19 @@ async def upload_job(
         job_description_url = supabase.storage.from_(BUCKET_NAME).get_public_url(file_name)
 
         # Insert metadata + file URL into database
+        # Some DB schemas do not have a `description` text column — store structured JD in `job_metadata` instead
+        job_metadata = None
+        try:
+            job_metadata = json.loads(file_bytes)
+        except Exception:
+            job_metadata = {"raw": description}
+
         supabase.table("jobs").insert({
             "company_id": user.user.id,
-            "title": title,
-            "description": description,
+            # some schemas use `job_title` instead of `title`
+            "job_title": title,
             "job_description_url": job_description_url,
+            "job_metadata": job_metadata,
             "status": "open"
         }).execute()
 
