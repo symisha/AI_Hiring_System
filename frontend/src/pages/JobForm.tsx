@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { Upload, FileText } from "lucide-react";
+import { Upload, FileText, Plus, Trash } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 interface JobFormProps {
   token: string;
@@ -8,82 +12,205 @@ interface JobFormProps {
 const JobForm: React.FC<JobFormProps> = ({ token }) => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fields, setFields] = useState<Array<{ key: string; value: string }>>([
+    { key: "role_problem", value: "" },
+  ]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleAddField = () => {
+    setFields([...fields, { key: "", value: "" }]);
+  };
+
+  const handleRemoveField = (index: number) => {
+    const next = fields.slice();
+    next.splice(index, 1);
+    setFields(next);
+  };
+
+  const handleFieldChange = (index: number, key: string, value: string) => {
+    const next = fields.slice();
+    next[index] = { key, value };
+    setFields(next);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files && e.target.files[0];
+    setSelectedFile(f || null);
+  };
+
+  const buildMetadataObject = () => {
+    const obj: Record<string, any> = {};
+    for (const f of fields) {
+      if (!f.key) continue;
+      // try parse value as JSON, else comma-split to array if contains comma, else raw string
+      let val: any = f.value;
+      try {
+        val = JSON.parse(f.value);
+      } catch {
+        if (f.value.includes(",")) {
+          val = f.value.split(",").map((s) => s.trim()).filter(Boolean);
+        }
+      }
+      obj[f.key] = val;
+    }
+    return obj;
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const title = (form.elements.namedItem("title") as HTMLInputElement).value;
+    const description = (form.elements.namedItem("description") as HTMLTextAreaElement)?.value || "";
+
+    // require either a file or at least one non-empty field
+    if (!selectedFile && fields.every((f) => !f.key || !f.value)) {
+      setMessage("Please upload a JSON file or add at least one custom field.");
+      setLoading(false);
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append("title", title);
+    fd.append("description", description || (fields[0]?.value || ""));
+
+    if (selectedFile) {
+      fd.append("jd_file", selectedFile, selectedFile.name);
+    } else {
+      // build JSON from fields
+      const metadata = buildMetadataObject();
+      // include title inside metadata as well
+      metadata.title = title;
+      const blob = new Blob([JSON.stringify(metadata, null, 2)], { type: "application/json" });
+      fd.append("jd_file", blob, `${title.replace(/\s+/g, "_") || "job"}_${Date.now()}.json`);
+    }
 
     try {
-      const res = await fetch("http://localhost:8000/upload-job", { //replace with your backend URL
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/upload-job`, {
         method: "POST",
-        body: formData,
+        body: fd,
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       const data = await res.json();
-      setMessage(data.message + (data.file_url ? ` URL: ${data.file_url}` : ""));
-    } catch {
-      setMessage("Upload failed");
+      if (res.ok) {
+        setMessage(data.message || "Job uploaded successfully.");
+        // reset form
+        setFields([{ key: "role_problem", value: "" }]);
+        setSelectedFile(null);
+        form.reset();
+      } else {
+        setMessage(data.error || data.message || "Upload failed");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setMessage(err?.message || "Upload failed");
     }
 
     setLoading(false);
   };
 
-  return (
-    <div className="max-w-xl mx-auto mt-14 bg-white shadow-lg rounded-2xl p-8 border border-gray-200">
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-          <FileText className="w-7 h-7 text-indigo-600" />
-          Upload Job Description
-        </h2>
-        <p className="text-gray-600 text-sm mt-1">
-          Upload the JD JSON file to automatically process job requirements.
-        </p>
-      </div>
+  const previewMetadata = () => {
+    if (selectedFile) return null;
+    const obj = buildMetadataObject();
+    return <pre className="whitespace-pre-wrap bg-gray-50 p-3 rounded-md text-sm">{JSON.stringify(obj, null, 2)}</pre>;
+  };
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-5">
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div>
+            <div className="flex items-center gap-3">
+              <FileText className="w-7 h-7 text-primary" />
+              <CardTitle className="text-3xl font-bold">Upload Job Description</CardTitle>
+            </div>
+            <p className="text-muted-foreground mt-1">Upload the JD JSON file to automatically process job requirements or build one using the fields below.</p>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-5">
         {/* Job Title */}
         <div>
-          <label className="block mb-1.5 font-medium text-gray-800">Job Title</label>
-          <input
+          <label className="text-sm font-medium mb-1">Job Title</label>
+          <Input
             name="title"
             type="text"
             required
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             placeholder="e.g. Senior Frontend Developer"
+          />
+        </div>
+
+        {/* Short description */}
+        <div>
+          <label className="text-sm font-medium mb-1">Short Description (optional)</label>
+          <Textarea
+            name="description"
+            rows={3}
+            placeholder="One-line summary of the role (optional)"
           />
         </div>
 
         {/* Upload File */}
         <div>
-          <label className="block mb-1.5 font-medium text-gray-800">Upload JD JSON File</label>
-          <input
+          <label className="text-sm font-medium mb-">Upload JD JSON File (optional)</label>
+          <Input
             name="jd_file"
             type="file"
             accept=".json,application/json"
-            required
-            className="w-full text-sm border border-gray-300 rounded-lg p-2 file:bg-indigo-600 file:text-white file:border-0 file:px-4 file:py-2 file:rounded-lg file:mr-3 hover:file:bg-indigo-700 cursor-pointer"
+            onChange={handleFileChange}
+            className="file:bg-indigo-600 file:text-white file:border-0 file:px-4 file:py-2 file:rounded-lg hover:file:bg-indigo-700"
           />
         </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-indigo-600 text-white py-3 rounded-lg text-lg font-medium flex justify-center items-center gap-2 
-          hover:bg-indigo-700 transition-all shadow-md disabled:opacity-70"
-        >
-          <Upload className="w-5 h-5" />
-          {loading ? "Uploading..." : "Upload Job"}
-        </button>
-      </form>
+        {/* Dynamic fields builder */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium">Custom Fields</label>
+            <button type="button" onClick={handleAddField} className="flex items-center gap-2 text-sm text-indigo-600">
+              <Plus className="w-4 h-4" /> Add field
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {fields.map((f, idx) => (
+              <div key={idx} className="grid grid-cols-12 gap-2 items-start">
+                <Input
+                  value={f.key}
+                  onChange={(e) => handleFieldChange(idx, e.target.value, f.value)}
+                  placeholder="field name (e.g. languages)"
+                  className="col-span-4"
+                />
+                <Textarea
+                  value={f.value}
+                  onChange={(e) => handleFieldChange(idx, f.key, e.target.value)}
+                  placeholder="value (JSON, CSV, or text)"
+                  className="col-span-7"
+                  rows={2}
+                />
+                <button type="button" onClick={() => handleRemoveField(idx)} className="col-span-1 text-red-500 p-2">
+                  <Trash className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Preview */}
+        {/* {previewMetadata()} */}
+
+            {/* Submit Button */}
+            <Button type="submit" disabled={loading} variant="hero" size="default" className="w-full justify-center">
+              <Upload className="w-4 h-4" />
+              {loading ? "Uploading..." : "Upload Job"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* Message */}
       {message && (

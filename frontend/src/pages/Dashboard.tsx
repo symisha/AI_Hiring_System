@@ -17,6 +17,16 @@ import {
   ChevronDown,
   Plus,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import DashboardTopbar from "@/components/DashboardTopbar";
@@ -72,6 +82,40 @@ const Dashboard = () => {
   } catch (error) {
     console.error("Error deleting job:", error);
   }
+  };
+
+  // Delete dialog state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<any | null>(null);
+
+  // When a job is selected for deletion, open dialog
+  const confirmDelete = (job: any) => {
+    setJobToDelete(job);
+    setShowDeleteDialog(true);
+  };
+
+  // Try to fetch job description from public URL if description missing
+  const fetchJobDescriptionIfNeeded = async (job: any) => {
+    if (!job) return job;
+    if (job.description) return job;
+    const url = job.job_description_url || job.job_description_url?.publicURL || job.job_description_url?.url;
+    if (!url) return job;
+    try {
+      const res = await fetch(url);
+      const text = await res.text();
+      // try parse JSON
+      try {
+        const json = JSON.parse(text);
+        const desc = json.description || json.job_description || json.jd || JSON.stringify(json);
+        return { ...job, description: desc };
+      } catch {
+        // not JSON, use raw text
+        return { ...job, description: text };
+      }
+    } catch (e) {
+      console.error("Failed to fetch job description:", e);
+      return job;
+    }
   };
 
   useEffect(() => {
@@ -263,13 +307,83 @@ const Dashboard = () => {
 
         case "jobDetails":
           if (!selectedJob) return null;
-          return (
-            <Card className="p-6 mt-4 border-none">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl font-semibold mb-1">{selectedJob.job_title}</h2>
-                  <p className="text-blue-400">Status: {selectedJob.status || "Unknown"}</p>
+            const renderMetadata = (job: any) => {
+              // job_metadata may be a JSON string or object; description may also contain structured JSON
+              const metadataRaw = job.job_metadata || job.metadata || job.description || null;
+              let meta = null;
+              if (!metadataRaw) return null;
+              try {
+                if (typeof metadataRaw === "string") meta = JSON.parse(metadataRaw);
+                else meta = metadataRaw;
+              } catch (e) {
+                // not JSON: try if it's a URL to fetch (job_description_url handled elsewhere)
+                return null;
+              }
+
+              return (
+                <div className="space-y-3 text-sm">
+                  {meta.role_problem && (
+                    <p>
+                      <span className="font-semibold">Role summary:</span> {meta.role_problem}
+                    </p>
+                  )}
+
+                  {meta.experience && (
+                    <p>
+                      <span className="font-semibold">Experience:</span> {meta.experience}
+                    </p>
+                  )}
+
+                  {meta.languages && (
+                    <p>
+                      <span className="font-semibold">Languages:</span> {Array.isArray(meta.languages) ? meta.languages.join(", ") : meta.languages}
+                    </p>
+                  )}
+
+                  {meta.frameworks && (
+                    <p>
+                      <span className="font-semibold">Frameworks:</span> {meta.frameworks}
+                    </p>
+                  )}
+
+                  {meta.cloud && (
+                    <p>
+                      <span className="font-semibold">Cloud / Hosting:</span> {meta.cloud}
+                    </p>
+                  )}
+
+                  {meta.databases && (
+                    <p>
+                      <span className="font-semibold">Databases / APIs:</span> {meta.databases}
+                    </p>
+                  )}
+
+                  {meta.must_haves && (
+                    <div>
+                      <span className="font-semibold">Must haves:</span>
+                      <p className="mt-1 ml-3">{meta.must_haves}</p>
+                    </div>
+                  )}
+
+                  {meta.job_description_url && (
+                    <p>
+                      <span className="font-semibold">Full JD:</span>{' '}
+                      <a href={meta.job_description_url} target="_blank" rel="noreferrer" className="text-indigo-600 underline">
+                        View job description
+                      </a>
+                    </p>
+                  )}
                 </div>
+              );
+            };
+
+            return (
+              <Card className="p-6 mt-4 border-none">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-semibold mb-1">{selectedJob.title || selectedJob.job_title || selectedJob.id}</h2>
+                    <p className="text-blue-400">Status: {selectedJob.status || "Unknown"}</p>
+                  </div>
                 <div className="flex gap-2">
                   <Button
                     onClick={() => handleGenerateApplyLink(selectedJob)}
@@ -288,15 +402,7 @@ const Dashboard = () => {
                   {/* Zoha please redo this, this looks ugly */}
                   <Button
                     variant="destructive"
-                    onClick={() => {
-                      const confirmed = window.confirm(
-                        "Are you sure you want to delete this job?"
-                      );
-
-                    if (confirmed) {
-                      deleteJob(selectedJob.id, localStorage.getItem("token"));
-                    }
-                    }}
+                    onClick={() => confirmDelete(selectedJob)}
                     className="rounded-md bg-red-600/60 text-white hover:bg-red-600/80"
                     >
                     Delete
@@ -307,18 +413,23 @@ const Dashboard = () => {
               <Separator className="my-4" />
 
               <div className="space-y-3">
-                <p>
-                  <span className="font-semibold">Description:</span>{" "}
-                  {selectedJob.description || "No description available."}
-                </p>
-                <p>
-                  <span className="font-semibold">Location:</span>{" "}
-                  {selectedJob.location || "Not specified"}
-                </p>
-                <p>
-                  <span className="font-semibold">Posted On:</span>{" "}
-                  {selectedJob.posted_on ? new Date(selectedJob.posted_on).toLocaleDateString() : "N/A"}
-                </p>
+                {/* Prefer structured metadata rendering if available */}
+                {renderMetadata(selectedJob) || (
+                  <>
+                    <p>
+                      <span className="font-semibold">Description:</span>{" "}
+                      {selectedJob.description || "No description available."}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Location:</span>{" "}
+                      {selectedJob.location || "Not specified"}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Posted On:</span>{" "}
+                      {selectedJob.posted_on ? new Date(selectedJob.posted_on).toLocaleDateString() : "N/A"}
+                    </p>
+                  </>
+                )}
               </div>
             </Card>
           );
@@ -389,12 +500,15 @@ const Dashboard = () => {
                   ${showJobs ? "max-h-[1000px] opacity-100 mt-2" : "max-h-0 opacity-0 mt-0"}
                 `}
               >
-                {activeJobs.map((job) => (
+                        {activeJobs.map((job) => (
                   <div key={job.id} className="mb-1">
                     <Button
                       variant="ghost"
                       onClick={() => {
-                        setSelectedJob(job);
+                                (async () => {
+                                  const withDesc = await fetchJobDescriptionIfNeeded(job);
+                                  setSelectedJob(withDesc);
+                                })();
                         setExpandedJob(expandedJob === job.id ? null : job.id);
                         setActiveSection("jobDetails");
                       }}
@@ -402,7 +516,7 @@ const Dashboard = () => {
                         ${expandedJob === job.id ? "bg-secondary/60" : "hover:bg-secondary/70"}
                       `}
                     >
-                      <span className="truncate">{job.job_title}</span>
+                      <span className="truncate">{job.title || job.job_title || job.id}</span>
                       {expandedJob === job.id ? (
                         <ChevronDown className="h-4 w-4 opacity-60 transition-transform duration-300 rotate-180" />
                       ) : (
@@ -411,7 +525,7 @@ const Dashboard = () => {
                     </Button>
 
                     {/* Smooth dropdown for job sub-options */}
-                    <div
+                      <div
                       className={`pl-4 overflow-hidden transition-[max-height,opacity,margin] duration-300 ease-in-out
                         ${expandedJob === job.id ? "max-h-60 opacity-100 mt-1" : "max-h-0 opacity-0 mt-0"}
                       `}
@@ -423,7 +537,10 @@ const Dashboard = () => {
                           size="sm"
                           onClick={() => {
                             // ensure selected job is set, then switch section
-                            setSelectedJob(job);
+                            (async () => {
+                              const withDesc = await fetchJobDescriptionIfNeeded(job);
+                              setSelectedJob(withDesc);
+                            })();
                             setActiveSection(option.key);
                           }}
                           className={`w-[90%] justify-start text-sm transition-colors duration-200
@@ -491,6 +608,31 @@ const Dashboard = () => {
             }
           }}
         />
+        {/* Global delete confirmation dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Job</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete "{jobToDelete?.title || jobToDelete?.job_title || jobToDelete?.id}"? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setShowDeleteDialog(false)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (!jobToDelete) return;
+                  await deleteJob(jobToDelete.id, localStorage.getItem("token"));
+                  setShowDeleteDialog(false);
+                  setActiveJobs(activeJobs.filter((j) => j.id !== jobToDelete.id));
+                  if (selectedJob?.id === jobToDelete.id) setSelectedJob(null);
+                }}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         {renderMainContent()}
       </div>
     </div>
