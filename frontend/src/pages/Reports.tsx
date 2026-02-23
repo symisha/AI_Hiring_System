@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReportsJobHeader from "@/components/Reports/ReportsJobHeader";
 import ReportsSummary from "@/components/Reports/ReportsSummary.tsx";
 import TopCandidates from "@/components/Reports/TopCandidates.tsx";
@@ -14,7 +14,39 @@ const mockCandidates = [
 ];
 
 const Reports = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
-  const [candidates] = useState(mockCandidates);
+  const [candidates, setCandidates] = useState<any[]>(mockCandidates);
+
+  useEffect(() => {
+    const fetchApps = async () => {
+      if (!jobId && !job?.id) return;
+      const id = job?.id ?? jobId;
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/routes/dashboard_essentials/job/${id}/get-applicants`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!res.ok) throw new Error("Failed to fetch applications");
+        const data = await res.json();
+        const apps = data.applicants || data || [];
+        const normalized = apps.map((a: any) => ({
+          id: a.id || a.applicant_id,
+          name: a.name || (a.applicant && a.applicant.name) || "Unknown",
+          email: a.email || (a.applicant && a.applicant.email) || "",
+          assessment: a.assessment_score || a.resume_score || null,
+          interview: a.interview_score || null,
+          resumeMatch: a.resume_score || null,
+          totalScore: a.total_score || null,
+          strengths: a.strengths || [],
+          recommendation: a.recommendation || null,
+        }));
+        setCandidates(normalized.length ? normalized : mockCandidates);
+      } catch (e) {
+        console.error("Reports fetch error:", e);
+        setCandidates(mockCandidates);
+      }
+    };
+    fetchApps();
+  }, [jobId, job]);
 
   return (
     <div>

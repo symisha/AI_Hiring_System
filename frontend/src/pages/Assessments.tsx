@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AssessmentJobHeader from "@/components/Assessments/AssessmentJobHeader";
 import AssessmentOverview from "@/components/Assessments/AssessmentOverview.tsx";
 import AssessmentFilters from "@/components/Assessments/AssessmentFilters.tsx";
@@ -46,8 +46,40 @@ const mockCandidates = [
 ];
 
 const Assessments = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
-  const [candidates] = useState(mockCandidates);
+  const [candidates, setCandidates] = useState<any[]>(mockCandidates);
   const [selected, setSelected] = useState<any | null>(null);
+
+  useEffect(() => {
+    const fetchApps = async () => {
+      if (!jobId && !job?.id) return;
+      const id = job?.id ?? jobId;
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/routes/dashboard_essentials/job/${id}/get-applicants`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!res.ok) throw new Error("Failed to fetch applications");
+        const data = await res.json();
+        const apps = data.applicants || data || [];
+        const normalized = apps.map((a: any) => ({
+          id: a.id || a.applicant_id,
+          name: a.name || a.applicant_name || (a.applicant && a.applicant.name) || "Unknown",
+          email: a.email || (a.applicant && a.applicant.email) || "",
+          invitedDate: a.invited_on || a.created_at || null,
+          assessmentId: a.assessment_id || null,
+          status: a.status || "Pending",
+          score: a.resume_score || a.score || null,
+          resume: a.resume_url || (a.applicant && a.applicant.resume_url) || null,
+          notes: a.notes || null,
+        }));
+        setCandidates(normalized.length ? normalized : mockCandidates);
+      } catch (e) {
+        console.error("Assessments fetch error:", e);
+        setCandidates(mockCandidates);
+      }
+    };
+    fetchApps();
+  }, [jobId, job]);
 
   return (
     <div>
