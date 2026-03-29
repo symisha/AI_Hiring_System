@@ -55,65 +55,55 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
     }
     return obj;
   };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
+  e.preventDefault();
+  setLoading(true);
+  setMessage("");
 
-    const form = e.currentTarget;
-    const title = (form.elements.namedItem("title") as HTMLInputElement).value;
-    const description = (form.elements.namedItem("description") as HTMLTextAreaElement)?.value || "";
+  const form = e.currentTarget;
+  const title = (form.elements.namedItem("title") as HTMLInputElement).value;
+  const description = (form.elements.namedItem("description") as HTMLTextAreaElement)?.value || "";
 
-    // require either a file or at least one non-empty field
-    if (!selectedFile && fields.every((f) => !f.key || !f.value)) {
-      setMessage("Please upload a JSON file or add at least one custom field.");
-      setLoading(false);
-      return;
-    }
-
-    const fd = new FormData();
-    fd.append("title", title);
-    fd.append("description", description || (fields[0]?.value || ""));
-
-    if (selectedFile) {
-      fd.append("jd_file", selectedFile, selectedFile.name);
-    } else {
-      // build JSON from fields
-      const metadata = buildMetadataObject();
-      // include title inside metadata as well
-      metadata.title = title;
-      const blob = new Blob([JSON.stringify(metadata, null, 2)], { type: "application/json" });
-      fd.append("jd_file", blob, `${title.replace(/\s+/g, "_") || "job"}_${Date.now()}.json`);
-    }
-
-    try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/upload-job`, {
-        method: "POST",
-        body: fd,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        setMessage(data.message || "Job uploaded successfully.");
-        // reset form
-        setFields([{ key: "role_problem", value: "" }]);
-        setSelectedFile(null);
-        form.reset();
-      } else {
-        setMessage(data.error || data.message || "Upload failed");
-      }
-    } catch (err: any) {
-      console.error(err);
-      setMessage(err?.message || "Upload failed");
-    }
-
+  // 1. Validation
+  if (fields.every((f) => !f.key || !f.value)) {
+    setMessage("Add at least one custom field.");
     setLoading(false);
+    return;
+  }
+
+  // 2. Build the JSON payload (Matches your Python JobCreate model)
+  const payload = {
+    title: title,
+    short_description: description, // Mapping 'description' from form to 'short_description' in DB
+    metadata: buildMetadataObject()
   };
 
+  try {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/services/upload-job`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json", // Crucial: Tells FastAPI to expect JSON
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload), // Send the object as a string
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      setMessage(data.message || "Job uploaded successfully.");
+      setFields([{ key: "role_problem", value: "" }]);
+      form.reset();
+    } else {
+      // This will show you exactly what field FastAPI is complaining about
+      setMessage(data.detail?.[0]?.msg || data.message || "Upload failed");
+    }
+  } catch (err: any) {
+    console.error(err);
+    setMessage(err?.message || "Upload failed");
+  } finally {
+    setLoading(false);
+  }
+  };
   const previewMetadata = () => {
     if (selectedFile) return null;
     const obj = buildMetadataObject();
@@ -129,7 +119,6 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
               <FileText className="w-7 h-7 text-primary" />
               <CardTitle className="text-3xl font-bold">Upload Job Description</CardTitle>
             </div>
-            <p className="text-muted-foreground mt-1">Upload the JD JSON file to automatically process job requirements or build one using the fields below.</p>
           </div>
         </CardHeader>
         <CardContent>
@@ -155,17 +144,7 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
           />
         </div>
 
-        {/* Upload File */}
-        <div>
-          <label className="text-sm font-medium mb-">Upload JD JSON File (optional)</label>
-          <Input
-            name="jd_file"
-            type="file"
-            accept=".json,application/json"
-            onChange={handleFileChange}
-            className="file:bg-indigo-600 file:text-white file:border-0 file:px-4 file:py-2 file:rounded-lg hover:file:bg-indigo-700"
-          />
-        </div>
+       
 
         {/* Dynamic fields builder */}
         <div>
