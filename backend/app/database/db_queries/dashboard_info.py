@@ -134,3 +134,5 @@ def get_applicant_details(job_id: str):
     except Exception as e:
         print("Error in get_applicant_details:", e)
         return {"error": str(e)}
+
+
