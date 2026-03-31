@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     BACKEND_URL: str
     FRONTEND_URL: str
     LLAMA_API_KEY: str
-
+    
     model_config = SettingsConfigDict(env_file=".env", extra="allow")  #ignore evrthing else in .env file except defined variables
 
 Settings = Settings()   # Create an instance of the Settings class to access environment variables

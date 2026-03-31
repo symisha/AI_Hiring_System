@@ -13,6 +13,10 @@ from app.routes.specific_job_routes import delRouter
 # Database
 from app.database.db_connection import supabase  # Supabase client instance
 
+
+#Import from services 
+from app.services import job_description
+
 # Auth middleware
 from app.auth_middleware import auth_middleware, get_current_user_id
 
@@ -32,6 +36,8 @@ app.include_router(apply.router, prefix="/routes", tags=["apply"])
 app.include_router(delRouter, prefix="/routes", tags=["delete_job"])
 app.include_router(resume_extractor_router, prefix="/services", tags=["resume_extractor"])
 app.include_router(dashboard_info_router, prefix="/routes/dashboard_essentials", tags=["complaints"])
+app.include_router(job_description.router, prefix="/services", tags=["job_description"])
+
 
 # Add CORS middleware
 app.add_middleware(
@@ -118,7 +124,7 @@ async def submit_form(
 
 #Job description upload endpoint ------------------------
 import json
-    
+"""   
 @app.post("/upload-job")
 async def upload_job(
     BUCKET_NAME: str = "Job Description",
@@ -146,10 +152,10 @@ async def upload_job(
         file_name = f"{uuid.uuid4()}.json"
 
         # Upload JSON to Supabase bucket
-        supabase.storage.from_(BUCKET_NAME).upload(file_name, file_bytes)
+        #supabase.storage.from_(BUCKET_NAME).upload(file_name, file_bytes)
 
         # Get public URL
-        job_description_url = supabase.storage.from_(BUCKET_NAME).get_public_url(file_name)
+        #job_description_url = supabase.storage.from_(BUCKET_NAME).get_public_url(file_name)
 
         # Insert metadata + file URL into database
         # Some DB schemas do not have a `description` text column — store structured JD in `job_metadata` instead
@@ -179,3 +185,7 @@ async def upload_job(
 
 
     #URL NOT BEING SAVED IN THE DATABASES YET...FIGURE OUT LATER  ------------------------
+
+
+
+ """
