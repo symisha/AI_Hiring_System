@@ -4,6 +4,9 @@
   "description": "---",
   "main": "index.js",
   "scripts": {
+    "dev:backend": "cmd /c \"cd backend && venv\\Scripts\\python -m uvicorn app.main:app --reload\"",
+    "dev:frontend": "cmd /c \"cd frontend && npm run dev\"",
+    "dev": "concurrently -n backend,frontend -c green,cyan \"npm run dev:backend\" \"npm run dev:frontend\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,5 +14,8 @@
   "license": "ISC",
   "dependencies": {
     "@playwright/test": "^1.58.2"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
