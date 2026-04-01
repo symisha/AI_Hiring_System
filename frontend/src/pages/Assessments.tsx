@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/supabaseClient";
 import AssessmentJobHeader from "@/components/Assessments/AssessmentJobHeader";
 import AssessmentOverview from "@/components/Assessments/AssessmentOverview.tsx";
-import AssessmentFilters from "@/components/Assessments/AssessmentFilters.tsx";
+// import AssessmentFilters from "@/components/Assessments/AssessmentFilters.tsx";
 import CandidateAssessmentList from "@/components/Assessments/CandidateAssessmentList.tsx";
 import CandidateAssessmentDetail from "@/components/Assessments/CandidateAssessmentDetail.tsx";
 import { Card } from "@/components/ui/card";
@@ -48,6 +49,20 @@ const mockCandidates = [
 const Assessments = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
   const [candidates, setCandidates] = useState<any[]>(mockCandidates);
   const [selected, setSelected] = useState<any | null>(null);
+  const [jobTitle, setJobTitle] = useState<string>(job?.title || job?.job_title || "");
+
+  useEffect(() => {
+    const id = job?.id ?? jobId;
+    if (!id) return;
+    supabase
+      .from("jobs")
+      .select("title")
+      .eq("id", id)
+      .single()
+      .then(({ data }) => {
+        if (data?.title) setJobTitle(data.title);
+      });
+  }, [jobId, job?.id]);
 
   useEffect(() => {
     const fetchApps = async () => {
@@ -84,7 +99,7 @@ const Assessments = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
   return (
     <div>
       <AssessmentJobHeader
-        jobTitle={job?.title ?? (jobId ? `Job ${jobId}` : "Backend Developer")}
+        jobTitle={jobTitle || (jobId ? `Job ${jobId}` : "Backend Developer")}
         jobId={job?.id ?? jobId}
         totalInvited={candidates.length}
         assessmentsPending={candidates.filter((c) => c.status === "Pending").length}
@@ -92,12 +107,12 @@ const Assessments = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
         assessmentType="AI-generated"
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
-        <div className="lg:col-span-1">
+      <div className="mt-6">
+        {/* <div className="lg:col-span-1">
           <AssessmentFilters />
-        </div>
+        </div> */}
 
-        <div className="lg:col-span-3">
+        <div className="mt-6">
           <Card className="p-4">
             <AssessmentOverview candidates={candidates} />
 

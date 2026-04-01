@@ -118,6 +118,15 @@ def search_applicants(
 
 def get_applicant_details(job_id: str):
     try:
+        job_response = (
+            supabase.table("jobs")
+            .select("title")
+            .eq("id", job_id)
+            .single()
+            .execute()
+        )
+        job_title = job_response.data.get("title") if job_response.data else None
+
         response = (
             supabase.table("job_applications")
             .select("*")            # get all columns
@@ -128,6 +137,7 @@ def get_applicant_details(job_id: str):
         total_applicants = len(applicants) if applicants else 0
 
         return {
+            "job_title": job_title,
             "total_applicants": total_applicants, 
             "applicants": applicants
         }      

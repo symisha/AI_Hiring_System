@@ -21,7 +21,7 @@ const Apply: React.FC = () => {
   const [step, setStep] = useState(1);
 
   // Basic info
-  const [jobID, setJobID] = useState("");
+  // const [jobID, setJobID] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -110,12 +110,12 @@ const Apply: React.FC = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!jobID) return alert("Please enter the Job ID");
+    // if (!jobID) return alert("Please enter the Job ID");
     // if (!resumeFile) return alert("Please upload a resume");
     if (!agreed) return alert("Please agree to the terms and consent");
 
     const fd = new FormData();
-    fd.append("job_id", jobID);
+    // fd.append("job_id", jobID);
     fd.append("name", name);
     fd.append("email", email);
     fd.append("phone", phone);
@@ -178,13 +178,13 @@ const Apply: React.FC = () => {
         <form onSubmit={submit} className="space-y-6">
           {step === 1 && (
             <div className="space-y-4">
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium mb-2">Job ID</label>
                 <div className="relative">
                   <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input placeholder="Enter Job ID" value={jobID} onChange={(e) => setJobID(e.target.value)} required className="pl-10 bg-secondary border-border" />
                 </div>
-              </div>
+              </div> */}
 
               <div>
                 <label className="block text-sm font-medium mb-2">Full Name</label>

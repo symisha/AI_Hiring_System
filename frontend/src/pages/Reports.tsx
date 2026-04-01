@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/supabaseClient";
 import ReportsJobHeader from "@/components/Reports/ReportsJobHeader";
 import ReportsSummary from "@/components/Reports/ReportsSummary.tsx";
 import TopCandidates from "@/components/Reports/TopCandidates.tsx";
@@ -15,6 +16,20 @@ const mockCandidates = [
 
 const Reports = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
   const [candidates, setCandidates] = useState<any[]>(mockCandidates);
+  const [jobTitle, setJobTitle] = useState<string>(job?.title || job?.job_title || "");
+
+  useEffect(() => {
+    const id = job?.id ?? jobId;
+    if (!id) return;
+    supabase
+      .from("jobs")
+      .select("title")
+      .eq("id", id)
+      .single()
+      .then(({ data }) => {
+        if (data?.title) setJobTitle(data.title);
+      });
+  }, [jobId, job?.id]);
 
   useEffect(() => {
     const fetchApps = async () => {
@@ -51,7 +66,7 @@ const Reports = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
   return (
     <div>
       <ReportsJobHeader
-        jobTitle={job?.title ?? (jobId ? `Job ${jobId}` : 'Backend Developer')}
+        jobTitle={jobTitle || (jobId ? `Job ${jobId}` : 'Backend Developer')}
         jobId={job?.id ?? jobId}
         totalEvaluated={candidates.length}
         topCandidates={candidates.slice(0,3)}
