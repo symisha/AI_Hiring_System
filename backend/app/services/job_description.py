@@ -39,3 +39,41 @@ async def upload_job(
             {"message": "Failed to save job", "error": str(e)}, 
             status_code=500
         )
+    
+
+@router.put("/update-job/{job_id}")
+async def update_job(
+    job_id: str, 
+    job_data: JobCreate, 
+    user=Depends(auth_middleware)
+):
+    try:
+        user_id = user.user.id
+
+        # 1. Update the record where the ID matches AND the user owns it
+        # This prevents one company from updating another company's job
+        db_response = supabase.table("jobs").update({
+            "job_title": job_data.title,
+            "short_description": job_data.short_description,
+            "job_metadata": job_data.metadata,
+            "status": "open" 
+        }).eq("id", job_id).eq("company_id", user_id).execute()
+
+        # 2. Check if anything was actually updated
+        if not db_response.data:
+            return JSONResponse(
+                {"message": "Job not found or you don't have permission to edit it"}, 
+                status_code=404
+            )
+
+        return {
+            "message": "Job updated successfully",
+            "data": db_response.data[0]
+        }
+
+    except Exception as e:
+        print(f"Update Error: {str(e)}")
+        return JSONResponse(
+            {"message": "Failed to update job", "error": str(e)}, 
+            status_code=500
+        )
