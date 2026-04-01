@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/supabaseClient";
 import AIInterviewJobHeader from "@/components/AIInterviews/AIInterviewJobHeader";
 import AIInterviewOverview from "@/components/AIInterviews/AIInterviewOverview.tsx";
-import AIInterviewFilters from "@/components/AIInterviews/AIInterviewFilters.tsx";
+// import AIInterviewFilters from "@/components/AIInterviews/AIInterviewFilters.tsx";
 import CandidateInterviewList from "@/components/AIInterviews/CandidateInterviewList.tsx";
 import CandidateInterviewDetail from "@/components/AIInterviews/CandidateInterviewDetail.tsx";
 import { Card } from "@/components/ui/card";
@@ -54,6 +55,20 @@ const mockCandidates = [
 const AIInterviews = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
   const [candidates, setCandidates] = useState<any[]>(mockCandidates);
   const [selected, setSelected] = useState<any | null>(null);
+  const [jobTitle, setJobTitle] = useState<string>(job?.title || job?.job_title || "");
+
+  useEffect(() => {
+    const id = job?.id ?? jobId;
+    if (!id) return;
+    supabase
+      .from("jobs")
+      .select("title")
+      .eq("id", id)
+      .single()
+      .then(({ data }) => {
+        if (data?.title) setJobTitle(data.title);
+      });
+  }, [jobId, job?.id]);
 
   useEffect(() => {
     const fetchApps = async () => {
@@ -89,18 +104,15 @@ const AIInterviews = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
   return (
     <div>
       <AIInterviewJobHeader
-        jobTitle={job?.title ?? (jobId ? `Job ${jobId}` : "Backend Developer")}
+        jobTitle={jobTitle || (jobId ? `Job ${jobId}` : "Backend Developer")}
         jobId={job?.id ?? jobId}
         invitedCount={candidates.length}
         mode="Asynchronous AI"
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
-        <div className="lg:col-span-1">
-          <AIInterviewFilters />
-        </div>
-
-        <div className="lg:col-span-3">
+      <div className="mt-6">
+        {/* <AIInterviewFilters /> */}
+        <div className="mt-6">
           <Card className="p-4">
             <AIInterviewOverview candidates={candidates} />
 

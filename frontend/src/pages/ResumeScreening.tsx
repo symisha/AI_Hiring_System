@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { supabase } from "@/supabaseClient";
 import JobHeader from "@/components/ResumeScreening/JobHeader";
 import ScreeningOverview from "@/components/ResumeScreening/ScreeningOverview";
-import FiltersPanel from "@/components/ResumeScreening/FiltersPanel";
+
 import CandidateList from "@/components/ResumeScreening/CandidateList";
 import CandidateDetailPanel from "@/components/ResumeScreening/CandidateDetailPanel";
 import { Card } from "@/components/ui/card";
@@ -54,7 +55,20 @@ const ResumeScreening = ({ jobId: propJobId, job }: { jobId?: string; job?: any 
   const [searchParams] = useSearchParams();
   const jobId = propJobId ?? searchParams.get("jobId") ?? undefined;
   const [selected, setSelected] = useState<any | null>(null);
-  const title = job?.title ?? (jobId ? `Job ${jobId}` : "Backend Developer");
+  const [jobTitle, setJobTitle] = useState<string>(job?.title || job?.job_title || "");
+
+  useEffect(() => {
+    if (!jobId) return;
+    // Always fetch fresh title directly from DB
+    supabase
+      .from("jobs")
+      .select("title")
+      .eq("id", jobId)
+      .single()
+      .then(({ data }) => {
+        if (data?.title) setJobTitle(data.title);
+      });
+  }, [jobId]);
 
   useEffect(() => {
     const fetchApps = async () => {
@@ -66,6 +80,7 @@ const ResumeScreening = ({ jobId: propJobId, job }: { jobId?: string; job?: any 
         });
         if (!res.ok) throw new Error("Failed to fetch applications");
         const data = await res.json();
+        if (data.job_title) setJobTitle(data.job_title);
         // backend returns { total_applicants, applicants }
         const apps = data.applicants || data || [];
         // normalize to expected candidate shape when possible
@@ -94,14 +109,10 @@ const ResumeScreening = ({ jobId: propJobId, job }: { jobId?: string; job?: any 
 
   return (
     <div>
-      <JobHeader jobTitle={`${title}${jobId && !job?.title ? ` (${jobId})` : ""}`} applicationsCount={candidates.length} />
+      <JobHeader jobTitle={jobTitle || (jobId ? `Job ${jobId}` : "Backend Developer")} applicationsCount={candidates.length} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
-        <div className="lg:col-span-1">
-          <FiltersPanel />
-        </div>
-
-        <div className="lg:col-span-3">
+      <div className="mt-6">
+        <div>
           <Card className="p-4">
             <ScreeningOverview candidates={candidates} />
 
