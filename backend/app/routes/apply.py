@@ -6,6 +6,7 @@ import time
 import hmac
 import hashlib
 import base64
+from uuid import UUID
 
 router = APIRouter()
 
@@ -21,6 +22,14 @@ def _make_token(job_id: str, ttl_seconds: int = 60 * 60 * 24 * 30):
 
 
 def _verify_token(token: str):
+    # Stable public link format: token is the job UUID itself.
+    try:
+        UUID(str(token))
+        return str(token)
+    except Exception:
+        pass
+
+    # Backward-compatible format: signed/expiring token.
     try:
         decoded = base64.urlsafe_b64decode(token.encode()).decode()
         parts = decoded.split(":")
@@ -51,7 +60,7 @@ def generate_apply_link(job_id: str, user=Depends(auth_middleware)):
     except Exception:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    token = _make_token(job_id)
+    token = job_id
     frontend = Settings.FRONTEND_URL.rstrip("/")
     link = f"{frontend}/apply?token={token}"
     return {"apply_link": link}
