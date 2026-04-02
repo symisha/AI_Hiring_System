@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev:backend": "cmd /c \"cd backend && venv\\Scripts\\python -m uvicorn app.main:app --reload\"",
-    "dev:frontend": "cmd /c \"cd frontend && npm run dev\"",
-    "dev": "concurrently -n backend,frontend -c green,cyan \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev": "concurrently --restart-tries -1 --restart-after 2000 -n backend,frontend -c green,cyan \"npm run dev:backend\" \"npm run dev:frontend\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
