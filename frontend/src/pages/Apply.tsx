@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import logo from "@/assets/logo-purple.svg";
@@ -7,6 +7,8 @@ import { Mail, User, FileText, Phone, Hash } from "lucide-react";
 
 const Apply: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token") ?? "";
 
   const sectionLabels = [
     "Basic Information",
@@ -110,12 +112,11 @@ const Apply: React.FC = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // if (!jobID) return alert("Please enter the Job ID");
-    // if (!resumeFile) return alert("Please upload a resume");
     if (!agreed) return alert("Please agree to the terms and consent");
+    if (!token) return alert("Invalid application link. Please use the link provided to you.");
 
     const fd = new FormData();
-    // fd.append("job_id", jobID);
+    fd.append("token", token);
     fd.append("name", name);
     fd.append("email", email);
     fd.append("phone", phone);
@@ -133,17 +134,14 @@ const Apply: React.FC = () => {
     fd.append("skills", JSON.stringify(selectedSkills));
     fd.append("projects", JSON.stringify(projects));
 
-    // fd.append("resume", resumeFile as Blob);
-
     try {
-      const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/process-uploads", {
+      const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/routes/apply/form", {
         method: "POST",
         body: fd,
       });
       const json = await res.json();
       if (res.ok) {
-        alert("Application submitted. Thank you!");
-        navigate("/");
+        navigate("/apply/confirmed");
       } else {
         alert(json.detail || json.message || "Error submitting application");
       }

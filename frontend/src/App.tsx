@@ -12,6 +12,7 @@ import CandidateLogin from "./pages/CandidateLogin";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Apply from "./pages/Apply";
+import ApplicationConfirmed from "./pages/ApplicationConfirmed";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import FormPage from "./pages/form";
 import JobForm from "./pages/JobForm";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/hr-signup" element={<HRSignup />} />
           <Route path="/candidate-login" element={<CandidateLogin />} />
           <Route path="/apply" element={<Apply />} />
+          <Route path="/apply/confirmed" element={<ApplicationConfirmed />} />
           <Route path="/dashboard" element={<ProtectedRoutes><Dashboard /></ProtectedRoutes>} />
           <Route path="/form" element={<FormPage />} />  
           <Route path="/upload-job" element={<JobForm token={""} />} />
