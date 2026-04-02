@@ -1,14 +1,29 @@
 
 import json
 import uuid
+import time
+import hmac
+import hashlib
+import base64
 from fastapi import Depends
 from app.models.upload_job import JobCreate
 from app.database.db_connection import supabase
 from app.auth_middleware import auth_middleware
+from app.config.config import Settings
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 router = APIRouter()
+
+
+def _make_apply_token(job_id: str, ttl_seconds: int = 60 * 60 * 24 * 30):
+    expires = int(time.time()) + ttl_seconds
+    payload = f"{job_id}:{expires}"
+    sig = hmac.new(Settings.SUPABASE_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    token_raw = f"{payload}:{sig}"
+    return base64.urlsafe_b64encode(token_raw.encode()).decode()
+
+
 @router.post("/upload-job")
 async def upload_job(
     job_data: JobCreate, 
@@ -28,9 +43,26 @@ async def upload_job(
             "job_description_url": None  
         }).execute()
 
+        created_job = db_response.data[0] if db_response.data else {}
+        job_id = created_job.get("id")
+        apply_token = None
+        apply_link = None
+
+        if job_id:
+            apply_token = _make_apply_token(str(job_id))
+            frontend = Settings.FRONTEND_URL.rstrip("/")
+            apply_link = f"{frontend}/apply?token={apply_token}"
+            # Persist token if the column exists; ignore silently if not yet added
+            try:
+                supabase.table("jobs").update({"apply_token": apply_token}).eq("id", job_id).execute()
+            except Exception as token_err:
+                print(f"[upload-job] apply_token column not available, skipping: {token_err}")
+
         return {
             "message": "Job details saved successfully",
-            "job_id": db_response.data[0].get("id") if db_response.data else None
+            "job_id": job_id,
+            "apply_token": apply_token,
+            "apply_link": apply_link,
         }
 
     except Exception as e:

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Upload, FileText, Plus, Trash } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,15 +7,39 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 
 interface JobFormProps {
   token: string;
+  editingJob?: any;
+  onEditComplete?: () => void;
 }
 
-const JobForm: React.FC<JobFormProps> = ({ token }) => {
+const JobForm: React.FC<JobFormProps> = ({ token, editingJob, onEditComplete }) => {
   const [message, setMessage] = useState("");
+  const [applyLink, setApplyLink] = useState("");
   const [loading, setLoading] = useState(false);
   const [fields, setFields] = useState<Array<{ key: string; value: string }>>([
-    { key: "role_problem", value: "" },
+    { key: "", value: "" },
   ]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Initialize form with editing job data if available
+  useEffect(() => {
+    if (editingJob) {
+      const initialFields: Array<{ key: string; value: string }> = [];
+      if (editingJob.job_metadata && typeof editingJob.job_metadata === "object") {
+        // Preserve insertion order using Object.keys which maintains order in modern JS
+        Object.keys(editingJob.job_metadata).forEach((key) => {
+          const value = editingJob.job_metadata[key];
+          initialFields.push({
+            key,
+            value: typeof value === "string" ? value : JSON.stringify(value),
+          });
+        });
+      }
+      if (initialFields.length === 0) {
+        initialFields.push({ key: "", value: "" });
+      }
+      setFields(initialFields);
+    }
+  }, [editingJob]);
 
   const handleAddField = () => {
     setFields([...fields, { key: "", value: "" }]);
@@ -59,6 +83,7 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
   e.preventDefault();
   setLoading(true);
   setMessage("");
+  setApplyLink("");
 
   const form = e.currentTarget;
   const title = (form.elements.namedItem("title") as HTMLInputElement).value;
@@ -74,32 +99,46 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
   // 2. Build the JSON payload (Matches your Python JobCreate model)
   const payload = {
     title: title,
-    short_description: description, // Mapping 'description' from form to 'short_description' in DB
+    short_description: description,
     metadata: buildMetadataObject()
   };
 
   try {
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/services/upload-job`, {
-      method: "POST",
+    // Determine endpoint and method based on whether we're editing or creating
+    const isEditing = editingJob && editingJob.id;
+    const endpoint = isEditing 
+      ? `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/routes/edit-job/${editingJob.id}`
+      : `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/services/upload-job`;
+    const method = isEditing ? "PUT" : "POST";
+
+    const res = await fetch(endpoint, {
+      method: method,
       headers: {
-        "Content-Type": "application/json", // Crucial: Tells FastAPI to expect JSON
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(payload), // Send the object as a string
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
     if (res.ok) {
-      setMessage(data.message || "Job uploaded successfully.");
-      setFields([{ key: "role_problem", value: "" }]);
-      form.reset();
+      if (isEditing) {
+        setMessage("Job updated successfully.");
+        if (onEditComplete) {
+          setTimeout(() => onEditComplete(), 1000);
+        }
+      } else {
+        setMessage(data.message || "Job uploaded successfully.");
+        setApplyLink(data.apply_link || "");
+        setFields([{ key: "", value: "" }]);
+        form.reset();
+      }
     } else {
-      // This will show you exactly what field FastAPI is complaining about
-      setMessage(data.detail?.[0]?.msg || data.message || "Upload failed");
+      setMessage(data.detail?.[0]?.msg || data.message || "Operation failed");
     }
   } catch (err: any) {
     console.error(err);
-    setMessage(err?.message || "Upload failed");
+    setMessage(err?.message || "Operation failed");
   } finally {
     setLoading(false);
   }
@@ -110,6 +149,16 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
     return <pre className="whitespace-pre-wrap bg-gray-50 p-3 rounded-md text-sm">{JSON.stringify(obj, null, 2)}</pre>;
   };
 
+  const copyApplyLink = () => {
+    if (!applyLink) return;
+    if (navigator && (navigator as any).clipboard && (navigator as any).clipboard.writeText) {
+      (navigator as any).clipboard.writeText(applyLink);
+      alert("Apply link copied to clipboard");
+      return;
+    }
+    window.prompt("Copy this link:", applyLink);
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -117,7 +166,9 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
           <div>
             <div className="flex items-center gap-3">
               <FileText className="w-7 h-7 text-primary" />
-              <CardTitle className="text-3xl font-bold">Upload Job Description</CardTitle>
+              <CardTitle className="text-3xl font-bold">
+                {editingJob ? "Edit Job Description" : "Upload Job Description"}
+              </CardTitle>
             </div>
           </div>
         </CardHeader>
@@ -131,6 +182,7 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
             type="text"
             required
             placeholder="e.g. Senior Frontend Developer"
+            defaultValue={editingJob?.title || ""}
           />
         </div>
 
@@ -141,42 +193,72 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
             name="description"
             rows={3}
             placeholder="One-line summary of the role (optional)"
+            defaultValue={editingJob?.short_description || ""}
           />
         </div>
 
        
 
         {/* Dynamic fields builder */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium">Custom Fields</label>
-            <button type="button" onClick={handleAddField} className="flex items-center gap-2 text-sm text-indigo-600">
-              <Plus className="w-4 h-4" /> Add field
-            </button>
+        <div className="bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <label className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">Job Requirements & Details</label>
+              <p className="text-xs text-muted-foreground mt-2">Add custom fields to define key job requirements and qualifications</p>
+            </div>
+            <Button 
+              type="button" 
+              onClick={handleAddField} 
+              className="flex items-center gap-2 text-sm bg-gradient-primary hover:opacity-90 text-white shadow-lg"
+              size="sm"
+            >
+              <Plus className="w-4 h-4" /> Add Field
+            </Button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {fields.map((f, idx) => (
-              <div key={idx} className="grid grid-cols-12 gap-2 items-start">
-                <Input
-                  value={f.key}
-                  onChange={(e) => handleFieldChange(idx, e.target.value, f.value)}
-                  placeholder="field name (e.g. languages)"
-                  className="col-span-4"
-                />
-                <Textarea
-                  value={f.value}
-                  onChange={(e) => handleFieldChange(idx, f.key, e.target.value)}
-                  placeholder="value (JSON, CSV, or text)"
-                  className="col-span-7"
-                  rows={2}
-                />
-                <button type="button" onClick={() => handleRemoveField(idx)} className="col-span-1 text-red-500 p-2">
-                  <Trash className="w-4 h-4" />
-                </button>
+              <div 
+                key={idx} 
+                className="bg-card border border-primary/10 rounded-lg p-4 hover:border-primary/30 hover:shadow-md transition-all"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center shadow-sm">
+                    <span className="text-sm font-bold text-white">{idx + 1}</span>
+                  </div>
+                  <div className="flex-grow space-y-3">
+                    <Input
+                      value={f.key}
+                      onChange={(e) => handleFieldChange(idx, e.target.value, f.value)}
+                      placeholder="Field name (e.g., required_skills, experience_level)"
+                      className="text-sm border-primary/20 focus:border-primary/50 focus:ring-primary/30"
+                    />
+                    <Textarea
+                      value={f.value}
+                      onChange={(e) => handleFieldChange(idx, f.key, e.target.value)}
+                      placeholder="Field value (JSON, CSV list, or text)"
+                      className="text-sm resize-none border-primary/20 focus:border-primary/50 focus:ring-primary/30"
+                      rows={3}
+                    />
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => handleRemoveField(idx)} 
+                    className="flex-shrink-0 mt-1 text-destructive/70 hover:text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-all"
+                  >
+                    <Trash className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
+
+          {fields.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <FileText className="w-8 h-8 mx-auto mb-3 opacity-50" />
+              <p className="text-sm">No fields added yet. Click "Add Field" to get started</p>
+            </div>
+          )}
         </div>
 
         {/* Preview */}
@@ -185,7 +267,7 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
             {/* Submit Button */}
             <Button type="submit" disabled={loading} variant="hero" size="default" className="w-full justify-center">
               <Upload className="w-4 h-4" />
-              {loading ? "Uploading..." : "Upload Job"}
+              {loading ? (editingJob ? "Updating..." : "Uploading...") : (editingJob ? "Update Job" : "Upload Job")}
             </Button>
           </form>
         </CardContent>
@@ -196,6 +278,20 @@ const JobForm: React.FC<JobFormProps> = ({ token }) => {
         <p className="mt-5 p-3 rounded-lg bg-indigo-50 text-gray-800 border border-indigo-200">
           {message}
         </p>
+      )}
+
+      {applyLink && (
+        <div className="mt-3 p-3 rounded-lg bg-indigo-50 text-gray-800 border border-indigo-200">
+          <p className="font-medium">Apply link generated:</p>
+          <a href={applyLink} target="_blank" rel="noreferrer" className="text-indigo-600 underline break-all">
+            {applyLink}
+          </a>
+          <div className="mt-2">
+            <Button type="button" onClick={copyApplyLink} className="bg-indigo-600/70 text-white hover:bg-indigo-600/90">
+              Copy Link
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );

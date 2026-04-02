@@ -84,14 +84,64 @@ const Dashboard = () => {
   }
   };
 
+  const toggleJobStatus = async (jobId: string, token: string) => {
+    try {
+      if (!token) return;
+
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/routes/toggle-job-status/${jobId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to toggle job status");
+      }
+
+      const data = await response.json();
+      if (!data?.success || !data?.status) {
+        throw new Error(data?.detail || data?.error || "Invalid status response");
+      }
+      const nextStatus = data?.status || "inactive";
+      const nextToken = data?.apply_token || null;
+
+      setActiveJobs((prev) => prev.map((job) => (
+        job.id === jobId ? { ...job, status: nextStatus, apply_token: nextToken } : job
+      )));
+
+      setSelectedJob((prev) => (
+        prev && prev.id === jobId ? { ...prev, status: nextStatus, apply_token: nextToken } : prev
+      ));
+
+      setStats((prev) => prev.map((stat) => {
+        if (stat.title !== "Active Jobs") return stat;
+        if (typeof stat.value !== "number") return stat;
+        const delta = nextStatus === "open" ? 1 : -1;
+        const nextValue = Math.max(0, stat.value + delta);
+        return { ...stat, value: nextValue };
+      }));
+    } catch (error) {
+      console.error("Error toggling job status:", error);
+      alert("Could not update this job status. Please try again.");
+    }
+  };
+
   // Delete dialog state
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<any | null>(null);
+  const [showToggleStatusDialog, setShowToggleStatusDialog] = useState(false);
+  const [jobToToggleStatus, setJobToToggleStatus] = useState<any | null>(null);
 
   // When a job is selected for deletion, open dialog
   const confirmDelete = (job: any) => {
     setJobToDelete(job);
     setShowDeleteDialog(true);
+  };
+
+  const confirmToggleStatus = (job: any) => {
+    setJobToToggleStatus(job);
+    setShowToggleStatusDialog(true);
   };
 
   // Try to fetch job description from public URL if description missing
@@ -169,22 +219,31 @@ const Dashboard = () => {
     fetchDashboard();
   }, []);
 
-  // 👇 Helper function for rendering the main section
-  const handleGenerateApplyLink = (job: any) => {
-    if (!job) return;
+  const buildApplyLink = (job: any) => {
+    if (!job || job.status !== "open") return null;
+    // Prefer stored signed token; fall back to job.id when apply_token column isn't in DB yet
+    const token = job?.apply_token || job?.id;
+    if (!token) return null;
+    return `${window.location.origin}/apply?token=${encodeURIComponent(token)}`;
+  };
+
+  const handleCopyApplyLink = (job: any) => {
+    const link = buildApplyLink(job);
+    if (!link) {
+      alert("Apply link is not available for this job yet.");
+      return;
+    }
+
     try {
-      const token = job.apply_token || job.id;
-      const link = `${window.location.origin}/apply?token=${encodeURIComponent(token)}`;
       if (navigator && (navigator as any).clipboard && (navigator as any).clipboard.writeText) {
         (navigator as any).clipboard.writeText(link);
         alert("Apply link copied to clipboard:\n" + link);
       } else {
-        // fallback
         window.prompt("Copy this link:", link);
       }
     } catch (err) {
       console.error(err);
-      alert("Could not generate link");
+      alert("Could not copy apply link");
     }
   };
   const renderMainContent = () => {
@@ -284,6 +343,15 @@ const Dashboard = () => {
       case "uploadJob":
         return <JobForm token={localStorage.getItem("token") || ""} />;
 
+      case "editJob":
+        return (
+          <JobForm
+            token={localStorage.getItem("token") || ""}
+            editingJob={selectedJob}
+            onEditComplete={() => setActiveSection("dashboard")}
+          />
+        );
+
       case "screening":
         return <ResumeScreening jobId={selectedJob?.id} job={selectedJob} />;
 
@@ -320,62 +388,37 @@ const Dashboard = () => {
                 return null;
               }
 
+              if (!meta || Object.keys(meta).length === 0) return null;
+
               return (
                 <div className="space-y-3 text-sm">
-                  {meta.role_problem && (
-                    <p>
-                      <span className="font-semibold">Role summary:</span> {meta.role_problem}
-                    </p>
-                  )}
+                  {Object.entries(meta).map(([key, value]: [string, any]) => {
+                    // Skip empty values
+                    if (!value) return null;
+                    
+                    // Format the key name: convert snake_case to Title Case
+                    const formattedKey = key
+                      .split('_')
+                      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                      .join(' ');
 
-                  {meta.experience && (
-                    <p>
-                      <span className="font-semibold">Experience:</span> {meta.experience}
-                    </p>
-                  )}
+                    // Format the value: if it's an array, join with commas
+                    const formattedValue = Array.isArray(value) 
+                      ? value.join(", ") 
+                      : value;
 
-                  {meta.languages && (
-                    <p>
-                      <span className="font-semibold">Languages:</span> {Array.isArray(meta.languages) ? meta.languages.join(", ") : meta.languages}
-                    </p>
-                  )}
-
-                  {meta.frameworks && (
-                    <p>
-                      <span className="font-semibold">Frameworks:</span> {meta.frameworks}
-                    </p>
-                  )}
-
-                  {meta.cloud && (
-                    <p>
-                      <span className="font-semibold">Cloud / Hosting:</span> {meta.cloud}
-                    </p>
-                  )}
-
-                  {meta.databases && (
-                    <p>
-                      <span className="font-semibold">Databases / APIs:</span> {meta.databases}
-                    </p>
-                  )}
-
-                  {meta.must_haves && (
-                    <div>
-                      <span className="font-semibold">Must haves:</span>
-                      <p className="mt-1 ml-3">{meta.must_haves}</p>
-                    </div>
-                  )}
-
-                  {meta.job_description_url && (
-                    <p>
-                      <span className="font-semibold">Full JD:</span>{' '}
-                      <a href={meta.job_description_url} target="_blank" rel="noreferrer" className="text-indigo-600 underline">
-                        View job description
-                      </a>
-                    </p>
-                  )}
+                    return (
+                      <p key={key}>
+                        <span className="font-semibold">{formattedKey}:</span>{" "}
+                        {formattedValue}
+                      </p>
+                    );
+                  })}
                 </div>
               );
             };
+
+            const applyLink = buildApplyLink(selectedJob);
 
             return (
               <Card className="p-6 mt-4 border-none">
@@ -386,17 +429,26 @@ const Dashboard = () => {
                   </div>
                 <div className="flex gap-2">
                   <Button
-                    onClick={() => handleGenerateApplyLink(selectedJob)}
-                    className="rounded-md bg-indigo-600/60 text-white hover:bg-indigo-600/80"
-                  >
-                    Generate Apply Link
-                  </Button>
-                  <Button
                     variant="destructive"
-                    onClick={() => console.log("Edit", selectedJob.id)}
+                    onClick={() => setActiveSection("editJob")}
                     className="rounded-md bg-green-600/60 text-white hover:bg-green-600/80"
                   >
                     Edit
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (!selectedJob?.id) return;
+                      confirmToggleStatus(selectedJob);
+                    }}
+                    className={`rounded-md text-white ${
+                      selectedJob?.status === "open"
+                        ? "bg-amber-600/70 hover:bg-amber-600/90"
+                        : "bg-emerald-600/70 hover:bg-emerald-600/90"
+                    }`}
+                  >
+                    {selectedJob?.status === "open" ? "Close" : "Activate"}
                   </Button>
 
                   {/* Zoha please redo this, this looks ugly */}
@@ -430,6 +482,31 @@ const Dashboard = () => {
                     </p>
                   </>
                 )}
+
+                <div>
+                  <span className="font-semibold">Apply Link:</span>
+                  {applyLink ? (
+                    <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <a
+                        href={applyLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-indigo-600 underline break-all"
+                      >
+                        {applyLink}
+                      </a>
+                      <Button
+                        type="button"
+                        onClick={() => handleCopyApplyLink(selectedJob)}
+                        className="rounded-md bg-indigo-600/60 text-white hover:bg-indigo-600/80"
+                      >
+                        Copy Link
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-sm text-muted-foreground">Apply link is not available for this job.</p>
+                  )}
+                </div>
               </div>
             </Card>
           );
@@ -629,6 +706,34 @@ const Dashboard = () => {
                 }}
               >
                 Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={showToggleStatusDialog} onOpenChange={setShowToggleStatusDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {jobToToggleStatus?.status === "open" ? "Close Job" : "Activate Job"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {jobToToggleStatus?.status === "open"
+                  ? `Are you sure you want to close "${jobToToggleStatus?.title || jobToToggleStatus?.job_title || jobToToggleStatus?.id}"? This will invalidate the current apply link and stop new applications.`
+                  : `Are you sure you want to activate "${jobToToggleStatus?.title || jobToToggleStatus?.job_title || jobToToggleStatus?.id}"? This will reopen the job and generate a fresh apply link.`}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setShowToggleStatusDialog(false)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (!jobToToggleStatus) return;
+                  await toggleJobStatus(jobToToggleStatus.id, localStorage.getItem("token") || "");
+                  setShowToggleStatusDialog(false);
+                  setJobToToggleStatus(null);
+                }}
+              >
+                {jobToToggleStatus?.status === "open" ? "Close Job" : "Activate Job"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

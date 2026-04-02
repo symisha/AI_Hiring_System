@@ -66,9 +66,11 @@ def get_job_for_apply(token: str):
 
     try:
         # Not all schemas include a `description` column. Prefer returning structured `job_metadata` and `job_description_url`.
-        res = supabase.table("jobs").select("id,title,job_metadata,job_description_url,location,posted_on").eq("id", job_id).single().execute()
+        res = supabase.table("jobs").select("id,title,job_metadata,job_description_url,location,posted_on,status").eq("id", job_id).single().execute()
         if not res.data:
             raise HTTPException(status_code=404, detail="Job not found")
+        if res.data.get("status") != "open":
+            raise HTTPException(status_code=410, detail="This job is no longer accepting applications")
         return res.data
     except Exception:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -87,6 +89,17 @@ def submit_application(
     job_id = _verify_token(token)
     if not job_id:
         raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+    try:
+        job_res = supabase.table("jobs").select("id,status").eq("id", job_id).single().execute()
+        if not job_res.data:
+            raise HTTPException(status_code=404, detail="Job not found")
+        if job_res.data.get("status") != "open":
+            raise HTTPException(status_code=410, detail="This job is no longer accepting applications")
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job not found")
 
     # Upload resume to Supabase storage (bucket: resumes)
     try:
