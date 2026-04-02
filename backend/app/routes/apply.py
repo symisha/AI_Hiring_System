@@ -85,6 +85,82 @@ def get_job_for_apply(token: str):
         raise HTTPException(status_code=404, detail="Job not found")
 
 
+@router.post("/apply/form")
+def submit_form_application(
+    token: str = Form(...),
+    name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(None),
+    city: str = Form(None),
+    linkedin: str = Form(None),
+    portfolio: str = Form(None),
+    degree: str = Form(None),
+    major: str = Form(None),
+    university: str = Form(None),
+    grad_year: str = Form(None),
+    cgpa: str = Form(None),
+    experiences: str = Form(None),
+    skills: str = Form(None),
+    projects: str = Form(None),
+):
+    """Accept candidate structured form application (no resume file required)."""
+    import json as _json
+
+    job_id = _verify_token(token)
+    if not job_id:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+    try:
+        job_res = supabase.table("jobs").select("id,status").eq("id", job_id).single().execute()
+        if not job_res.data:
+            raise HTTPException(status_code=404, detail="Job not found")
+        if job_res.data.get("status") != "open":
+            raise HTTPException(status_code=410, detail="This job is no longer accepting applications")
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    try:
+        experiences_data = _json.loads(experiences) if experiences else []
+    except Exception:
+        experiences_data = []
+    try:
+        skills_data = _json.loads(skills) if skills else []
+    except Exception:
+        skills_data = []
+    try:
+        projects_data = _json.loads(projects) if projects else []
+    except Exception:
+        projects_data = []
+
+    record = {
+        "job_id": job_id,
+        "name": name,
+        "email": email,
+        "phone": phone,
+        "city": city,
+        "linkedin": linkedin,
+        "portfolio": portfolio,
+        "degree": degree,
+        "major": major,
+        "university": university,
+        "grad_year": grad_year,
+        "cgpa": cgpa,
+        "experiences": experiences_data,
+        "skills": skills_data,
+        "projects": projects_data,
+        "applied_on": int(time.time()),
+        "status": "new",
+    }
+
+    try:
+        supabase.table("applications").insert(record).execute()
+        return {"status": "success", "message": "Application submitted."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error saving application: {str(e)}")
+
+
 @router.post("/apply")
 def submit_application(
     token: str = Form(...),
