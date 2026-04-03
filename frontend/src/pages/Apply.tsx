@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import logo from "@/assets/logo-purple.svg";
 import { Mail, User, FileText, Phone, Hash } from "lucide-react";
+import { applyBasicInfoSchema } from "@/lib/validationSchemas";
 
 const Apply: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ const Apply: React.FC = () => {
   const totalSteps = sectionLabels.length;
 
   const [step, setStep] = useState(1);
+  const [stepError, setStepError] = useState("");
 
   // Basic info
   // const [jobID, setJobID] = useState("");
@@ -73,7 +75,21 @@ const Apply: React.FC = () => {
   const [agreed, setAgreed] = useState(false);
 //   const [resumeFile, setResumeFile] = useState<File | null>(null);
 
-  const nextStep = () => setStep((s) => Math.min(s + 1, totalSteps));
+  const nextStep = async () => {
+    setStepError("");
+    if (step === 1) {
+      try {
+        await applyBasicInfoSchema.validate(
+          { name, email, phone, linkedin, portfolio },
+          { abortEarly: false }
+        );
+      } catch (err: any) {
+        setStepError(err?.errors?.[0] || "Please complete required fields.");
+        return;
+      }
+    }
+    setStep((s) => Math.min(s + 1, totalSteps));
+  };
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
   // Experience helpers
@@ -112,6 +128,17 @@ const Apply: React.FC = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setStepError("");
+    try {
+      await applyBasicInfoSchema.validate(
+        { name, email, phone, linkedin, portfolio },
+        { abortEarly: false }
+      );
+    } catch (err: any) {
+      setStep(1);
+      setStepError(err?.errors?.[0] || "Please complete required fields.");
+      return;
+    }
     if (!agreed) return alert("Please agree to the terms and consent");
     if (!token) return alert("Invalid application link. Please use the link provided to you.");
 
@@ -174,6 +201,7 @@ const Apply: React.FC = () => {
         <h2 className="text-3xl font-bold mb-4">Apply for the Job</h2>
 
         <form onSubmit={submit} className="space-y-6">
+          {stepError && <p className="text-sm text-red-500">{stepError}</p>}
           {step === 1 && (
             <div className="space-y-4">
               {/* <div>

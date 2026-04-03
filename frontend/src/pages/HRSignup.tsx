@@ -1,42 +1,65 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import image1 from "@/assets/1.jpg";
 import logo from "@/assets/logo-purple.svg";
 import { supabase } from "@/supabaseClient";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { hrSignupSchema } from "@/lib/validationSchemas";
+
+type HRSignupFormValues = {
+  name: string;
+  email: string;
+  password: string;
+  confirm: string;
+};
 
 const HRSignup = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+  const navigate = useNavigate();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<HRSignupFormValues>({
+    resolver: yupResolver(hrSignupSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirm: "",
+    },
+  });
+
 
   // Email/password signup
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: HRSignupFormValues) => {
     setError("");
     setLoading(true);
 
-    if (password !== confirm) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
-    }
-
     try {
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: values.email,
+        password: values.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/email-confirmation-pending`,
+        },
       });
 
       if (error) throw error;
+
+      if (data.user) {
+        navigate(`/email-confirmation-pending?email=${encodeURIComponent(values.email)}`);
+      }
 
       // Optional: redirect user after signup
       // window.location.href = "/user-onboarding";
@@ -87,7 +110,7 @@ const HRSignup = () => {
               <h2 className="text-3xl font-bold">Create Account</h2>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* Full Name */}
               <div>
                 <label htmlFor="name" className="block text-sm font-medium mb-2">Full name</label>
@@ -95,11 +118,10 @@ const HRSignup = () => {
                   id="name"
                   type="text"
                   placeholder="Your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
+                  {...register("name")}
                   className="bg-secondary border-border"
                 />
+                {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
               </div>
 
               {/* Email */}
@@ -111,12 +133,11 @@ const HRSignup = () => {
                     id="email"
                     type="email"
                     placeholder="hr@company.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    {...register("email")}
                     className="pl-10 bg-secondary border-border"
                   />
                 </div>
+                {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
               </div>
 
               {/* Password */}
@@ -128,9 +149,7 @@ const HRSignup = () => {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                    {...register("password")}
                     className="pl-10 pr-10 bg-secondary border-border"
                   />
                   <button
@@ -142,6 +161,7 @@ const HRSignup = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
               </div>
 
               {/* Confirm Password */}
@@ -153,9 +173,7 @@ const HRSignup = () => {
                     id="confirm"
                     type={showConfirm ? "text" : "password"}
                     placeholder="••••••••"
-                    value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)}
-                    required
+                    {...register("confirm")}
                     className="pl-10 pr-10 bg-secondary border-border"
                   />
                   <button
@@ -167,6 +185,7 @@ const HRSignup = () => {
                     {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {errors.confirm && <p className="text-xs text-red-500 mt-1">{errors.confirm.message}</p>}
               </div>
 
               {/* Terms */}

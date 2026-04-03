@@ -6,16 +6,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import heroImage from "@/assets/hero.jpg";
 import logo from "@/assets/logo-purple.svg";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { candidateLoginSchema } from "@/lib/validationSchemas";
+
+type CandidateLoginFormValues = {
+  email: string;
+  password: string;
+};
 
 const CandidateLogin = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CandidateLoginFormValues>({
+    resolver: yupResolver(candidateLoginSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = (values: CandidateLoginFormValues) => {
     // Authentication logic will be implemented later
-    console.log("Candidate Login:", { email, password });
+    console.log("Candidate Login:", values);
   };
 
   return (
@@ -38,7 +57,7 @@ const CandidateLogin = () => {
               </p>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium mb-2">
                     Email Address
@@ -49,12 +68,11 @@ const CandidateLogin = () => {
                       id="email"
                       type="email"
                       placeholder="candidate@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
+                      {...register("email")}
                       className="pl-10 bg-secondary border-border"
                     />
                   </div>
+                  {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
                 </div>
 
                 <div>
@@ -67,9 +85,7 @@ const CandidateLogin = () => {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
+                      {...register("password")}
                       className="pl-10 pr-10 bg-secondary border-border"
                     />
                     <button
@@ -81,6 +97,7 @@ const CandidateLogin = () => {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
                 </div>
 
                 <div className="flex items-center justify-between text-sm">

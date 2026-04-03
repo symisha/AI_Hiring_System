@@ -1,40 +1,58 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { profileSchema } from "@/lib/validationSchemas";
+
+type ProfileFormValues = {
+  companyName: string;
+  companySize: string;
+  website: string | null;
+  countryCity: string;
+  companyDescription: string;
+  adminName: string;
+  designation: string;
+  adminEmail: string;
+  adminPhone: string | null;
+};
 
 const Profile: React.FC = () => {
-  // Company Basic Information
-  const [companyName, setCompanyName] = useState("");
-  const [companySize, setCompanySize] = useState("");
-  const [website, setWebsite] = useState("");
-  const [countryCity, setCountryCity] = useState("");
-  const [companyDescription, setCompanyDescription] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ProfileFormValues>({
+    resolver: yupResolver(profileSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
+    defaultValues: {
+      companyName: "",
+      companySize: "",
+      website: "",
+      countryCity: "",
+      companyDescription: "",
+      adminName: "",
+      designation: "",
+      adminEmail: "",
+      adminPhone: "",
+    },
+  });
 
-  // Primary Contact / Admin
-  const [adminName, setAdminName] = useState("");
-  const [designation, setDesignation] = useState("");
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPhone, setAdminPhone] = useState("");
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!companyName) return alert("Company Name is required");
-    if (!adminName || !adminEmail)
-      return alert("Admin name and email are required");
+  const submit = async (values: ProfileFormValues) => {
 
     const fd = new FormData();
-    fd.append("company_name", companyName);
-    fd.append("company_size", companySize);
-    fd.append("website", website);
-    fd.append("country_city", countryCity);
-    fd.append("company_description", companyDescription);
+    fd.append("company_name", values.companyName);
+    fd.append("company_size", values.companySize || "");
+    fd.append("website", values.website || "");
+    fd.append("country_city", values.countryCity || "");
+    fd.append("company_description", values.companyDescription || "");
 
-    fd.append("admin_name", adminName);
-    fd.append("designation", designation);
-    fd.append("admin_email", adminEmail);
-    fd.append("admin_phone", adminPhone);
+    fd.append("admin_name", values.adminName);
+    fd.append("designation", values.designation || "");
+    fd.append("admin_email", values.adminEmail);
+    fd.append("admin_phone", values.adminPhone || "");
 
     try {
       const res = await fetch(
@@ -58,7 +76,7 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-6">
+    <form onSubmit={handleSubmit(submit)} className="space-y-6">
       {/* ================= Company Info ================= */}
       <Card className="p-8">
         <div className="p-2">
@@ -73,19 +91,15 @@ const Profile: React.FC = () => {
           <div>
             <label className="text-sm">Company Name</label>
             <Input
-              value={companyName}
-              onChange={(e) =>
-                setCompanyName((e.target as HTMLInputElement).value)
-              }
-              required
+              {...register("companyName")}
             />
+            {errors.companyName && <p className="text-xs text-red-500 mt-1">{errors.companyName.message}</p>}
           </div>
 
           <div>
             <label className="text-sm">Company Size</label>
             <select
-              value={companySize}
-              onChange={(e) => setCompanySize(e.target.value)}
+              {...register("companySize")}
               className="w-full rounded-md bg-secondary border-border p-2"
             >
               <option value="">Select size</option>
@@ -99,28 +113,22 @@ const Profile: React.FC = () => {
           <div>
             <label className="text-sm">Website URL</label>
             <Input
-              value={website}
-              onChange={(e) =>
-                setWebsite((e.target as HTMLInputElement).value)
-              }
+              {...register("website")}
             />
+            {errors.website && <p className="text-xs text-red-500 mt-1">{errors.website.message}</p>}
           </div>
 
           <div>
             <label className="text-sm">Country / City</label>
             <Input
-              value={countryCity}
-              onChange={(e) =>
-                setCountryCity((e.target as HTMLInputElement).value)
-              }
+              {...register("countryCity")}
             />
           </div>
 
           <div className="md:col-span-2">
             <label className="text-sm">Company Description</label>
             <textarea
-              value={companyDescription}
-              onChange={(e) => setCompanyDescription(e.target.value)}
+              {...register("companyDescription")}
               className="w-full rounded-md bg-secondary border-border p-2"
               rows={4}
             />
@@ -138,21 +146,15 @@ const Profile: React.FC = () => {
           <div>
             <label className="text-sm">Full Name</label>
             <Input
-              value={adminName}
-              onChange={(e) =>
-                setAdminName((e.target as HTMLInputElement).value)
-              }
-              required
+              {...register("adminName")}
             />
+            {errors.adminName && <p className="text-xs text-red-500 mt-1">{errors.adminName.message}</p>}
           </div>
 
           <div>
             <label className="text-sm">Designation</label>
             <Input
-              value={designation}
-              onChange={(e) =>
-                setDesignation((e.target as HTMLInputElement).value)
-              }
+              {...register("designation")}
             />
           </div>
 
@@ -160,22 +162,17 @@ const Profile: React.FC = () => {
             <label className="text-sm">Work Email</label>
             <Input
               type="email"
-              value={adminEmail}
-              onChange={(e) =>
-                setAdminEmail((e.target as HTMLInputElement).value)
-              }
-              required
+              {...register("adminEmail")}
             />
+            {errors.adminEmail && <p className="text-xs text-red-500 mt-1">{errors.adminEmail.message}</p>}
           </div>
 
           <div>
             <label className="text-sm">Phone Number</label>
             <Input
-              value={adminPhone}
-              onChange={(e) =>
-                setAdminPhone((e.target as HTMLInputElement).value)
-              }
+              {...register("adminPhone")}
             />
+            {errors.adminPhone && <p className="text-xs text-red-500 mt-1">{errors.adminPhone.message}</p>}
           </div>
         </div>
 
