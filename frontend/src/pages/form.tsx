@@ -1,15 +1,40 @@
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { resumeFormSchema } from "@/lib/validationSchemas";
+
+type ResumeFormValues = {
+  name: string;
+  email: string;
+  phone: string;
+  resume: FileList;
+};
 
 const FormPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResumeFormValues>({
+    resolver: yupResolver(resumeFormSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
+  });
+
+  const onSubmit = async (values: ResumeFormValues) => {
     setLoading(true);
     setMessage("");
 
-    const formData = new FormData(e.currentTarget);
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("email", values.email);
+    formData.append("phone", values.phone);
+    if (values.resume && values.resume.length > 0) {
+      formData.append("resume", values.resume[0]);
+    }
 
     try {
       const res = await fetch("http://localhost:8000/submit", {
@@ -30,16 +55,17 @@ const FormPage: React.FC = () => {
     <div className="max-w-lg mx-auto mt-10 p-6 border rounded-lg shadow">
       <h2 className="text-2xl font-semibold mb-4">Submit Your Resume</h2>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
         <div>
           <label className="block mb-1 font-medium">Name</label>
           <input
             name="name"
             type="text"
-            required
+            {...register("name")}
             className="w-full p-2 border rounded"
           />
+          {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
         </div>
 
         <div>
@@ -47,9 +73,10 @@ const FormPage: React.FC = () => {
           <input
             name="email"
             type="email"
-            required
+            {...register("email")}
             className="w-full p-2 border rounded"
           />
+          {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
         </div>
 
         <div>
@@ -57,9 +84,10 @@ const FormPage: React.FC = () => {
           <input
             name="phone"
             type="text"
-            required
+            {...register("phone")}
             className="w-full p-2 border rounded"
           />
+          {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone.message}</p>}
         </div>
 
         <div>
@@ -67,9 +95,10 @@ const FormPage: React.FC = () => {
           <input
             name="resume"
             type="file"
-            required
+            {...register("resume")}
             className="w-full"
           />
+          {errors.resume && <p className="text-xs text-red-500 mt-1">{errors.resume.message as string}</p>}
         </div>
 
         <button

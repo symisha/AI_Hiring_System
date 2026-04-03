@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,22 +6,40 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, MapPin, Send } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { contactSchema } from "@/lib/validationSchemas";
+
+type ContactFormValues = {
+  name: string;
+  email: string;
+  message: string;
+};
 
 const Contact = () => {
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: ""
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ContactFormValues>({
+    resolver: yupResolver(contactSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
+    defaultValues: {
+      name: "",
+      email: "",
+      message: "",
+    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = () => {
     toast({
       title: "Message Sent!",
       description: "We'll get back to you as soon as possible.",
     });
-    setFormData({ name: "", email: "", message: "" });
+    reset({ name: "", email: "", message: "" });
   };
 
   return (
@@ -46,7 +63,7 @@ const Contact = () => {
               {/* Contact Form */}
               <Card className="border-border bg-card animate-scale-in">
                 <CardContent className="p-8">
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div>
                       <label htmlFor="name" className="block text-sm font-medium mb-2">
                         Name
@@ -55,11 +72,10 @@ const Contact = () => {
                         id="name"
                         type="text"
                         placeholder="Your name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        required
+                        {...register("name")}
                         className="bg-secondary border-border"
                       />
+                      {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
                     </div>
 
                     <div>
@@ -70,11 +86,10 @@ const Contact = () => {
                         id="email"
                         type="email"
                         placeholder="your.email@example.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        required
+                        {...register("email")}
                         className="bg-secondary border-border"
                       />
+                      {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
                     </div>
 
                     <div>
@@ -84,12 +99,11 @@ const Contact = () => {
                       <Textarea
                         id="message"
                         placeholder="Tell us about your inquiry..."
-                        value={formData.message}
-                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                        required
+                        {...register("message")}
                         rows={6}
                         className="bg-secondary border-border resize-none"
                       />
+                      {errors.message && <p className="text-xs text-red-500 mt-1">{errors.message.message}</p>}
                     </div>
 
                     <Button type="submit" variant="hero" size="lg" className="w-full">

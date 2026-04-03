@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { jobFormSchema } from "@/lib/validationSchemas";
 
 interface JobFormProps {
   token: string;
@@ -19,6 +20,7 @@ const JobForm: React.FC<JobFormProps> = ({ token, editingJob, onEditComplete }) 
     { key: "", value: "" },
   ]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [validationError, setValidationError] = useState("");
 
   // Initialize form with editing job data if available
   useEffect(() => {
@@ -84,14 +86,30 @@ const JobForm: React.FC<JobFormProps> = ({ token, editingJob, onEditComplete }) 
   setLoading(true);
   setMessage("");
   setApplyLink("");
+    setValidationError("");
 
   const form = e.currentTarget;
   const title = (form.elements.namedItem("title") as HTMLInputElement).value;
   const description = (form.elements.namedItem("description") as HTMLTextAreaElement)?.value || "";
 
-  // 1. Validation
-  if (fields.every((f) => !f.key || !f.value)) {
-    setMessage("Add at least one custom field.");
+    // Validate static fields with Yup and dynamic metadata manually.
+    try {
+      await jobFormSchema.validate({ title, description }, { abortEarly: false });
+    } catch (err: any) {
+      setValidationError(err?.errors?.[0] || "Please check the form fields.");
+      setLoading(false);
+      return;
+    }
+
+    if (fields.every((f) => !f.key?.trim() || !f.value?.trim())) {
+      setValidationError("Add at least one custom field with both key and value.");
+      setLoading(false);
+      return;
+    }
+
+    const hasIncompleteField = fields.some((f) => (f.key?.trim() && !f.value?.trim()) || (!f.key?.trim() && f.value?.trim()));
+    if (hasIncompleteField) {
+      setValidationError("Each custom field must include both name and value.");
     setLoading(false);
     return;
   }
@@ -184,6 +202,7 @@ const JobForm: React.FC<JobFormProps> = ({ token, editingJob, onEditComplete }) 
             placeholder="e.g. Senior Frontend Developer"
             defaultValue={editingJob?.title || ""}
           />
+          {validationError && <p className="text-xs text-red-500 mt-1">{validationError}</p>}
         </div>
 
         {/* Short description */}

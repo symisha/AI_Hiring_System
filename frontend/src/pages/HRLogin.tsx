@@ -6,25 +6,43 @@ import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import image1 from "@/assets/1.jpg";
 import logo from "@/assets/logo-purple.svg";
 import { supabase } from "@/supabaseClient";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { hrLoginSchema } from "@/lib/validationSchemas";
+
+type HRLoginFormValues = {
+  email: string;
+  password: string;
+};
 
 
 const HRLogin = () => {
   const navigate = useNavigate();   
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<HRLoginFormValues>({
+    resolver: yupResolver(hrLoginSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+const onSubmit = async (values: HRLoginFormValues) => {
   setError("");
   setLoading(true);
 
   const { data, error: supabaseError } = await supabase.auth.signInWithPassword({
-    email,
-    password,
+    email: values.email,
+    password: values.password,
   });
 
   if (supabaseError) {
@@ -88,7 +106,7 @@ const handleGoogleLogin = async () => {
               <p className="text-muted-foreground mt-2">Log in to access your recruitment dashboard</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium mb-2">
                     Email Address
@@ -99,12 +117,11 @@ const handleGoogleLogin = async () => {
                       id="email"
                       type="email"
                       placeholder="hr@company.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
+                      {...register("email")}
                       className="pl-10 bg-secondary border-border"
                     />
                   </div>
+                  {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
                 </div>
 
                 <div>
@@ -117,9 +134,7 @@ const handleGoogleLogin = async () => {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
+                      {...register("password")}
                       className="pl-10 pr-10 bg-secondary border-border"
                     />
                     <button
@@ -131,6 +146,7 @@ const handleGoogleLogin = async () => {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
@@ -147,10 +163,12 @@ const handleGoogleLogin = async () => {
 
                 </div>
 
-                <Button type="submit" variant="hero" size="lg" className="w-full">
-                  Log In
+                <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+                  {loading ? "Logging in..." : "Log In"}
                 </Button>
             </form>
+
+            {error && <p className="text-red-500 mt-3 text-sm">{error}</p>}
 
             <div className="mt-6 text-left">
               <p className="text-sm text-muted-foreground">

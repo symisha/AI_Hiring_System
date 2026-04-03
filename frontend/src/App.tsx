@@ -18,6 +18,7 @@ import FormPage from "./pages/form";
 import JobForm from "./pages/JobForm";
 import ResumeScreening from "./pages/ResumeScreening";
 import ForgotPassword from "./pages/forgot-password";
+import EmailConfirmationPending from "./pages/EmailConfirmationPending";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/hr-login" element={<HRLogin />} />
           <Route path="/hr-signup" element={<HRSignup />} />
+          <Route path="/email-confirmation-pending" element={<EmailConfirmationPending />} />
           <Route path="/candidate-login" element={<CandidateLogin />} />
           <Route path="/apply" element={<Apply />} />
           <Route path="/apply/confirmed" element={<ApplicationConfirmed />} />
