@@ -134,10 +134,13 @@ const Profile: React.FC = () => {
             />
           </div>
         </div>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button type="submit">Save Profile</Button>
+        </div>
       </Card>
 
       {/* ================= Admin Info ================= */}
-      <Card className="p-8">
+      {/* <Card className="p-8">
         <h3 className="font-medium mb-6">
           Primary Contact Person (Admin)
         </h3>
@@ -179,7 +182,7 @@ const Profile: React.FC = () => {
         <div className="mt-4 flex justify-end gap-2">
           <Button type="submit">Save Profile</Button>
         </div>
-      </Card>
+      </Card> */}
     </form>
   );
 };

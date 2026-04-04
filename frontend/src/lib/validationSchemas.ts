@@ -65,6 +65,14 @@ export const profileSchema = yup.object({
     .transform((v) => (v === "" ? null : v)),
 });
 
+export const companyOnboardingSchema = yup.object({
+  name: yup.string().trim().min(2, "Company name must be at least 2 characters").required("Company name is required"),
+  industry: yup.string().trim().required("Industry is required"),
+  company_size: yup.string().trim().required("Company size is required"),
+  country: yup.string().trim().required("Country is required"),
+  description: yup.string().trim().min(20, "Description should be at least 20 characters").required("Description is required"),
+});
+
 export const applyBasicInfoSchema = yup.object({
   name: yup.string().trim().min(2, "Full name must be at least 2 characters").required("Full name is required"),
   email: yup.string().trim().email("Enter a valid email address").required("Email is required"),
