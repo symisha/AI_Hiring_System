@@ -19,6 +19,7 @@ import JobForm from "./pages/JobForm";
 import ResumeScreening from "./pages/ResumeScreening";
 import ForgotPassword from "./pages/forgot-password";
 import EmailConfirmationPending from "./pages/EmailConfirmationPending";
+import CompanyOnboarding from "./pages/CompanyOnboarding";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/candidate-login" element={<CandidateLogin />} />
           <Route path="/apply" element={<Apply />} />
           <Route path="/apply/confirmed" element={<ApplicationConfirmed />} />
+          <Route path="/company-onboarding" element={<ProtectedRoutes><CompanyOnboarding /></ProtectedRoutes>} />
           <Route path="/dashboard" element={<ProtectedRoutes><Dashboard /></ProtectedRoutes>} />
           <Route path="/form" element={<FormPage />} />  
           <Route path="/upload-job" element={<JobForm token={""} />} />
