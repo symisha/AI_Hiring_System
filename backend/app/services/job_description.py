@@ -30,9 +30,7 @@ async def upload_job(
     user=Depends(auth_middleware)
 ):
     try:
-        # Accessing the ID from the UserResponse object
-        # Supabase UserResponse -> user attribute -> id attribute
-        user_id = user.user.id 
+        user_id = user.id 
 
         db_response = supabase.table("jobs").insert({
             "company_id": user_id, 
@@ -80,7 +78,7 @@ async def update_job(
     user=Depends(auth_middleware)
 ):
     try:
-        user_id = user.user.id
+        user_id = user.id
 
         # 1. Update the record where the ID matches AND the user owns it
         # This prevents one company from updating another company's job

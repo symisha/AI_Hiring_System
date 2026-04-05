@@ -1,15 +1,11 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from openai import OpenAI
-import os
-from dotenv import load_dotenv
-from app.core import config
+from app.config.config import Settings
 
 router = APIRouter()
 
-load_dotenv()  # Load environment variables from .env file
-# Initialize OpenAI client (make sure OPENAI_API_KEY is in your .env)
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=Settings.OPENAI_API_KEY)
 
 # Request and response models
 class TextRatingRequest(BaseModel):

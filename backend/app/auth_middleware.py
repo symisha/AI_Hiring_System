@@ -1,33 +1,31 @@
-from fastapi import Request, HTTPException, status, Depends, APIRouter
+from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import jwt
 from supabase import create_client
-from app.database.db_connection import supabase_url, supabase_key  # your setup
+from app.database.db_connection import supabase_url, supabase_key
 
-
-security = HTTPBearer()
+security = HTTPBearer(auto_error=True)
 supabase = create_client(supabase_url, supabase_key)
 
 async def auth_middleware(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    token = credentials.credentials
+    token = (credentials.credentials or "").strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing bearer token")
 
     try:
-        # Verify the JWT using Supabase’s public key
-        user = supabase.auth.get_user(token)
+        user_response = supabase.auth.get_user(token)
+        user = getattr(user_response, "user", None)
         if not user:
             raise HTTPException(status_code=401, detail="Invalid token")
         return user
-    except Exception:
+    except HTTPException:
+        raise
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
+            detail=f"Invalid or expired token: {str(e)}",
         )
 
-
 def get_current_user_id(user=Depends(auth_middleware)) -> str:
-    """
-    Returns only the user ID from the authenticated Supabase user
-    """
-    return user.id    
+    return user.id

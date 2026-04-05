@@ -1,4 +1,6 @@
 import uvicorn  # ASGI server used to run FastAPI apps (like "npm start" for Node)
+import asyncio
+from urllib.parse import urlparse
 from fastapi import FastAPI, Depends  # Main FastAPI class used to create the web application instance
 from fastapi.middleware.cors import CORSMiddleware  # Middleware to handle CORS (Cross-Origin Resource Sharing)
 from pydantic import BaseModel  # Used to define and validate data models (for requests/responses) with type checking
@@ -9,7 +11,10 @@ from app.routes import rating_resume, apply
 from app.routes.dashboard_essentials.dashboard_info import router as dashboard_info_router
 from app.routes.dashboard_essentials.profile_preview_router import router as profile_preview_router
 from app.services.resume_extractor import router as resume_extractor_router
+from app.services.shortlisting_resume import router as shortlisting_router
+from app.api.interview_api import app1 as interview_ws_app
 from app.routes.specific_job_routes import delRouter
+from app.services.screening_scheduler import screening_scheduler_loop
 # Database
 from app.database.db_connection import supabase  # Supabase client instance
 
@@ -23,10 +28,25 @@ from app.auth_middleware import auth_middleware, get_current_user_id
 # Create FastAPI app instance
 app = FastAPI()
 
+def _origin(url: str | None) -> str | None:
+    if not url:
+        return None
+    parsed = urlparse(url)
+    if parsed.scheme and parsed.netloc:
+        return f"{parsed.scheme}://{parsed.netloc}"
+    return None
+
+
 # Allowed origins for CORS
 origins = [
-    # "http://localhost:8000",  # Frontend URL
+    _origin(getattr(Settings, "FRONTEND_URL", None)),
+    _origin(getattr(Settings, "FRONTEND_INTERVIEW_URL", None)),
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
+origins = [o for o in origins if o]
 
 # Include your endpoints
 app.include_router(rating_resume.router, prefix="/routes", tags=["rating"])
@@ -35,14 +55,16 @@ app.include_router(profile_preview_router, prefix="/routes/dashboard_essentials"
 app.include_router(apply.router, prefix="/routes", tags=["apply"])
 app.include_router(delRouter, prefix="/routes", tags=["delete_job"])
 app.include_router(resume_extractor_router, prefix="/services", tags=["resume_extractor"])
+app.include_router(shortlisting_router, prefix="/services", tags=["shortlisting"])
 app.include_router(dashboard_info_router, prefix="/routes/dashboard_essentials", tags=["complaints"])
 app.include_router(job_description.router, prefix="/services", tags=["job_description"])
+app.mount("/interview", interview_ws_app)
 
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[Settings.FRONTEND_URL],  # List of allowed origins (frontend URLs)
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -62,6 +84,18 @@ async def create_item(item: dict):
 @app.get("/whoami")
 async def who_am_i(user=Depends(auth_middleware)):
     return user
+
+
+@app.on_event("startup")
+async def _start_screening_scheduler():
+    app.state.screening_scheduler_task = asyncio.create_task(screening_scheduler_loop())
+
+
+@app.on_event("shutdown")
+async def _stop_screening_scheduler():
+    task = getattr(app.state, "screening_scheduler_task", None)
+    if task:
+        task.cancel()
 
 # Run the app
 if __name__ == "__main__":

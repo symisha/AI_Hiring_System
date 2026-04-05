@@ -12,14 +12,11 @@ import uuid, hmac, hashlib
 import fitz
 import re
 import requests
+import traceback
 from app.database.db_connection import supabase         # Import the Supabase client instance to interact with the database
-from fastapi import APIRouter, Depends                     # Import FastAPI class to create the web
+from fastapi import APIRouter, Depends, HTTPException                     # Import FastAPI class to create the web
 from app.auth_middleware import auth_middleware         # Import the authentication middleware to protect routes
 from app.config.config import Settings
-
-def get_jd_from_supabase(bucket: str, filename: str):
-    data = supabase.storage.from_(bucket).download(filename)
-    return data.decode("utf-8")  # JSON text
 
 
 def fit_score(text, applicant_id: str):
@@ -30,33 +27,6 @@ def fit_score(text, applicant_id: str):
     #put it in supabase
     
 
-
-# Local directory to save files
-LOCAL_DIR = "uploads"
-os.makedirs(LOCAL_DIR, exist_ok=True)
-def download_all_files(bucket_name: str, folder_prefix: str = ""):
-    LOCAL_UPLOADS_DIR = "uploads"
-    os.makedirs(LOCAL_UPLOADS_DIR, exist_ok=True)
-    """
-    Download all files from a Supabase bucket/folder into LOCAL_UPLOADS_DIR
-    """
-    files = supabase.storage.from_(bucket_name).list(path=folder_prefix)
-    
-    if not files:
-        print(f"No files found in bucket/folder '{folder_prefix}'.")
-        return
-
-    for file in files:
-        remote_path = file['name']  # e.g., "resume1.pdf"
-        local_path = os.path.join(LOCAL_UPLOADS_DIR, os.path.basename(remote_path))
-
-        try:
-            file_data = supabase.storage.from_(bucket_name).download(remote_path)
-            with open(local_path, "wb") as f:
-                f.write(file_data)
-            print(f"Downloaded {remote_path} -> {local_path}")
-        except Exception as e:
-            print(f"Error downloading {remote_path}: {e}")
 
 # Usage
   # '' = root of bucket
@@ -70,11 +40,7 @@ def download_all_files(bucket_name: str, folder_prefix: str = ""):
 # Prefer env vars; falls back to your literal for convenience
 #GROQ_API_KEY = os.getenv("GROQ_API_KEY", "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")
 #client = Groq(api_key=GROQ_API_KEY)
-
-#MODEL = "gemma3:4b"            # Ollama local model for comparison
-#JD_JSON_FILE = get_jd_from_supabase(                  )#JD_PDF= "jd_extraction.json"
-UPLOADS_DIR = "uploads"        # resumes (PDFs) are read only from here
-RESUMES_JSON_DIR = "extracted_resumes"   # individual extracted resume JSON files
+  # individual extracted resume JSON files
 EVALS_DIR = "evaluations"                # individual evaluation JSON files
 
 
@@ -87,55 +53,14 @@ EVALS_DIR = "evaluations"                # individual evaluation JSON files
 
 model_id = "llama-3.1-8b-instant"
 API_key = Settings.LLAMA_API_KEY
+DEBUG_PIPELINE = True
 
 
-def save_json_result(result_text, filename) -> bool:
-    if result_text:
-        try:
-            parsed = json.loads(result_text)
-            with open(filename, "w", encoding="utf-8") as f:
-                json.dump(parsed, f, indent=2, ensure_ascii=False)
-            print(f"✅ Saved JSON to: {filename}")
-            return True
-        except json.JSONDecodeError as e:
-            print(f"⚠️ Invalid JSON, saving raw text to {filename}.txt ({e})")
-            with open(f"{filename}.txt", "w", encoding="utf-8") as f:
-                f.write(result_text)
-            return False
-    else:
-        print("⚠️ No result to save")
-        return False
-
-def load_jd_file(file_path):
-    file_path = Path(file_path).resolve()
-    with open(file_path, "r", encoding="utf-8") as f:
-        return json.load(f), str(file_path)
-
-def load_all_resume_files(directory):
-    resume_files = {}
-    dir_path = Path(directory).resolve()
-    if not dir_path.is_dir():
-        raise FileNotFoundError(f"Directory not found: {directory}")
-    for json_file in dir_path.glob("*.json"):
-        try:
-            with open(json_file, "r", encoding="utf-8") as f:
-                resume_data = json.load(f)
-                resume_name = json_file.stem
-                resume_files[resume_name] = {"data": resume_data, "path": str(json_file)}
-        except Exception as e:
-            print(f"Error loading {json_file}: {e}")
-    return resume_files
+def debug_log(message: str):
+    if DEBUG_PIPELINE:
+        print(f"[resume_extractor] {message}")
 
 
-def get_resume_files_from_uploads(uploads_dir=UPLOADS_DIR):
-    resumes = []
-    p = Path(uploads_dir)
-    if not p.exists():
-        print(f"⚠️ Uploads directory '{uploads_dir}' not found!")
-        return []
-    for pdf in p.glob("*.pdf"):
-        resumes.append({"candidate_id": pdf.stem, "resume_filepath": str(pdf), "resume_filename": pdf.name})
-    return resumes
 
 
 def extract_resume_sections(path):
@@ -378,94 +303,262 @@ Instructions:
     # This should now be a pure JSON string
     return response.choices[0].message.content
 
+
+def _json_to_text(value) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, ensure_ascii=False, indent=2)
+    return str(value)
+
+
+def _build_jd_text(job: dict) -> str:
+    return (
+        f"Job Title: {job.get('job_title', '')}\n\n"
+        f"Short Description:\n{job.get('short_description', '')}\n\n"
+        f"Job Metadata:\n{_json_to_text(job.get('job_metadata'))}"
+    )
+
+
+def _build_application_profile_text(application: dict) -> str:
+    return (
+        f"Name: {application.get('name', '')}\n"
+        f"Email: {application.get('email', '')}\n"
+        f"Phone: {application.get('phone', '')}\n"
+        f"City: {application.get('city', '')}\n"
+        f"LinkedIn: {application.get('linkedin', '')}\n"
+        f"Portfolio: {application.get('portfolio', '')}\n\n"
+        f"Education:\n"
+        f"- Degree: {application.get('degree', '')}\n"
+        f"- Major: {application.get('major', '')}\n"
+        f"- University: {application.get('university', '')}\n"
+        f"- Graduation Year: {application.get('grad_year', '')}\n"
+        f"- CGPA: {application.get('cgpa', '')}\n\n"
+        f"Experiences:\n{_json_to_text(application.get('experiences'))}\n\n"
+        f"Skills:\n{_json_to_text(application.get('skills'))}\n\n"
+        f"Projects:\n{_json_to_text(application.get('projects'))}\n"
+    )
+
+
+def _extract_overall_fit_score(comparison_json_text: str):
+    try:
+        parsed = json.loads(comparison_json_text)
+        raw_score = parsed.get("overall_fit_score")
+        if raw_score is None:
+            return None
+        score = int(float(str(raw_score)))
+        return max(0, min(100, score))
+    except Exception:
+        match = re.search(r'"overall_fit_score"\s*:\s*"?(\d{1,3})"?', comparison_json_text)
+        if not match:
+            return None
+        score = int(match.group(1))
+        return max(0, min(100, score))
+
+
+def _upsert_resume_score(job_id: str, applicant_id: str, score: int, resume_evaluation):
+    debug_log(f"Upserting score/evaluation. job_id={job_id}, applicant_id={applicant_id}, score={score}")
+    existing = (
+        supabase.table("job_applications")
+        .select("id")
+        .eq("job_id", job_id)
+        .eq("applicant_id", applicant_id)
+        .limit(1)
+        .execute()
+    )
+
+    debug_log(f"job_applications existing rows: {len(existing.data) if existing and existing.data else 0}")
+
+    if existing.data:
+        (
+            supabase.table("job_applications")
+            .update(
+                {
+                    "resume_score": score,
+                    "resume_evaluation": resume_evaluation,
+                    "status": "processed",
+                }
+            )
+            .eq("job_id", job_id)
+            .eq("applicant_id", applicant_id)
+            .execute()
+        )
+        debug_log("Updated existing job_applications row")
+    else:
+        (
+            supabase.table("job_applications")
+            .insert(
+                {
+                    "job_id": job_id,
+                    "applicant_id": applicant_id,
+                    "status": "processed",
+                    "resume_score": score,
+                    "resume_evaluation": resume_evaluation,
+                }
+            )
+            .execute()
+        )
+        debug_log("Inserted new job_applications row")
+
 # ------------------------- MAIN ---------------------F----
 
 router = APIRouter()
 
 
-@router.get("/process-uploads")
+def screen_new_applications_for_job(job_id: str, company_id: str):
+    debug_log("============================================================")
+    debug_log(f"screen_new_applications_for_job called with job_id={job_id}, company_id={company_id}")
 
-def process_uploads_endpoint(user=Depends(auth_middleware)):
-    logs = []   # store all messages for response
+    job_response = (
+        supabase.table("jobs")
+        .select("id,company_id,status,job_title,job_metadata,short_description")
+        .eq("id", job_id)
+        .eq("company_id", str(company_id))
+        .in_("status", ["open", "active"])
+        .limit(1)
+        .execute()
+    )
 
-    def log(msg):
-        print(msg)       # still prints to console
-        logs.append(msg) # also store for API response
+    if not job_response.data:
+        debug_log("No open/active job found for this company; collecting diagnostics")
 
-    download_all_files("Resumes", "")
-    log("Downloaded all files from bucket 'Resumes'")
+        by_id = (
+            supabase.table("jobs")
+            .select("id,company_id,status")
+            .eq("id", job_id)
+            .limit(1)
+            .execute()
+            .data
+        ) or []
 
-    JD_txt = get_jd_from_supabase("Job Description", "0de15667-02f8-40ce-9887-9eeafefd9abb.json")       #Static for now
+        if not by_id:
+            reason = "Job id does not exist"
+            debug_log(reason)
+        else:
+            row = by_id[0]
+            row_company = str(row.get("company_id"))
+            row_status = str(row.get("status"))
+            if row_company != str(company_id):
+                reason = f"Job belongs to a different company (job.company_id={row_company}, token.user_id={company_id})"
+                debug_log(reason)
+            elif row_status not in {"open", "active"}:
+                reason = f"Job status is '{row_status}', expected open/active"
+                debug_log(reason)
+            else:
+                reason = "Job exists but query did not return it (unexpected filter issue)"
+                debug_log(reason)
 
-    UPLOADS_DIR = "uploads"
-    RESUMES_JSON_DIR = "extracted_resumes"
-    EVALS_DIR = "evaluations"
+        return {
+            "job_id": job_id,
+            "total_applications": 0,
+            "new_applications": 0,
+            "processed": 0,
+            "failed": 0,
+            "results": [],
+            "errors": [reason],
+        }
 
-    log("=" * 60)
-    log("PROCESSING JD + RESUMES FROM 'uploads/'")
-    log("=" * 60)
+    job = job_response.data[0]
+    jd_text = _build_jd_text(job)
 
-    # ----- PROCESS RESUMES -----
-    resume_entries = get_resume_files_from_uploads(UPLOADS_DIR)
-    log(f"Found {len(resume_entries)} PDF(s) in '{UPLOADS_DIR}'")
+    applications_response = (
+        supabase.table("applications")
+        .select("id,job_id,name,email,phone,city,linkedin,portfolio,degree,major,university,grad_year,cgpa,experiences,skills,projects")
+        .eq("job_id", job_id)
+        .execute()
+    )
+    applications = applications_response.data or []
 
-    processed = 0
-    errors = []
+    existing_rows = (
+        supabase.table("job_applications")
+        .select("applicant_id")
+        .eq("job_id", job_id)
+        .execute()
+        .data
+    ) or []
+    existing_applicant_ids = {str(row.get("applicant_id")) for row in existing_rows if row.get("applicant_id") is not None}
 
-    for i, resume_info in enumerate(resume_entries, start=1):
-        resume_path = resume_info["resume_filepath"]
-        resume_name = resume_info["candidate_id"]
+    pending_applications = [
+        application for application in applications if str(application.get("id")) not in existing_applicant_ids
+    ]
 
-        log(f"PROCESSING RESUME {i}/{len(resume_entries)}: {resume_path}")
+    debug_log(
+        f"Applications fetched={len(applications)} existing_job_applications={len(existing_applicant_ids)} new_candidates={len(pending_applications)}"
+    )
 
-        if not os.path.exists(resume_path):
-            msg = f"⚠️ File not found, skipping: {resume_path}"
-            log(msg)
-            errors.append(msg)
-            continue
+    os.makedirs(EVALS_DIR, exist_ok=True)
 
+    processed_results = []
+    failed_results = []
+
+    for application in pending_applications:
+        applicant_id = str(application.get("id"))
+        debug_log("------------------------------------------------------------")
+        debug_log(f"Processing NEW applicant_id={applicant_id}")
         try:
-            # Extract Resume
-            sections = extract_resume_sections(resume_path)
-
-            with open("output.txt", "w", encoding="utf-8") as f:
-                for k, v in sections.items():
-                    f.write(f"{k}:\n{v}\n\n")
-
-            with open("output.txt", "r") as f:
-                resume_text = f.read()
-
-            jd_bytes = supabase.storage.from_("Job Description").download("0de15667-02f8-40ce-9887-9eeafefd9abb.json")
-            jd_text = jd_bytes.decode("utf-8")
-
-            log("Comparing resume with JD...")
-
-            comparison_result = compare_cv_with_jd(
-                jd_text, resume_text, model_id, api_key=API_key
+            resume_text = _build_application_profile_text(application)
+            comparison_json = compare_cv_with_jd(
+                jd_text=jd_text,
+                resume_text=resume_text,
+                model=model_id,
+                api_key=API_key,
             )
 
-            result_path = os.path.join(
-                RESUMES_JSON_DIR, f"{resume_name}_comparison.json"
+            score = _extract_overall_fit_score(comparison_json)
+            if score is None:
+                score = 0
+
+            try:
+                parsed_evaluation = json.loads(comparison_json)
+            except Exception:
+                parsed_evaluation = {"raw": comparison_json}
+
+            parsed_evaluation["overall_fit_score"] = score
+
+            _upsert_resume_score(
+                job_id=job_id,
+                applicant_id=applicant_id,
+                score=score,
+                resume_evaluation=parsed_evaluation,
             )
 
-            with open(result_path, "w", encoding="utf-8") as f:
-                f.write(comparison_result)
+            comparison_file = os.path.join(EVALS_DIR, f"{job_id}_{applicant_id}_comparison.json")
+            with open(comparison_file, "w", encoding="utf-8") as file:
+                file.write(json.dumps(parsed_evaluation, ensure_ascii=False, indent=2))
 
-            log(f"✅ Comparison result saved to: {result_path}")
-            processed += 1   
-            log(fit_score(comparison_result, "bce77a80-ce81-4d79-8c48-706dd271b473"))        
-        except Exception as e:
-            err = f"Error processing resume {resume_path}: {e}"
-            log(err)
-            errors.append(err)
+            processed_results.append(
+                {
+                    "applicant_id": applicant_id,
+                    "resume_score": score,
+                    "comparison_file": comparison_file,
+                }
+            )
+            debug_log(f"Applicant processed successfully: {applicant_id}")
+        except Exception as error:
+            error_message = str(error)
+            debug_log(f"Error processing applicant_id={applicant_id}: {error_message}")
+            debug_log(traceback.format_exc())
+            failed_results.append({"applicant_id": applicant_id, "error": error_message})
 
-        #update in the database and store the resume_score 
-        
-    # ----- RETURN EVERYTHING -----
+    debug_log(
+        f"Screening complete. total={len(applications)}, new={len(pending_applications)}, processed={len(processed_results)}, failed={len(failed_results)}"
+    )
+
     return {
-        "status": "completed",
-        "total_files_found": len(resume_entries),
-        "successfully_processed": processed,
-        "errors": errors,
-        "logs": logs
+        "job_id": job_id,
+        "total_applications": len(applications),
+        "new_applications": len(pending_applications),
+        "processed": len(processed_results),
+        "failed": len(failed_results),
+        "results": processed_results,
+        "errors": failed_results,
     }
+
+
+@router.post("/process-job/{job_id}")
+def process_job_from_database(job_id: str, user=Depends(auth_middleware)):
+    user_id = getattr(user, "id", None) if user is not None else None
+    debug_log(f"process_job_from_database called with user_id={user_id}")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized user")
+    return screen_new_applications_for_job(job_id=job_id, company_id=str(user_id))

@@ -9,12 +9,13 @@ import uuid
 import re
 from typing import Dict, Any, Optional, List, Tuple
 from app.services.ai_interview import *
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 #from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi import Request
+from pydantic import BaseModel
 import numpy as np
 import soundfile as sf
 import torch
@@ -22,12 +23,50 @@ from faster_whisper import WhisperModel
 import edge_tts
 import requests
 import tempfile
+from app.database.db_connection import supabase
+from app.services.interview_link import verify_interview_token
 
 # ----------------- Config -----------------
 GROQ_API_KEY = "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"  # keep env in prod
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 SAMPLE_RATE = 16000  # you confirmed 16kHz
+
+
+def verify_token(authorization: str) -> Dict[str, Any]:
+    token = (authorization or "").replace("Bearer", "").strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing token")
+
+    try:
+        user_response = supabase.auth.get_user(token)
+        user = getattr(user_response, "user", None)
+        if user:
+            user_id = getattr(user, "id", None)
+            email = getattr(user, "email", None)
+            return {
+                "candidate_id": str(user_id) if user_id else "",
+                "email": email or "unknown",
+                "auth_type": "supabase",
+            }
+    except Exception:
+        pass
+
+    payload = verify_interview_token(token)
+    if payload.get("purpose") != "ai_interview":
+        raise HTTPException(status_code=401, detail="Invalid interview token purpose")
+
+    return {
+        "candidate_id": str(payload.get("applicant_id") or ""),
+        "email": payload.get("email") or "unknown",
+        "auth_type": "interview_link",
+        "job_id": payload.get("job_id"),
+        "name": payload.get("name"),
+    }
+
+
+class StopInterviewBody(BaseModel):
+    session_id: str | None = None
 
 # ======================== QUESTION COUNTER SYSTEM ========================
 MAX_QUESTIONS = 10
@@ -161,7 +200,14 @@ app1 = FastAPI(title="Interview Agent - WS")
 
 app1.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8000", "http://127.0.0.1:8000"],
+    allow_origins=[
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -174,6 +220,18 @@ templates = Jinja2Templates(directory="templates")
 @app1.get("/")
 def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app1.post("/stop")
+async def stop_interview(request: Request, body: StopInterviewBody):
+    authorization = request.headers.get("Authorization", "")
+    user_info = verify_token(authorization=authorization)
+    return {
+        "ok": True,
+        "message": "Interview stopped",
+        "session_id": body.session_id,
+        "candidate_id": user_info.get("candidate_id"),
+    }
 
 
 # ----------------- Audio / AI utils -----------------

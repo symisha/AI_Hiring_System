@@ -4,9 +4,11 @@
   "description": "---",
   "main": "index.js",
   "scripts": {
-    "dev:backend": "cmd /c \"cd backend && venv\\Scripts\\python -m uvicorn app.main:app --reload\"",
+    "predev:backend": "fuser -k 8000/tcp 2>/dev/null || true",
+    "dev:backend": "python3 -m uvicorn app.main:app --app-dir backend",
+    "predev:frontend": "fuser -k 8080/tcp 2>/dev/null || true",
     "dev:frontend": "npm --prefix frontend run dev",
-    "dev": "concurrently --restart-tries -1 --restart-after 2000 -n backend,frontend -c green,cyan \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev": "concurrently -n backend,frontend -c green,cyan \"npm run dev:backend\" \"npm run dev:frontend\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,7 +17,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@playwright/test": "^1.58.2",
-    "react-hook-form": "^7.72.0",
+    "react-hook-form": "^7.72.1",
     "yup": "^1.7.1"
   },
   "devDependencies": {
