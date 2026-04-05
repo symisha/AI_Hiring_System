@@ -1,0 +1,111 @@
+### JSON Assessment
+
+```json
+{
+  "education": {
+    "required": "Bachelor’s degree in Computer Science, Data Science, Statistics, Mathematics, or a related field",
+    "candidate": "BS in Computer Science from FAST NUCES (2026)",
+    "match": "yes",
+    "notes": ""
+  },
+  "skills": {
+    "required": [
+      "Python",
+      "R",
+      "SQL",
+      "Data Visualization tools (e.g., Matplotlib, Seaborn, Power BI, or Tableau)",
+      "Machine Learning libraries (e.g., Pandas, NumPy, Scikit-learn)",
+      "Cloud platforms (AWS, GCP, or Azure)",
+      "Version control systems (Git)",
+      "Statistics and hypothesis testing"
+    ],
+    "candidate": [
+      "Python",
+      "Django",
+      "Flask",
+      "SQLite",
+      "Git",
+      "MongoDB",
+      "MySQL",
+      "AWS",
+      "Problem Solving"
+    ],
+    "match": [
+      "Python",
+      "SQL",
+      "Git",
+      "AWS"
+    ],
+    "gap": [
+      "R",
+      "Data Visualization tools (e.g., Matplotlib, Seaborn, Power BI, or Tableau)",
+      "Machine Learning libraries (e.g., Pandas, NumPy, Scikit-learn)",
+      "Cloud platforms (AWS, GCP, or Azure)",
+      "Statistics and hypothesis testing"
+    ]
+  },
+  "projects": [
+    {
+      "title": "Optimal Player Substitution Strategy",
+      "tools_methods": [
+        "Python",
+        "Yolov5",
+        "ByteTrack",
+        "fine-tuned model"
+      ],
+      "relevance_to_JD": "medium"
+    },
+    {
+      "title": "AI Crypto Trading Bot",
+      "tools_methods": [
+        "Python",
+        "LSTM deep learning model",
+        "AWS SageMaker",
+        "FastAPI",
+        "WebSocket streaming",
+        "backtesting",
+        "paper trading simulation"
+      ],
+      "relevance_to_JD": "high"
+    },
+    {
+      "title": "Sentiment Analysis",
+      "tools_methods": [
+        "Python",
+        "Gemma 7B",
+        "accelerate",
+        "multi-gpus",
+        "bitsandbytes",
+        "LORA"
+      ],
+      "relevance_to_JD": "low"
+    }
+  ],
+  "experience": [
+    {
+      "title": "Trainee Data Scientist",
+      "domain_relevance": "relevant",
+      "start_date": "2025-07",
+      "end_date": "",
+      "duration_years": "0.8"
+    }
+  ],
+  "strengths": [
+    "Experience as a Trainee Data Scientist",
+    "Proficiency in Python",
+    "Knowledge of SQL and AWS"
+  ],
+  "weaknesses": [
+    "Lack of experience with R, Data Visualization tools, Machine Learning libraries, Cloud platforms, and Statistics and hypothesis testing",
+    "Limited experience with Data Science and Analytics"
+  ],
+  "overall_fit_score": "60"
+}
+```
+
+### Notes:
+- The candidate has a relevant degree in Computer Science, but lacks experience in Data Science and Analytics.
+- The candidate has some relevant skills, but lacks experience with R, Data Visualization tools, Machine Learning libraries, Cloud platforms, and Statistics and hypothesis testing.
+- The candidate has some relevant projects, but the relevance of the projects to the JD is mixed.
+- The candidate has some relevant experience as a Trainee Data Scientist, but the duration of the experience is short.
+- The overall fit score is 60, indicating that the candidate has some relevant skills and experience, but lacks experience in some key areas.

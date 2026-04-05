@@ -27,9 +27,10 @@ from sentence_transformers import SentenceTransformer
 from faster_whisper import WhisperModel
 
 # --- PDF & FAISS Setup ---
-pdf_path = "app/services/associate_data_scientist.pdf"  # ✅"
-index_path = "faiss_index.bin"
-json_path = "questions1_.json"
+SERVICE_DIR = os.path.dirname(os.path.abspath(__file__))
+pdf_path = os.path.join(SERVICE_DIR, "associate_data_scientist.pdf")
+index_path = os.path.join(SERVICE_DIR, "faiss_index.bin")
+json_path = os.path.join(SERVICE_DIR, "questions1_.json")
 model_name = "paraphrase-multilingual-MiniLM-L12-v2"
 # --- Interview Prompts ---
 interview_prompt_ur = """

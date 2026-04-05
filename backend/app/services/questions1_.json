@@ -1,0 +1,442 @@
+[
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "1. Can you explain the differences between supervised, unsupervised, and reinforcement"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "2. What is the purpose of splitting data into training, validation, and test sets?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "3. What is the bias-variance tradeoff, and how does it affect model performance?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "4. How do you detect and prevent overfitting and underfitting?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "5. How does logistic regression differ from linear regression?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "6. What are the key advantages of decision trees, and how do random forests improve"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "7. Can you explain how gradient boosting algorithms like XGBoost work?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "8. What are some limitations of k-Nearest Neighbors?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "9. How does the Naïve Bayes classifier work, and in which scenarios is it most useful?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "10. What is the kernel trick in SVMs, and why is it important?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "11. How do you determine the optimal number of clusters in k-Means?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "12. Can you explain the intuition behind PCA?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "13. When would you prefer F1 score over accuracy?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "14. How do you interpret an ROC curve and AUC score?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "15. What regression metric would you choose for a business case where large errors are"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "16. How do you evaluate a model when your dataset is highly imbalanced?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "17. How do you handle missing values in your dataset?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "18. When would you choose one-hot encoding over label encoding?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "19. Why and when should you scale your features?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "20. Can you give an example of an embedded method for feature selection?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "21. What is the difference between L1 and L2 regularization?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "22. How does dropout help prevent overfitting in neural networks?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "23. Can you explain how the Adam optimizer differs from standard SGD?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "24. When would you use a learning rate schedule?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "25. How does k-fold cross-validation work, and why is it useful?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "26. How do you handle imbalanced classes in a classification problem?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "27. Can you explain the purpose of using sklearn pipelines?"
+    },
+    {
+        "topic": "TOPIC 1 : Machine Learning",
+        "question": "28. What methods can you use to make your model explainable to non-technical"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "1. What is the difference between a perceptron and a multi-layer perceptron?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "2. Why do we need activation functions in neural networks?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "3. How does the softmax function work and where is it used?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "4. Can you explain the process of backpropagation?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "5. What are some differences between Adam, SGD, and RMSProp?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "6. Why do vanishing gradients occur, and how can they be mitigated?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "7. How does the convolution operation extract features from an image?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "8. What is the role of stride and padding in convolutional layers?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "9. Compare max pooling and average pooling. When would you choose one over the"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "10. What is the main limitation of vanilla RNNs?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "11. How does an LSTM cell address the vanishing gradient problem?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "12. When would you prefer a GRU over an LSTM?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "13. What is self-attention, and how does it work?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "14. Why are transformers better suited for long sequences compared to RNNs?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "15. What is positional encoding, and why is it necessary in transformers?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "16. How does dropout help prevent overfitting?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "17. What is batch normalization, and why is it useful?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "18. When would you use L1 regularization over L2 regularization?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "19. What is the difference between fine-tuning and feature extraction in transfer learning?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "20. Can you name some popular pretrained CNN architectures?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "21. How would you adapt a pretrained model for a new classification problem?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "22. What is the difference between an autoencoder and a variational autoencoder?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "23. How do GANs work, and what is the role of the generator and discriminator?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "24. What are some common challenges in training GANs?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "25. How does batch size affect training and generalization?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "26. What are learning rate schedules, and why are they important?"
+    },
+    {
+        "topic": "TOPIC 2 : Deep Learning",
+        "question": "27. How do you detect and handle overfitting in deep learning"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "1. How does tokenization work, and why is it important in NLP?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "2. What are stopwords, and when should you remove them?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "3. Can you explain stemming vs. lemmatization with examples?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "4. What are word embeddings, and how do they capture semantic meaning?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "5. Compare Word2Vec, GloVe, and FastText."
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "6. How do embeddings handle synonyms and polysemy (multiple meanings)?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "7. What is the difference between a unidirectional and bidirectional language model?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "8. How do n-gram models work, and what are their limitations?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "9. How does a transformer-based language model differ from traditional RNN-based"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "10. Why do vanilla RNNs struggle with long-term dependencies?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "11. How does an LSTM’s gating mechanism work?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "12. When would you use a GRU instead of an LSTM?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "13. Explain the concept of self-attention."
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "14. What is the purpose of positional encoding in transformers?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "15. How does BERT differ from GPT in architecture and training objectives?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "16. How would you build a text classification pipeline from scratch?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "17. What evaluation metrics would you use for imbalanced sentiment datasets?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "18. How can transfer learning improve text classification?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "19. What is NER, and how does it work?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "20. How would you handle overlapping or nested entities in NER?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "21. Can you give an example of real-world applications of NER?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "22. What is the difference between statistical and neural machine translation?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "23. How do attention mechanisms improve translation quality?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "24. What is beam search, and why is it used in translation models?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "25. What are the main differences between extractive and abstractive QA?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "26. How does RAG improve retrieval-based NLP tasks?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "27. What role does a vector database play in RAG systems?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "28. What is BLEU score, and when would you use it?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "29. How do ROUGE metrics differ from BLEU?"
+    },
+    {
+        "topic": "TOPIC 3 : NLP",
+        "question": "30. When would F1 score be more informative than accuracy in NLP tasks?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "1. What techniques can be used to normalize or standardize images before training?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "2. How does data augmentation help in improving model performance?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "3. Why might you convert images to a different color space (e.g., HSV)?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "4. How do convolutional layers work, and why are they effective for images?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "5. What’s the role of pooling layers in CNNs?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "6. How do CNNs differ from fully connected networks?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "7. What is the difference between handcrafted features (e.g., SIFT, HOG) and learned"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "8. How do filters in CNNs detect edges, textures, or patterns?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "9. What is receptive field, and why is it important?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "10. What’s the difference between object detection and image classification?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "11. How do algorithms like YOLO and Faster R-CNN work at a high level?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "12. What is Intersection over Union (IoU), and how is it used in detection tasks?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "13. What is the difference between semantic segmentation and instance segmentation?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "14. How does U-Net architecture work?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "15. What metrics are used to evaluate segmentation models?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "16. How does transfer learning benefit computer vision projects?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "17. When would you fine-tune all layers vs. only the last few layers?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "18. Give an example of using a pretrained model for a custom CV task."
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "19. How do Vision Transformers differ from CNNs?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "20. What is patch embedding in ViTs?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "21. When might you prefer a ViT over a CNN?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "22. How do GANs work for image generation?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "23. What is the role of the discriminator and generator in GANs?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "24. What are common issues when training GANs, and how can they be mitigated?"
+    },
+    {
+        "topic": "TOPIC 4: Computer Vision",
+        "question": "25. How is accuracy different from precision and recall in object detection?"
+    }
+]
