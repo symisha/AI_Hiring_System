@@ -219,7 +219,7 @@ templates = Jinja2Templates(directory="templates")
 
 @app1.get("/")
 def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return {"message": "Welcome to the Interview Agent API. Please connect via WebSocket at /ws for the interview process."}
 
 
 @app1.post("/stop")
@@ -728,6 +728,7 @@ async def process_utterance(sess: Session, audio: np.ndarray, ws: WebSocket):
             # non-fatal: proceed without RAG context
             context = ""
 
+        # 4) LLM: call with context + running history (query_groq handles appending user message)
         # 4) LLM: call with context + running history (query_groq handles appending user message)
         ai_text, updated_history = query_groq(
             user_input=user_text,

@@ -704,21 +704,40 @@ def transcribe(audio_array, language="en"):
 #     communicate = edge_tts.Communicate(text=response_text, voice=selected_voice)
 #     await communicate.save(output_path)
 #     return output_path
-from google import genai
-GEMINI_API_KEY = "AIzaSyBU58d8p9X5WxUoWFf-j0o4Uq_vDtDPjXc"
-GEMINI_MODEL = "gemini-2.0-flash"  # 1500 req/day free tier (vs 20 for 2.5-flash)
+# from google import genai
+# GEMINI_API_KEY = "AIzaSyBU58d8p9X5WxUoWFf-j0o4Uq_vDtDPjXc"
+# GEMINI_MODEL = "gemini-2.0-flash"  # 1500 req/day free tier (vs 20 for 2.5-flash)
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+# client = genai.Client(api_key=GEMINI_API_KEY)
 
-def query_groq(user_input, context="", conversation_history=None, max_tokens=800, temperature=0.5, interview_prompt=interview_prompt_en):
-    from google.genai import types
+GROQ_API_KEY = "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"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
-    if conversation_history is None:
-        conversation_history = []
+def query_groq(user_input, context="", conversation_history=None, max_tokens=800, temperature=0.1, interview_prompt=interview_prompt_en):
+    """
+    Query Groq API with conversation history and interview prompt.
+    Returns: (response_text, updated_conversation_history)
+    """
+    try:
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        
+        print(f"🔵 Calling Groq API with model: {GROQ_MODEL}")
+        print(f"🔵 Using interview prompt: {interview_prompt[:50]}...")
 
-    # Augment user message with FAISS context if available
-    user_message = user_input
-    if context and context.strip():
+        if isinstance(user_input, list):
+            user_input = " ".join(user_input)
+        elif not isinstance(user_input, str):
+            user_input = str(user_input)
+
+        # Initialize conversation history with system prompt if empty
+        if conversation_history is None or len(conversation_history) == 0:
+            conversation_history = [{"role": "system", "content": interview_prompt}]
+        
+        # Check if system prompt exists, if not add it
+        if not any(msg.get("role") == "system" for msg in conversation_history):
+            conversation_history.insert(0, {"role": "system", "content": interview_prompt})
+
+        # Build user message with context
         user_message = f"""Candidate answer: "{user_input}"
 
 Relevant interview questions from knowledge base:
@@ -726,43 +745,38 @@ Relevant interview questions from knowledge base:
 
 Keep it conversational. It should look like a natural conversation, not a scripted interview. Follow the instruction and flow."""
 
-    # Build Gemini contents from history + current user turn.
-    # History may use "content" (OpenAI format) or "text" (internal format).
-    # Gemini requires role "user"/"model" — map "assistant" -> "model", skip "system".
-    contents = []
-    for msg in conversation_history:
-        role = msg.get("role", "user")
-        text = msg.get("content") or msg.get("text", "")
-        if role == "system":
-            continue  # system instruction is passed via GenerateContentConfig
-        if role == "assistant":
-            role = "model"
-        contents.append(
-            types.Content(role=role, parts=[types.Part(text=text)])
-        )
-    contents.append(
-        types.Content(role="user", parts=[types.Part(text=user_message)])
-    )
+        conversation_history.append({
+            "role": "user",
+            "content": user_message
+        })
 
-    # System instruction belongs in GenerateContentConfig, not in contents
-    response = client.models.generate_content(
-        model=GEMINI_MODEL,
-        contents=contents,
-        config=types.GenerateContentConfig(
-            system_instruction=interview_prompt,
-            max_output_tokens=max_tokens,
-            temperature=temperature,
-        )
-    )
+        payload = {
+            "model": GROQ_MODEL,
+            "messages": conversation_history,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "stream": False,
+        }
 
-    generated_text = response.text
+        headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
+        response = requests.post(url, headers=headers, json=payload)
 
-    # Append to history using "content" key (compatible with in_sock_1.py format)
-    conversation_history.append({"role": "user", "content": user_input})
-    conversation_history.append({"role": "assistant", "content": generated_text})
+        if response.status_code == 200:
+            result = response.json()
+            choice = result["choices"][0]["message"]["content"]
+            conversation_history.append({"role": "assistant", "content": choice})
+            return choice.strip(), conversation_history
+        else:
+            print(f"❌ Error calling Groq API: {response.status_code}")
+            print(response.text)
+            return "Sorry, I'm having trouble processing your answer right now.", conversation_history
 
-    return generated_text, conversation_history
-
+    except Exception as e:
+        print(f"❌ Exception in query_groq: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return "Sorry, there was an error processing your answer.", conversation_history
+    
 # def text_to_speech(response_text):
 #     try:
 #         #print(f"Generating speech for: {response_text}")

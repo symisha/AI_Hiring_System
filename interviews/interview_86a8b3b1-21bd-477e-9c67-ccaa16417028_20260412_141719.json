@@ -1,0 +1,37 @@
+{
+  "session_id": "86a8b3b1-21bd-477e-9c67-ccaa16417028_20260412_141719",
+  "candidate_id": "86a8b3b1-21bd-477e-9c67-ccaa16417028",
+  "language": "en",
+  "started_at": "2026-04-12 14:17:19",
+  "conversations": [
+    {
+      "timestamp": "2026-04-12 14:18:18",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to data science?",
+      "user_answer": "Okay, so I did my bachelor's in computer science from Fast University and I liked working with data,  hence I decided to pursue data science.",
+      "status": "valid",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-04-12 14:19:44",
+      "ai_question": "That's great, it's good to hear you have a computer science background. Now, let's move on to some technical questions. How does data augmentation help in improving model performance?",
+      "user_answer": "Okay so data augmentation helps the model in performance by increasing the size of the data.  Basically data augmentation what it does is that it  what it does is that it generates fake images which increase using the existing images which  helps in increasing the size of the data which makes the dataset larger hence training becomes more easier.",
+      "status": "valid",
+      "valid_count_at_time": 1
+    },
+    {
+      "timestamp": "2026-04-12 14:21:16",
+      "ai_question": "That's a good point about data augmentation increasing the dataset size. Now, let's talk about another important aspect of model training. What is the purpose of splitting data into training, validation, and test sets?",
+      "user_answer": "we divide the data into three parts because the training data is basically a greater amount of  data which helps the model to be trained and model learns from data, it learns all the patterns and  the significance of the data whereas validation test is done to check whether the data with the  training is done right or not whereas test set is whereas test set is basically an unbiased  and unseen data set which tests the model and it tells how the training is done and  whether it is correctly predicting the right answer or not.",
+      "status": "valid",
+      "valid_count_at_time": 2
+    },
+    {
+      "timestamp": "2026-04-12 14:21:36",
+      "ai_question": "Great explanation on the purpose of splitting data into training, validation, and test sets. Now, let's dive a bit deeper into model performance. What is the bias-variance tradeoff, and how does it affect model performance?",
+      "user_answer": "Hello, can you please tell me what is AI?",
+      "status": "discarded",
+      "valid_count_at_time": 3
+    }
+  ],
+  "valid_question_count": 3
+}

@@ -125,7 +125,7 @@ def get_applicant_details(job_id: str):
             .single()
             .execute()
         )
-        job_title = job_response.data.get("title") if job_response.data else None
+        job_title = job_response.data.get("job_title") if job_response.data else None
 
         response = (
             supabase.table("job_applications")
