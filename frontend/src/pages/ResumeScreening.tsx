@@ -8,50 +8,16 @@ import CandidateList from "@/components/ResumeScreening/CandidateList";
 import CandidateDetailPanel from "@/components/ResumeScreening/CandidateDetailPanel";
 import { Card } from "@/components/ui/card";
 
-const mockCandidates = [
-  {
-    id: "c1",
-    name: "Alice Johnson",
-    email: "alice.j@example.com",
-    appliedDate: "2025-11-30",
-    experience: 4,
-    education: "B.Sc Computer Science",
-    skills: ["Node.js", "Postgres", "Docker", "REST"],
-    aiScore: 82,
-    status: "New",
-    resume: "/resumes/alice_johnson.pdf",
-    reasons: ["Strong backend experience", "Matches keywords: Node, REST"],
-  },
-  {
-    id: "c2",
-    name: "Brian Lee",
-    email: "brian.lee@example.com",
-    appliedDate: "2025-12-02",
-    experience: 7,
-    education: "M.Sc Software Engineering",
-    skills: ["Python", "Django", "AWS", "Microservices"],
-    aiScore: 91,
-    status: "Shortlisted",
-    resume: "/resumes/brian_lee.pdf",
-    reasons: ["Excellent JD alignment", "Cloud + Microservices experience"],
-  },
-  {
-    id: "c3",
-    name: "Carmen Diaz",
-    email: "carmen.d@example.com",
-    appliedDate: "2025-12-04",
-    experience: 1,
-    education: "B.Eng",
-    skills: ["HTML", "CSS", "React"],
-    aiScore: 45,
-    status: "Rejected",
-    resume: "/resumes/carmen_diaz.pdf",
-    reasons: ["Insufficient backend experience"],
-  },
-];
+const SHORTLIST_THRESHOLD = 75;
+
+const toNumberOrNull = (value: unknown): number | null => {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
 const ResumeScreening = ({ jobId: propJobId, job }: { jobId?: string; job?: any } = {}) => {
-  const [candidates, setCandidates] = useState<any[]>(mockCandidates);
+  const [candidates, setCandidates] = useState<any[]>([]);
   const [searchParams] = useSearchParams();
   const jobId = propJobId ?? searchParams.get("jobId") ?? undefined;
   const [selected, setSelected] = useState<any | null>(null);
@@ -72,35 +38,48 @@ const ResumeScreening = ({ jobId: propJobId, job }: { jobId?: string; job?: any 
 
   useEffect(() => {
     const fetchApps = async () => {
-      if (!jobId) return;
+      if (!jobId) {
+        setCandidates([]);
+        return;
+      }
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/routes/dashboard_essentials/job/${jobId}/get-applicants`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        const { data: apps, error } = await supabase
+          .from("job_applications")
+          .select("*")
+          .eq("job_id", jobId)
+          .order("submitted_at", { ascending: false, nullsFirst: false });
+
+        if (error) throw error;
+
+        const normalized = (apps || []).map((a: any) => {
+          const score = toNumberOrNull(a.resume_score);
+          return {
+            id: a.id || a.applicant_id,
+            name: a.name || a.applicant_name || "Unknown",
+            email: a.applicant_email || a.email || "",
+            appliedDate: a.submitted_at || a.created_at || null,
+            experience: a.experience || null,
+            education: a.education || null,
+            skills: Array.isArray(a.skills) ? a.skills : [],
+            aiScore: score,
+            status: score !== null && score > SHORTLIST_THRESHOLD ? "Shortlisted" : "Rejected",
+            resume: a.resume_url || a.resume_path || null,
+            reasons: a.reasons || [],
+            resumeEvaluation: a.resume_evaluation || null,
+          };
+        }).filter((c: any) => c.aiScore !== null);
+
+        normalized.sort((a, b) => {
+          if (a.aiScore === null && b.aiScore === null) return 0;
+          if (a.aiScore === null) return 1;
+          if (b.aiScore === null) return -1;
+          return b.aiScore - a.aiScore;
         });
-        if (!res.ok) throw new Error("Failed to fetch applications");
-        const data = await res.json();
-        if (data.job_title) setJobTitle(data.job_title);
-        // backend returns { total_applicants, applicants }
-        const apps = data.applicants || data || [];
-        // normalize to expected candidate shape when possible
-        const normalized = apps.map((a: any) => ({
-          id: a.id || a.applicant_id || a.applicant?.id,
-          name: a.name || a.applicant_name || (a.applicant && a.applicant.name) || "Unknown",
-          email: a.email || a.applicant_email || (a.applicant && a.applicant.email) || "",
-          appliedDate: a.applied_on || a.created_at || null,
-          experience: a.experience || null,
-          education: a.education || null,
-          skills: a.skills || [],
-          aiScore: a.resume_score || a.score || null,
-          status: a.status || "New",
-          resume: a.resume_url || a.resume_path || (a.applicant && a.applicant.resume_url) || null,
-          reasons: a.reasons || [],
-        }));
-        setCandidates(normalized.length ? normalized : mockCandidates);
+
+        setCandidates(normalized);
       } catch (e) {
         console.error("ResumeScreening fetch error:", e);
-        setCandidates(mockCandidates);
+        setCandidates([]);
       }
     };
 

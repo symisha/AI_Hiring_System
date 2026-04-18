@@ -1,0 +1,30 @@
+{
+  "session_id": "1c28c594-676a-4748-9237-8423e3a9e2e9_20260413_144022",
+  "candidate_id": "1c28c594-676a-4748-9237-8423e3a9e2e9",
+  "language": "en",
+  "started_at": "2026-04-13 14:40:22",
+  "conversations": [
+    {
+      "timestamp": "2026-04-13 14:41:31",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to data science?",
+      "user_answer": "So I did my bachelor's in computer science from Fast University Karachi and I liked working  with big data.  Hence I decided to pursue data science during my bachelor's.",
+      "status": "valid",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-04-13 14:41:42",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to data science?",
+      "user_answer": "Next logon. Next logon mic can be used as well.",
+      "status": "discarded",
+      "valid_count_at_time": 1
+    },
+    {
+      "timestamp": "2026-04-13 14:42:59",
+      "ai_question": "It seems your answer is similar to what you said before. Can you answer the current question specifically?",
+      "user_answer": "The purpose of splitting data into training validation and test set is that the training  data is used to, it's basically the 80% of the data and it is used to train the model  form where it learns all the patterns, where the validation test is done to check that  whether there is validation loss during the training and if the training is done correctly  or not.  Whereas test set is basically unbiased and unique data set which is basically used  to test whether the model that you have trained on is working correctly or not.",
+      "status": "valid",
+      "valid_count_at_time": 1
+    }
+  ],
+  "valid_question_count": 1
+}

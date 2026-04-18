@@ -2,14 +2,12 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
 const AssessmentOverview = ({ candidates }: any) => {
   const total = candidates.length;
-  const completed = candidates.filter((c: any) => c.status === "Completed").length;
-  const pending = candidates.filter((c: any) => c.status === "Pending").length;
-  const notStarted = candidates.filter((c: any) => c.status === "Not Started").length;
+  const shortlisted = candidates.filter((c: any) => c.status === "Shortlisted").length;
+  const rejected = candidates.filter((c: any) => c.status === "Rejected").length;
 
   const parts = [
-    { label: "Completed", value: completed, color: "#10b981" },
-    { label: "Pending", value: pending, color: "#f59e0b" },
-    { label: "Not Started", value: notStarted, color: "#ef4444" },
+    { label: "Shortlisted", value: shortlisted, color: "#10b981" },
+    { label: "Rejected", value: rejected, color: "#ef4444" },
   ];
 
   const avgScore = candidates.filter((c: any) => c.score !== null && c.score !== undefined).reduce((s: number, c: any) => s + (c.score || 0), 0) / (candidates.filter((c: any) => c.score !== null && c.score !== undefined).length || 1);
@@ -21,11 +19,10 @@ const AssessmentOverview = ({ candidates }: any) => {
         <p className="text-sm text-muted-foreground">Snapshot of assessment progress</p>
 
         <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-          <div>Total shortlisted: <strong>{total}</strong></div>
+          <div>Total Candidates: <strong>{total}</strong></div>
           <div>Invited: <strong>{total}</strong></div>
-          <div>Completed: <strong>{completed}</strong></div>
-          <div>Pending: <strong>{pending}</strong></div>
-          <div>Not Started: <strong>{notStarted}</strong></div>
+          <div>Shortlisted: <strong>{shortlisted}</strong></div>
+          <div>Rejected: <strong>{rejected}</strong></div>
           <div>Avg Score: <strong>{Math.round(avgScore)}</strong></div>
         </div>
       </div>

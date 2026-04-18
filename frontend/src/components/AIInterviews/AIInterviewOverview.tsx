@@ -2,14 +2,12 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
 const AIInterviewOverview = ({ candidates }: any) => {
   const total = candidates.length;
-  const completed = candidates.filter((c: any) => c.interviewStatus === "Completed").length;
-  const inProgress = candidates.filter((c: any) => c.interviewStatus === "In Progress").length;
-  const notStarted = candidates.filter((c: any) => c.interviewStatus === "Not Started").length;
+  const shortlisted = candidates.filter((c: any) => c.interviewStatus === "Shortlisted").length;
+  const rejected = candidates.filter((c: any) => c.interviewStatus === "Rejected").length;
 
   const parts = [
-    { label: "Completed", value: completed, color: "#8610b9ff" },
-    { label: "In Progress", value: inProgress, color: "#d348d3ff" },
-    { label: "Not Started", value: notStarted, color: "#dfa0eaff" },
+    { label: "Shortlisted", value: shortlisted, color: "#10b981" },
+    { label: "Rejected", value: rejected, color: "#ef4444" },
   ];
 
   const avgAiScore = Math.round(candidates.filter((c: any) => c.aiScore != null).reduce((s: number, c: any) => s + (c.aiScore || 0), 0) / (candidates.filter((c:any)=>c.aiScore!=null).length || 1));
@@ -24,9 +22,8 @@ const AIInterviewOverview = ({ candidates }: any) => {
 
         <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
           <div>Invited: <strong>{total}</strong></div>
-          <div>Completed: <strong>{completed}</strong></div>
-          <div>In Progress: <strong>{inProgress}</strong></div>
-          <div>Not Started: <strong>{notStarted}</strong></div>
+          <div>Shortlisted: <strong>{shortlisted}</strong></div>
+          <div>Rejected: <strong>{rejected}</strong></div>
           <div>Avg AI Score: <strong>{avgAiScore}</strong></div>
           <div>Comm Avg: <strong>{avgComm}</strong> • Conf Avg: <strong>{avgConf}</strong></div>
         </div>

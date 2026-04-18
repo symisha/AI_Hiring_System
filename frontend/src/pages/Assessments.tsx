@@ -7,47 +7,16 @@ import CandidateAssessmentList from "@/components/Assessments/CandidateAssessmen
 import CandidateAssessmentDetail from "@/components/Assessments/CandidateAssessmentDetail.tsx";
 import { Card } from "@/components/ui/card";
 
-const mockCandidates = [
-  {
-    id: "a1",
-    name: "Alice Johnson",
-    email: "alice.j@example.com",
-    invitedDate: "2025-12-01",
-    // assessmentType: "AI-generated",
-    assessmentId: "AS-101",
-    status: "Completed",
-    score: 87,
-    resume: "/resumes/alice_johnson.pdf",
-    notes: "Strong backend skills",
-  },
-  {
-    id: "a2",
-    name: "Brian Lee",
-    email: "brian.lee@example.com",
-    invitedDate: "2025-12-03",
-    // assessmentType: "Manual",
-    assessmentId: "AS-102",
-    status: "Pending",
-    score: null,
-    resume: "/resumes/brian_lee.pdf",
-    notes: "Awaiting submission",
-  },
-  {
-    id: "a3",
-    name: "Carmen Diaz",
-    email: "carmen.d@example.com",
-    invitedDate: "2025-12-05",
-    // assessmentType: "AI-generated",
-    assessmentId: "AS-101",
-    status: "Not Started",
-    score: null,
-    resume: "/resumes/carmen_diaz.pdf",
-    notes: "Follow up needed",
-  },
-];
+const SHORTLIST_THRESHOLD = 75;
+
+const toNumberOrNull = (value: unknown): number | null => {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
 const Assessments = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
-  const [candidates, setCandidates] = useState<any[]>(mockCandidates);
+  const [candidates, setCandidates] = useState<any[]>([]);
   const [selected, setSelected] = useState<any | null>(null);
   const [jobTitle, setJobTitle] = useState<string>(job?.title || job?.job_title || "");
 
@@ -66,31 +35,47 @@ const Assessments = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
 
   useEffect(() => {
     const fetchApps = async () => {
-      if (!jobId && !job?.id) return;
+      if (!jobId && !job?.id) {
+        setCandidates([]);
+        return;
+      }
       const id = job?.id ?? jobId;
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/routes/dashboard_essentials/job/${id}/get-applicants`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        const { data: apps, error } = await supabase
+          .from("job_applications")
+          .select("*")
+          .eq("job_id", id)
+          .order("submitted_at", { ascending: false, nullsFirst: false });
+
+        if (error) throw error;
+
+        const normalized = (apps || []).map((a: any) => {
+          const score = toNumberOrNull(a.assessment_score);
+          return {
+            id: a.id || a.applicant_id,
+            name: a.name || a.applicant_name || "Unknown",
+            email: a.applicant_email || a.email || "",
+            invitedDate: a.submitted_at || a.created_at || null,
+            assessmentId: a.assessment_id || null,
+            assessmentType: a.assessment_type || "AI-generated",
+            status: score !== null && score > SHORTLIST_THRESHOLD ? "Shortlisted" : "Rejected",
+            score,
+            resume: a.resume_url || null,
+            notes: a.notes || null,
+          };
+        }).filter((c: any) => c.score !== null);
+
+        normalized.sort((a, b) => {
+          if (a.score === null && b.score === null) return 0;
+          if (a.score === null) return 1;
+          if (b.score === null) return -1;
+          return b.score - a.score;
         });
-        if (!res.ok) throw new Error("Failed to fetch applications");
-        const data = await res.json();
-        const apps = data.applicants || data || [];
-        const normalized = apps.map((a: any) => ({
-          id: a.id || a.applicant_id,
-          name: a.name || a.applicant_name || (a.applicant && a.applicant.name) || "Unknown",
-          email: a.email || (a.applicant && a.applicant.email) || "",
-          invitedDate: a.invited_on || a.created_at || null,
-          assessmentId: a.assessment_id || null,
-          status: a.status || "Pending",
-          score: a.resume_score || a.score || null,
-          resume: a.resume_url || (a.applicant && a.applicant.resume_url) || null,
-          notes: a.notes || null,
-        }));
-        setCandidates(normalized.length ? normalized : mockCandidates);
+
+        setCandidates(normalized);
       } catch (e) {
         console.error("Assessments fetch error:", e);
-        setCandidates(mockCandidates);
+        setCandidates([]);
       }
     };
     fetchApps();
@@ -102,8 +87,8 @@ const Assessments = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
         jobTitle={jobTitle || (jobId ? `Job ${jobId}` : "Backend Developer")}
         jobId={job?.id ?? jobId}
         totalInvited={candidates.length}
-        assessmentsPending={candidates.filter((c) => c.status === "Pending").length}
-        assessmentsCompleted={candidates.filter((c) => c.status === "Completed").length}
+        assessmentsPending={candidates.filter((c) => c.score === null || c.score === undefined).length}
+        assessmentsCompleted={candidates.filter((c) => c.score !== null && c.score !== undefined).length}
         assessmentType="AI-generated"
       />
 

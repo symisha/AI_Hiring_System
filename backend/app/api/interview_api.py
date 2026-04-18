@@ -1,6 +1,13 @@
 # app.py
 import os
 import sys
+
+# Fix Windows console encoding (cp1252 can't handle emojis)
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 import json
 import time
 import asyncio
@@ -9,7 +16,7 @@ import uuid
 import re
 from typing import Dict, Any, Optional, List, Tuple
 from app.services.ai_interview import *
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 #from fastapi.staticfiles import StaticFiles
@@ -25,6 +32,8 @@ import requests
 import tempfile
 from app.database.db_connection import supabase
 from app.services.interview_link import verify_interview_token
+from app.services.evaluating_interview import evaluate_and_save_interview
+import traceback
 
 # ----------------- Config -----------------
 GROQ_API_KEY = "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"  # keep env in prod
@@ -67,6 +76,7 @@ def verify_token(authorization: str) -> Dict[str, Any]:
 
 class StopInterviewBody(BaseModel):
     session_id: str | None = None
+    job_id: str | None = None  # optional; falls back to token's job_id
 
 # ======================== QUESTION COUNTER SYSTEM ========================
 MAX_QUESTIONS = 10
@@ -223,14 +233,32 @@ def home(request: Request):
 
 
 @app1.post("/stop")
-async def stop_interview(request: Request, body: StopInterviewBody):
+async def stop_interview(request: Request, body: StopInterviewBody, background_tasks: BackgroundTasks):
     authorization = request.headers.get("Authorization", "")
     user_info = verify_token(authorization=authorization)
+
+    candidate_id = user_info.get("candidate_id")
+    # job_id comes from the interview token (preferred) or the request body
+    job_id = user_info.get("job_id") or body.job_id
+    session_id = body.session_id
+
+    if session_id and job_id and candidate_id:
+        interview_filename = f"interviews/interview_{session_id}.json"
+        print(f"📋 Scheduling evaluation: {interview_filename}")
+        background_tasks.add_task(
+            evaluate_and_save_interview,
+            interview_filename,
+            str(candidate_id),
+            str(job_id),
+        )
+    else:
+        print(f"⚠️ Skipping evaluation — missing info: session_id={session_id}, job_id={job_id}, candidate_id={candidate_id}")
+
     return {
         "ok": True,
-        "message": "Interview stopped",
-        "session_id": body.session_id,
-        "candidate_id": user_info.get("candidate_id"),
+        "message": "Interview stopped. Evaluation is processing in the background.",
+        "session_id": session_id,
+        "candidate_id": candidate_id,
     }
 
 
@@ -622,6 +650,7 @@ class Session:
         self.conversation_history = []
         self.conversation_context = []
         self.previous_ai_question = None
+        self.job_id: Optional[str] = None  # set after token verification
         
         # Question counter tracking
         self.question_counter = {'count': 0}
@@ -914,6 +943,7 @@ async def ws_handler(ws: WebSocket):
                 
                     lang = (data.get("language") or "en").lower()
                     sess = Session(lang, candidate_id)
+                    sess.job_id = user_info.get("job_id")  # store job_id from token
                     
                     # Extract session_id from conversation filename
                     # Format: "interviews/interview_cand_20f6562e_20260219_003124.json"
@@ -924,6 +954,7 @@ async def ws_handler(ws: WebSocket):
                         "type": "session_initialized", 
                         "candidate_id": candidate_id,
                         "session_id": session_filename_part,
+                        "job_id": sess.job_id,
                         "email": user_info['email'],
                         "language": sess.lang,
                         "message": f"Session started for {user_info['email']} ({sess.lang})"

@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 
 const statusColor = (s: string) => {
   switch (s) {
+    case "Shortlisted": return "bg-green-100 text-green-700";
+    case "Rejected": return "bg-red-100 text-red-700";
     case "Completed": return "bg-green-100 text-green-700";
     case "Pending": return "bg-yellow-100 text-yellow-700";
     case "Not Started": return "bg-red-100 text-red-700";
@@ -24,6 +26,7 @@ const CandidateAssessmentCard = ({ candidate, onView }: any) => {
         <div className="mt-2 text-sm">
           <div>Assessment: {candidate.assessmentId} • {candidate.assessmentType}</div>
           <div className="mt-1">Invited: {candidate.invitedDate}</div>
+          <div className="mt-1">Assessment Score: {candidate.score ?? "N/A"}</div>
         </div>
       </div>
 
