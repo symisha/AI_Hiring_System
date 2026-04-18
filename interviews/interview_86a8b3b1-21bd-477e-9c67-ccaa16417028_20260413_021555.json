@@ -1,0 +1,51 @@
+{
+  "session_id": "86a8b3b1-21bd-477e-9c67-ccaa16417028_20260413_021555",
+  "candidate_id": "86a8b3b1-21bd-477e-9c67-ccaa16417028",
+  "language": "en",
+  "started_at": "2026-04-13 02:15:55",
+  "conversations": [
+    {
+      "timestamp": "2026-04-13 02:16:56",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to data science?",
+      "user_answer": "Okay, so I did my bachelor's in computer science from Fast University Karachi  and I like working with data, hence I decided to pursue data science.",
+      "status": "valid",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-04-13 02:18:00",
+      "ai_question": "That's great, it's good to have a computer science background for data science. Now, let's dive into some technical aspects. How does data augmentation help in improving model performance?",
+      "user_answer": "Data augmentation artificially increases the size of the data using the existing samples  which allows the model to have a greater amount of data to be trained on hence the chance of  overfitting decreases and the performance of the model improves.",
+      "status": "valid",
+      "valid_count_at_time": 1
+    },
+    {
+      "timestamp": "2026-04-13 02:19:43",
+      "ai_question": "That makes sense, increasing the data size can definitely help with overfitting. Now, let's talk about another important aspect of model training. What is the purpose of splitting data into training, validation, and test sets?",
+      "user_answer": "Basically, we split the data into training  because we need a certain amount of data to which  our model to be trained on.  It can learn various things like it  can learn various data, various patterns from the data,  variation set is basically to check  whether the training is done correctly or not,  whereas test set is used to, whereas test set  is basically used to check whether the model is  model is giving the right answer or not.",
+      "status": "valid",
+      "valid_count_at_time": 2
+    },
+    {
+      "timestamp": "2026-04-13 02:20:15",
+      "ai_question": "Great, you've covered the basic idea of splitting data into training, validation, and test sets. Now, let's move on to another important concept in machine learning. What is the bias-variance tradeoff, and how does it affect model performance?",
+      "user_answer": "Um, I think that, uh, can you please tell me what is AI?",
+      "status": "discarded",
+      "valid_count_at_time": 3
+    },
+    {
+      "timestamp": "2026-04-13 02:21:31",
+      "ai_question": "Your answer does not seem to be related to the question. Please answer the question I just asked. What is the bias-variance tradeoff, and how does it affect model performance?",
+      "user_answer": "bias variance trade-off is to find a middle ground where the model does not overfit  neither it underfits but increasing the variance will make the model so  complicated it will not only learn the patterns but it also learn the noise  which will make the model overfitting whereas bias is basically model is  making a model so simple that it does not even recognize the basic  patterns which makes the model underfitting pretty useless",
+      "status": "valid",
+      "valid_count_at_time": 3
+    },
+    {
+      "timestamp": "2026-04-13 02:22:12",
+      "ai_question": "Great, let's move on to Deep Learning. How does dropout help prevent overfitting in neural networks?",
+      "user_answer": "I would want to end the interview now. Bye.",
+      "status": "valid",
+      "valid_count_at_time": 4
+    }
+  ],
+  "valid_question_count": 4
+}

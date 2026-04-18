@@ -148,9 +148,24 @@
   .main-layout {
     display: grid;
     grid-template-columns: 1fr 420px;
+    grid-template-areas:
+      'interview camera'
+      'instructions instructions';
     gap: 28px;
     margin-bottom: 32px;
     align-items: start;
+  }
+
+  .interview-card {
+    grid-area: interview;
+  }
+
+  .camera-panel {
+    grid-area: camera;
+  }
+
+  .instructions-card {
+    grid-area: instructions;
   }
 
   /* ===== CARDS ===== */
@@ -276,7 +291,7 @@
 
   /* ===== INSTRUCTIONS CARD ===== */
   .instructions-card {
-    height: 380px;
+    min-height: 0;
   }
 
   .instructions-list {
@@ -513,6 +528,10 @@
   @media (max-width: 1024px) {
     .main-layout {
       grid-template-columns: 1fr;
+      grid-template-areas:
+        'interview'
+        'camera'
+        'instructions';
       gap: 24px;
     }
     
@@ -551,6 +570,175 @@
     }
   }
 
+  /* ===== TAB SWITCH WARNING ===== */
+  #tabWarningBanner {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 8888;
+    background: #dc2626;
+    color: white;
+    padding: 14px 24px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    animation: slideDown 0.3s ease-out;
+    box-shadow: 0 4px 12px rgba(220,38,38,0.4);
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to   { transform: translateY(0); }
+  }
+
+  #tabWarningBanner .warning-close {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.8;
+  }
+
+  #tabWarningBanner .warning-close:hover { opacity: 1; }
+
+  /* ===== LIVE CAMERA FEED ===== */
+  .live-camera-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .live-camera-header {
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .live-camera-header h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+  }
+
+  .live-badge {
+    background: #ef4444;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    animation: pulse-live 1.5s infinite;
+  }
+
+  @keyframes pulse-live {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.5; }
+  }
+
+  #liveCameraFeed {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    background: #000;
+    border-radius: 0 0 12px 12px;
+    transform: scaleX(-1); /* Mirror effect */
+  }
+
+  .tab-switch-counter {
+    font-size: 12px;
+    color: #6b7280;
+    padding: 10px 20px;
+    border-top: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .tab-switch-counter .count-badge {
+    font-weight: 700;
+    color: white;
+    background: #6b7280;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+  }
+
+  .tab-switch-counter .count-badge.warning { background: #f59e0b; }
+  .tab-switch-counter .count-badge.danger  { background: #dc2626; }
+
+  /* ===== CAMERA OVERLAY ===== */
+  #cameraOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .camera-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 460px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .camera-modal .camera-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+
+  .camera-modal h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+  }
+
+  .camera-modal p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .camera-preview {
+    width: 100%;
+    height: 200px;
+    border-radius: 10px;
+    background: #000;
+    margin-bottom: 20px;
+    object-fit: cover;
+    display: none;
+  }
+
+  .camera-denied {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    padding: 16px;
+    color: #dc2626;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
   /* ===== SCROLLBAR ===== */
   #conversation::-webkit-scrollbar {
     width: 6px;
@@ -569,9 +757,256 @@
   #conversation::-webkit-scrollbar-thumb:hover {
     background: #a1a1a1;
   }
+
+  /* ===== APP THEME ALIGNMENT OVERRIDES ===== */
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 8% 8%;
+    --card-foreground: 0 0% 98%;
+    --primary: 263 70% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 6% 15%;
+    --muted: 240 5% 20%;
+    --muted-foreground: 240 5% 64.9%;
+    --border: 240 6% 20%;
+    --success: 142 76% 45%;
+    --warning: 35 92% 52%;
+    --danger: 0 72% 51%;
+    --gradient-page: linear-gradient(180deg, hsl(240 10% 3.9%), hsl(240 8% 8%));
+    --gradient-accent: linear-gradient(135deg, hsl(263 70% 60% / 0.2), hsl(230 80% 65% / 0.15));
+  }
+
+  body {
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: var(--gradient-page);
+    color: hsl(var(--foreground));
+  }
+
+  .header,
+  .progress-header,
+  .bottom-actions {
+    background: hsl(var(--card));
+    border-color: hsl(var(--border));
+    box-shadow: none;
+  }
+
+  .header-left h1,
+  .card-title,
+  .live-camera-header h4,
+  .camera-modal h2 {
+    color: hsl(var(--foreground));
+  }
+
+  .header-info,
+  .card-subtitle,
+  .status-indicator,
+  .camera-modal p,
+  .tab-switch-counter {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .candidate-badge {
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--primary) / 0.35);
+  }
+
+  .progress-stepper::before {
+    background: hsl(var(--border));
+  }
+
+  .progress-step-icon {
+    background: hsl(var(--secondary));
+    border-color: hsl(var(--border));
+    color: hsl(var(--muted-foreground));
+  }
+
+  .progress-step.completed .progress-step-icon {
+    background: hsl(var(--success));
+    border-color: hsl(var(--success));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .progress-step.active .progress-step-icon {
+    background: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .progress-step-label {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .progress-step.active .progress-step-label {
+    color: hsl(var(--foreground));
+  }
+
+  .card,
+  .live-camera-card {
+    background: hsl(var(--card));
+    border-color: hsl(var(--border));
+    box-shadow: 0 10px 30px -10px hsl(263 70% 60% / 0.25);
+  }
+
+  .instructions-list li,
+  #conversation,
+  pre,
+  .tab-switch-counter,
+  .camera-denied,
+  .camera-modal {
+    background: hsl(var(--secondary));
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground));
+  }
+
+  .instructions-list li::before {
+    color: hsl(var(--success));
+  }
+
+  .system-status {
+    background: var(--gradient-accent);
+    border-color: hsl(var(--primary) / 0.35);
+  }
+
+  .system-status-title {
+    color: hsl(var(--foreground));
+  }
+
+  .status-dot {
+    background: hsl(var(--danger));
+  }
+
+  .status-dot.active {
+    background: hsl(var(--success));
+  }
+
+  select {
+    background: hsl(var(--secondary));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+  }
+
+  select:focus {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2);
+  }
+
+  .btn-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .btn-primary:hover {
+    background: hsl(263 70% 54%);
+  }
+
+  .btn-danger {
+    background: hsl(var(--danger));
+  }
+
+  .btn-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .btn-secondary:hover {
+    background: hsl(240 6% 19%);
+  }
+
+  .message.ai .message-bubble {
+    background: hsl(var(--secondary));
+    color: hsl(var(--foreground));
+  }
+
+  .message.user .message-bubble {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .message.system .message-bubble {
+    background: hsl(var(--warning) / 0.18);
+    border-color: hsl(var(--warning) / 0.5);
+    color: hsl(var(--foreground));
+  }
+
+  .message.ai .message-sender,
+  .message.system .message-sender,
+  .message.user .message-sender {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .evaluation-panel {
+    background: hsl(var(--card));
+    border-color: hsl(var(--success));
+  }
+
+  .evaluation-panel .card-title {
+    color: hsl(var(--success));
+  }
+
+  .live-camera-header {
+    border-color: hsl(var(--border));
+  }
+
+  .live-badge {
+    background: hsl(var(--danger));
+  }
+
+  #tabWarningBanner {
+    background: hsl(var(--danger));
+    box-shadow: 0 4px 12px hsl(var(--danger) / 0.4);
+  }
+
+  .tab-switch-counter .count-badge {
+    background: hsl(var(--muted));
+  }
+
+  .tab-switch-counter .count-badge.warning {
+    background: hsl(var(--warning));
+  }
+
+  .tab-switch-counter .count-badge.danger {
+    background: hsl(var(--danger));
+  }
+
+  #conversation::-webkit-scrollbar-track {
+    background: hsl(var(--secondary));
+  }
+
+  #conversation::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+  }
+
+  #conversation::-webkit-scrollbar-thumb:hover {
+    background: hsl(240 6% 28%);
+  }
 </style>
 </head>
 <body>
+  
+  <!-- ===== TAB SWITCH WARNING BANNER ===== -->
+  <div id="tabWarningBanner">
+    <span id="tabWarningText">⚠️ Tab switch detected! Please stay on this page during the interview.</span>
+    <span class="warning-close" onclick="dismissTabWarning()">✕</span>
+  </div>
+
+  <!-- ===== CAMERA ACCESS OVERLAY ===== -->
+  <div id="cameraOverlay">
+    <div class="camera-modal">
+      <div class="camera-icon">📷</div>
+      <h2>Camera Access Required</h2>
+      <p>This interview requires your camera to be active throughout the session. Please allow camera access to proceed.</p>
+      <video id="cameraPreview" class="camera-preview" autoplay muted playsinline></video>
+      <div id="cameraDeniedMsg" class="camera-denied">
+        ❌ Camera access was denied. You must allow camera access to participate in this interview. Please refresh the page and allow camera access when prompted.
+      </div>
+      <button id="allowCameraBtn" class="btn-primary" style="width:100%;padding:14px;font-size:15px;">
+        📷 Allow Camera & Continue
+      </button>
+    </div>
+  </div>
 
   <!-- ===== HEADER ===== -->
   <header class="header">
@@ -651,7 +1086,24 @@
         </div>
       </div>
 
-      <!-- ===== RIGHT: INSTRUCTIONS & STATUS ===== -->
+      <!-- ===== RIGHT: LIVE CAMERA ===== -->
+      <div class="camera-panel">
+
+        <!-- Live Camera Feed -->
+        <div class="live-camera-card" id="liveCameraCard" style="display:none;">
+          <div class="live-camera-header">
+            <h4>📷 Live Camera Feed</h4>
+            <span class="live-badge">● LIVE</span>
+          </div>
+          <video id="liveCameraFeed" autoplay muted playsinline></video>
+          <div class="tab-switch-counter">
+            <span>Tab switches detected</span>
+            <span class="count-badge" id="tabSwitchBadge">0 / 3</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instructions Card -->
       <div class="card instructions-card">
         <div class="card-header">
           <h3 class="card-title">Interview Instructions</h3>
@@ -662,10 +1114,10 @@
             <li>Ensure you're in a quiet environment</li>
             <li>Speak clearly and at a normal pace</li>
             <li>Answer questions thoughtfully and completely</li>
-            <li>Take your time to think before responding</li>
+            <li>Do NOT switch tabs — interview will be terminated</li>
           </ul>
           
-          <div class="system-status">
+          <!-- <div class="system-status">
             <div class="system-status-title">System Status</div>
             <div class="status-indicators">
               <div class="status-indicator">
@@ -676,8 +1128,12 @@
                 <div class="status-dot" id="connectionStatus"></div>
                 <span>Connection</span>
               </div>
+              <div class="status-indicator">
+                <div class="status-dot active" id="cameraStatus"></div>
+                <span>Camera</span>
+              </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -855,6 +1311,9 @@ document.getElementById('startBtn').onclick = async () => {
 
   // Update system status
   updateSystemStatus('connection', true);
+
+  // ✅ Enable tab switch detection now that interview is active
+  enableTabSwitchDetection();
   
   // Clear conversation and hide evaluation panel
   conversationDiv.innerHTML = '';
@@ -1128,6 +1587,10 @@ async function stopInterviewAndEvaluate() {
   // Update connection status
   updateSystemStatus('connection', false);
   
+  // Disable tab switch detection — interview is over
+  tabSwitchingEnabled = false;
+  dismissTabWarning();
+  
   // Add ending message
   addMessage('ai', 'Interview session ended. Processing your evaluation...');
   
@@ -1386,6 +1849,262 @@ function float32ToPCM16(float32Array){
   return view;
 }
 
+// ===== TAB SWITCH DETECTION =====
+let tabSwitchCount = 0;
+const MAX_TAB_SWITCHES = 3;
+let tabSwitchingEnabled = false; // Only activate after interview starts
+let tabWarningTimeout = null;
+
+function enableTabSwitchDetection() {
+  tabSwitchingEnabled = true;
+  console.log('🛡️ Tab switch detection enabled');
+}
+
+function dismissTabWarning() {
+  document.getElementById('tabWarningBanner').style.display = 'none';
+  clearTimeout(tabWarningTimeout);
+}
+
+function handleTabSwitch() {
+  if (!tabSwitchingEnabled) return;
+  if (document.visibilityState === 'hidden') {
+    tabSwitchCount++;
+    console.warn(`⚠️ Tab switch #${tabSwitchCount} detected`);
+    updateTabSwitchBadge();
+
+    if (tabSwitchCount >= MAX_TAB_SWITCHES) {
+      // Terminate on return
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          terminateInterviewDueToTabSwitch();
+        }
+      }, { once: true });
+      return;
+    }
+
+    // Show warning when they return
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        showTabWarning();
+      }
+    }, { once: true });
+  }
+}
+
+function handleWindowBlur() {
+  if (!tabSwitchingEnabled) return;
+  // Only count if page is also hidden (real tab switch, not just an alert)
+  setTimeout(() => {
+    if (document.visibilityState === 'hidden') return; // visibilitychange handles it
+    // Window lost focus but page still visible (e.g., alt+tab to another app)
+    tabSwitchCount++;
+    console.warn(`⚠️ Window focus lost #${tabSwitchCount}`);
+    updateTabSwitchBadge();
+    showTabWarning();
+
+    if (tabSwitchCount >= MAX_TAB_SWITCHES) {
+      terminateInterviewDueToTabSwitch();
+    }
+  }, 300);
+}
+
+function showTabWarning() {
+  const remaining = MAX_TAB_SWITCHES - tabSwitchCount;
+  const banner = document.getElementById('tabWarningBanner');
+  const text = document.getElementById('tabWarningText');
+
+  if (remaining > 0) {
+    text.textContent = `⚠️ Tab switch #${tabSwitchCount} detected! ${remaining} warning(s) remaining before interview is terminated.`;
+  } else {
+    text.textContent = `🚨 Final warning! Next tab switch will terminate your interview.`;
+  }
+
+  banner.style.display = 'block';
+  clearTimeout(tabWarningTimeout);
+  tabWarningTimeout = setTimeout(dismissTabWarning, 6000);
+}
+
+function updateTabSwitchBadge() {
+  const badge = document.getElementById('tabSwitchBadge');
+  if (!badge) return;
+  badge.textContent = `${tabSwitchCount} / ${MAX_TAB_SWITCHES}`;
+  badge.className = 'count-badge';
+  if (tabSwitchCount >= MAX_TAB_SWITCHES) badge.classList.add('danger');
+  else if (tabSwitchCount >= 2) badge.classList.add('warning');
+}
+
+function terminateInterviewDueToTabSwitch() {
+  tabSwitchingEnabled = false;
+  clearInterval(cameraMonitorInterval);
+  dismissTabWarning();
+
+  // Stop WebSocket  
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'stop' }));
+    ws.close();
+  }
+  // Stop mic
+  if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+  // Stop camera
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+
+  document.body.innerHTML = `
+    <div style="
+      position:fixed;inset:0;background:#1a1a1a;
+      display:flex;align-items:center;justify-content:center;
+      font-family:Arial,sans-serif;color:white;text-align:center;padding:40px;
+    ">
+      <div>
+        <div style="font-size:64px;margin-bottom:24px;">🚨</div>
+        <h1 style="font-size:28px;margin-bottom:16px;color:#ef4444;">Interview Terminated</h1>
+        <p style="font-size:16px;color:#ccc;max-width:420px;line-height:1.6;">
+          You switched tabs or minimized the browser ${MAX_TAB_SWITCHES} times.<br><br>
+          The interview has been automatically terminated due to suspicious activity.
+          Please contact HR if you believe this was a mistake.
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+// Register tab/focus listeners
+document.addEventListener('visibilitychange', handleTabSwitch);
+window.addEventListener('blur', handleWindowBlur);
+
+// ===== CAMERA ACCESS & MONITORING =====
+let cameraStream = null;
+let cameraMonitorInterval = null;
+
+async function requestCameraAccess() {
+  const overlay = document.getElementById('cameraOverlay');
+  const preview = document.getElementById('cameraPreview');
+  const deniedMsg = document.getElementById('cameraDeniedMsg');
+  const allowBtn = document.getElementById('allowCameraBtn');
+
+  allowBtn.onclick = async () => {
+    allowBtn.disabled = true;
+    allowBtn.textContent = '⏳ Requesting access...';
+    deniedMsg.style.display = 'none';
+
+    try {
+      // Try with ideal constraints first, fallback to basic if needed
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
+        });
+      } catch (constraintErr) {
+        console.warn('⚠️ Ideal constraints failed, trying basic video:', constraintErr);
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
+
+      // Show camera preview
+      preview.style.display = 'block';
+      preview.srcObject = cameraStream;
+
+      allowBtn.textContent = '✅ Camera Active — Enter Interview';
+      allowBtn.style.background = '#10b981';
+      updateSystemStatus('camera', true);
+
+      // After 1.5s, dismiss overlay, show live feed, start monitoring
+      setTimeout(() => {
+        overlay.style.display = 'none';
+
+        // Show live camera feed in main layout
+        const liveCard = document.getElementById('liveCameraCard');
+        const liveFeed = document.getElementById('liveCameraFeed');
+        if (liveCard && liveFeed) {
+          liveFeed.srcObject = cameraStream;
+          liveCard.style.display = 'block';
+        }
+
+        startCameraMonitoring();
+      }, 1500);
+
+    } catch (err) {
+      console.error('❌ Camera error:', err.name, err.message);
+      allowBtn.disabled = false;
+      allowBtn.textContent = '📷 Try Again';
+      updateSystemStatus('camera', false);
+
+      let message = '❌ Camera access failed. ';
+
+      if (err.name === 'AbortError' || err.message.includes('timeout')) {
+        message += 'Your camera is being used by another application (e.g., Zoom, Teams, browser tab). '
+          + 'Please close all other apps using the camera, then click "Try Again".';
+      } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        message += 'Camera permission was denied. Please allow camera access in your browser settings and refresh the page.';
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        message += 'No camera was found on your device. Please connect a camera and try again.';
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        message += 'Camera is already in use by another application. Please close it and try again.';
+      } else {
+        message += `Error: ${err.message}. Please close other apps using your camera and try again.`;
+      }
+
+      deniedMsg.textContent = message;
+      deniedMsg.style.display = 'block';
+    }
+  };
+}
+
+function startCameraMonitoring() {
+  cameraMonitorInterval = setInterval(() => {
+    if (!cameraStream) return;
+
+    const tracks = cameraStream.getVideoTracks();
+    const cameraActive = tracks.length > 0 && tracks[0].readyState === 'live' && tracks[0].enabled;
+
+    if (!cameraActive) {
+      console.warn('⚠️ Camera turned off — terminating interview');
+      terminateInterviewDueToCamera();
+    }
+  }, 2000); // Check every 2 seconds
+}
+
+function terminateInterviewDueToCamera() {
+  clearInterval(cameraMonitorInterval);
+  updateSystemStatus('camera', false);
+
+  // Stop WebSocket
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'stop' }));
+    ws.close();
+  }
+
+  // Stop microphone
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(t => t.stop());
+  }
+
+  // Stop camera
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+
+  // Block page with message
+  document.body.innerHTML = `
+    <div style="
+      position:fixed;inset:0;background:#1a1a1a;
+      display:flex;align-items:center;justify-content:center;
+      font-family:Arial,sans-serif;color:white;text-align:center;padding:40px;
+    ">
+      <div>
+        <div style="font-size:64px;margin-bottom:24px;">🚫</div>
+        <h1 style="font-size:28px;margin-bottom:16px;color:#ef4444;">Interview Terminated</h1>
+        <p style="font-size:16px;color:#ccc;max-width:400px;line-height:1.6;">
+          Your camera was turned off during the interview.<br><br>
+          The interview has been automatically terminated.
+          Please contact HR if you believe this was a mistake.
+        </p>
+      </div>
+    </div>
+  `;
+}
+
 // ✅ 5. INITIALIZE ON PAGE LOAD
 document.addEventListener('DOMContentLoaded', function() {
   console.log('✅ AI Interview Assessment page initialized');
@@ -1394,6 +2113,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize system status as inactive
   updateSystemStatus('mic', false);
   updateSystemStatus('connection', false);
+  updateSystemStatus('camera', false);
+
+  // ✅ Request camera access before anything else
+  requestCameraAccess();
 });
 </script>
 </body>

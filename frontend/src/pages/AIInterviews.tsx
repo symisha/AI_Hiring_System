@@ -7,53 +7,16 @@ import CandidateInterviewList from "@/components/AIInterviews/CandidateInterview
 import CandidateInterviewDetail from "@/components/AIInterviews/CandidateInterviewDetail.tsx";
 import { Card } from "@/components/ui/card";
 
-const mockCandidates = [
-  {
-    id: "i1",
-    name: "Alice Johnson",
-    email: "alice.j@example.com",
-    assessmentScore: 87,
-    invitedDate: "2025-12-06",
-    interviewStatus: "Completed",
-    aiScore: 88,
-    communication: 85,
-    confidence: 90,
-    fitLabel: "Strong Fit",
-    transcript: "/transcripts/alice_i1.txt",
-    media: "/media/alice_i1.mp4",
-  },
-  {
-    id: "i2",
-    name: "Brian Lee",
-    email: "brian.lee@example.com",
-    assessmentScore: 78,
-    invitedDate: "2025-12-07",
-    interviewStatus: "In Progress",
-    aiScore: 72,
-    communication: 70,
-    confidence: 75,
-    fitLabel: "Moderate Fit",
-    transcript: "/transcripts/brian_i2.txt",
-    media: "/media/brian_i2.mp4",
-  },
-  {
-    id: "i3",
-    name: "Carmen Diaz",
-    email: "carmen.d@example.com",
-    assessmentScore: 60,
-    invitedDate: "2025-12-08",
-    interviewStatus: "Not Started",
-    aiScore: null,
-    communication: null,
-    confidence: null,
-    fitLabel: "Weak Fit",
-    transcript: null,
-    media: null,
-  },
-];
+const SHORTLIST_THRESHOLD = 75;
+
+const toNumberOrNull = (value: unknown): number | null => {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
 const AIInterviews = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
-  const [candidates, setCandidates] = useState<any[]>(mockCandidates);
+  const [candidates, setCandidates] = useState<any[]>([]);
   const [selected, setSelected] = useState<any | null>(null);
   const [jobTitle, setJobTitle] = useState<string>(job?.title || job?.job_title || "");
 
@@ -72,30 +35,50 @@ const AIInterviews = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
 
   useEffect(() => {
     const fetchApps = async () => {
-      if (!jobId && !job?.id) return;
+      if (!jobId && !job?.id) {
+        setCandidates([]);
+        return;
+      }
       const id = job?.id ?? jobId;
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/routes/dashboard_essentials/job/${id}/get-applicants`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        const { data: apps, error } = await supabase
+          .from("job_applications")
+          .select("*")
+          .eq("job_id", id)
+          .order("submitted_at", { ascending: false, nullsFirst: false });
+
+        if (error) throw error;
+
+        const normalized = (apps || []).map((a: any) => {
+          const interviewScore = toNumberOrNull(a.interview_score);
+          return {
+            id: a.id || a.applicant_id,
+            name: a.name || a.applicant_name || "Unknown",
+            email: a.applicant_email || a.email || "",
+            invitedDate: a.submitted_at || a.created_at || null,
+            interviewStatus: interviewScore !== null && interviewScore > SHORTLIST_THRESHOLD ? "Shortlisted" : "Rejected",
+            interviewScore,
+            assessmentScore: toNumberOrNull(a.assessment_score),
+            aiScore: interviewScore,
+            communication: toNumberOrNull(a.communication),
+            confidence: toNumberOrNull(a.confidence),
+            fitLabel: interviewScore !== null && interviewScore > SHORTLIST_THRESHOLD ? "Strong Fit" : "Rejected",
+            transcript: a.transcript || null,
+            media: a.media || null,
+          };
+        }).filter((c: any) => c.interviewScore !== null);
+
+        normalized.sort((a, b) => {
+          if (a.interviewScore === null && b.interviewScore === null) return 0;
+          if (a.interviewScore === null) return 1;
+          if (b.interviewScore === null) return -1;
+          return b.interviewScore - a.interviewScore;
         });
-        if (!res.ok) throw new Error("Failed to fetch applications");
-        const data = await res.json();
-        const apps = data.applicants || data || [];
-        const normalized = apps.map((a: any) => ({
-          id: a.id || a.applicant_id,
-          name: a.name || (a.applicant && a.applicant.name) || "Unknown",
-          email: a.email || (a.applicant && a.applicant.email) || "",
-          invitedDate: a.invited_on || a.created_at || null,
-          interviewStatus: a.interview_status || a.status || "Not Started",
-          aiScore: a.ai_score || a.resume_score || null,
-          transcript: a.transcript || null,
-          media: a.media || null,
-        }));
-        setCandidates(normalized.length ? normalized : mockCandidates);
+
+        setCandidates(normalized);
       } catch (e) {
         console.error("AIInterviews fetch error:", e);
-        setCandidates(mockCandidates);
+        setCandidates([]);
       }
     };
     fetchApps();
