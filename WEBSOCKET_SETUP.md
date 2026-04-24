@@ -176,7 +176,7 @@ backend/
 
 ```bash
 # Check if server is running
-curl http://localhost:8000/
+curl curl ${BACKEND_URL}/
 
 # Check WebSocket endpoint (requires wscat)
 npm install -g wscat

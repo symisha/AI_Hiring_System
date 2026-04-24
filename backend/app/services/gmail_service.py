@@ -8,7 +8,7 @@ Setup (one-time):
 4. Go to APIs & Services → Credentials → Create Credentials → OAuth client ID.
    - Application type: **Desktop app** (easiest for initial token generation).
    - Download the JSON and save it as  backend/credentials.json
-5. Run  `python -m app.services.gmail_service`  once to complete the consent
+5. Run  `python -m app.services.gmail_service`  once to complete the 
    flow in your browser.  This creates  backend/token.json  (refresh token).
 6. After that the server can send emails headlessly using the stored token.
 

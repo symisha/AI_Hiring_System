@@ -7,7 +7,7 @@ import CandidateInterviewList from "@/components/AIInterviews/CandidateInterview
 import CandidateInterviewDetail from "@/components/AIInterviews/CandidateInterviewDetail.tsx";
 import { Card } from "@/components/ui/card";
 
-const SHORTLIST_THRESHOLD = 75;
+const SHORTLIST_THRESHOLD = 45;
 
 const toNumberOrNull = (value: unknown): number | null => {
   if (value === null || value === undefined || value === "") return null;

@@ -37,7 +37,7 @@ const FormPage: React.FC = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/submit", {
+      const res = await fetch("${import.meta.env.VITE_BACKEND_URL}/submit", {
         method: "POST",
         body: formData,
       });

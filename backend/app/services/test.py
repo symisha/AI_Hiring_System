@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 # Import your processor class
-from app.services.interview_process import AIInterviewProcessor 
+from backend.app.services.testMakingProcess import AIInterviewProcessor 
 
 router = APIRouter()
 ai_processor = AIInterviewProcessor()

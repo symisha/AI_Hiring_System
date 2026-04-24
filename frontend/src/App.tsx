@@ -20,6 +20,9 @@ import ResumeScreening from "./pages/ResumeScreening";
 import ForgotPassword from "./pages/forgot-password";
 import EmailConfirmationPending from "./pages/EmailConfirmationPending";
 import CompanyOnboarding from "./pages/CompanyOnboarding";
+import AssessmentPage from "./pages/test";
+import AIInterviews from "./pages/AIInterviews";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -44,6 +47,8 @@ const App = () => (
           <Route path="/upload-job" element={<JobForm token={""} />} />
           <Route path="/resume-screening" element={<ProtectedRoutes><ResumeScreening /></ProtectedRoutes>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/assessment" element={<AssessmentPage />} />
+          <Route path="/ai-interviews" element={<AIInterviews />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

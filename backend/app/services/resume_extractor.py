@@ -17,6 +17,7 @@ from app.database.db_connection import supabase         # Import the Supabase cl
 from fastapi import APIRouter, Depends, HTTPException                     # Import FastAPI class to create the web
 from app.auth_middleware import auth_middleware         # Import the authentication middleware to protect routes
 from app.config.config import Settings
+from app.models.appstage import AppStatus
 
 
 def fit_score(text, applicant_id: str):
@@ -320,7 +321,9 @@ def _build_jd_text(job: dict) -> str:
     )
 
 
-def _build_application_profile_text(application: dict) -> str:
+def _build_application_profile_text(meta: dict) -> str:
+    parent_data = meta.get("applications", {}) 
+    application = parent_data.get("metadata", {})
     return (
         f"Name: {application.get('name', '')}\n"
         f"Email: {application.get('email', '')}\n"
@@ -356,8 +359,8 @@ def _extract_overall_fit_score(comparison_json_text: str):
         return max(0, min(100, score))
 
 
-def _upsert_resume_score(job_id: str, applicant_id: str, score: int, resume_evaluation):
-    debug_log(f"Upserting score/evaluation. job_id={job_id}, applicant_id={applicant_id}, score={score}")
+def _upsert_resume_score(job_id: str, applicant_id: str, score: int, resume_evaluation, status: str):
+    debug_log(f"Upserting score/evaluation. job_id={job_id}, applicant_id={applicant_id}, score={score}, status={status}")
     existing = (
         supabase.table("job_applications")
         .select("id")
@@ -376,7 +379,7 @@ def _upsert_resume_score(job_id: str, applicant_id: str, score: int, resume_eval
                 {
                     "resume_score": score,
                     "resume_evaluation": resume_evaluation,
-                    "status": "processed",
+                    "status": status, # neeed to change 
                 }
             )
             .eq("job_id", job_id)
@@ -391,7 +394,9 @@ def _upsert_resume_score(job_id: str, applicant_id: str, score: int, resume_eval
                 {
                     "job_id": job_id,
                     "applicant_id": applicant_id,
-                    "status": "processed",
+                    #name should be here according to current scenario, but lets detele it later from the database job_applications 
+                    #"name" : "candidate",
+                    "status": status,
                     "resume_score": score,
                     "resume_evaluation": resume_evaluation,
                 }
@@ -461,30 +466,26 @@ def screen_new_applications_for_job(job_id: str, company_id: str):
     job = job_response.data[0]
     jd_text = _build_jd_text(job)
 
-    applications_response = (
-        supabase.table("applications")
-        .select("id,job_id,name,email,phone,city,linkedin,portfolio,degree,major,university,grad_year,cgpa,experiences,skills,projects")
-        .eq("job_id", job_id)
-        .execute()
-    )
-    applications = applications_response.data or []
 
-    existing_rows = (
+    pending_response = (
         supabase.table("job_applications")
-        .select("applicant_id")
+        # 1. Select columns from job_applications
+        # 2. Use 'applications(...)' to join and get columns from the parent table
+        .select("""
+            applicant_id, 
+            resume_evaluation, 
+            applications!applicant_id (
+                metadata
+            )
+        """)
         .eq("job_id", job_id)
+        .eq("status", AppStatus.RESUME_RECEIVED.value)
         .execute()
-        .data
-    ) or []
-    existing_applicant_ids = {str(row.get("applicant_id")) for row in existing_rows if row.get("applicant_id") is not None}
-
-    pending_applications = [
-        application for application in applications if str(application.get("id")) not in existing_applicant_ids
-    ]
-
-    debug_log(
-        f"Applications fetched={len(applications)} existing_job_applications={len(existing_applicant_ids)} new_candidates={len(pending_applications)}"
     )
+    print("Pending applications response:", pending_response)
+    pending_applications = pending_response.data or []
+
+    debug_log(f"New candidates found to process: {len(pending_applications)}")
 
     os.makedirs(EVALS_DIR, exist_ok=True)
 
@@ -492,11 +493,21 @@ def screen_new_applications_for_job(job_id: str, company_id: str):
     failed_results = []
 
     for application in pending_applications:
-        applicant_id = str(application.get("id"))
-        debug_log("------------------------------------------------------------")
-        debug_log(f"Processing NEW applicant_id={applicant_id}")
+        # 1. Get the ID directly from job_applications
+        applicant_id = str(application.get("applicant_id"))
+        
+        # 2. Extract the metadata from the joined 'applications' table
+        # This matches the 'applications!applicant_id' structure above
+        joined_data = application.get("applications", {})
+        metadata = joined_data.get("metadata", {})
+
+        if not metadata:
+            debug_log(f"Warning: No metadata found for applicant {applicant_id}")
+            continue
+
         try:
-            resume_text = _build_application_profile_text(application)
+            # 3. Pass the metadata dictionary to your formatter
+            resume_text = _build_application_profile_text(metadata)
             comparison_json = compare_cv_with_jd(
                 jd_text=jd_text,
                 resume_text=resume_text,
@@ -520,6 +531,7 @@ def screen_new_applications_for_job(job_id: str, company_id: str):
                 applicant_id=applicant_id,
                 score=score,
                 resume_evaluation=parsed_evaluation,
+                status=AppStatus.RESUME_GRADED.value
             )
 
             comparison_file = os.path.join(EVALS_DIR, f"{job_id}_{applicant_id}_comparison.json")
@@ -541,13 +553,13 @@ def screen_new_applications_for_job(job_id: str, company_id: str):
             failed_results.append({"applicant_id": applicant_id, "error": error_message})
 
     debug_log(
-        f"Screening complete. total={len(applications)}, new={len(pending_applications)}, processed={len(processed_results)}, failed={len(failed_results)}"
+        f"Screening complete. total={len(pending_applications)}, new={len(pending_applications)}, processed={len(processed_results)}, failed={len(failed_results)}"
     )
 
     return {
         "job_id": job_id,
-        "total_applications": len(applications),
-        "new_applications": len(pending_applications),
+        "total_applications": len(pending_applications),
+        "new_applications": len(pending_applications), # dont need this if we process at a single time 
         "processed": len(processed_results),
         "failed": len(failed_results),
         "results": processed_results,

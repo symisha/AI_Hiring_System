@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
-from app.services.interview_process import AIInterviewProcessor
+from app.services.testMakingProcess import AIInterviewProcessor
 from app.services.judge0 import Judge0PublicService
 
 

@@ -88,11 +88,18 @@ def calculate_interview_scores(conversations: list) -> dict:
 **Impact**: Anyone can start interviews
 **Fix**:
 ```python
-@app.websocket("/ws/interview")
+
+@app.websocket("/ws")
 async def interview_websocket(websocket: WebSocket, token: str = Query(...)):
-    # Verify JWT token
-    user = verify_token(token)
-    await ws_handler(websocket)
+    try:
+        print(f"Attempting to verify token: {token[:10]}...")
+        user = verify_token(token) # Check if THIS line is crashing
+        await websocket.accept()
+        print("✅ Connection accepted!")
+        await ws_handler(websocket)
+    except Exception as e:
+        print(f"❌ WebSocket Auth Error: {str(e)}")
+        # FastAPI might still send 403 if an exception is raised here
 ```
 
 ---
