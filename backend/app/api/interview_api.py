@@ -34,6 +34,7 @@ from app.database.db_connection import supabase
 from app.services.interview_link import verify_interview_token
 from app.services.evaluating_interview import evaluate_and_save_interview
 import traceback
+from fastapi import APIRouter
 
 # ----------------- Config -----------------
 GROQ_API_KEY = "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"  # keep env in prod
@@ -45,7 +46,7 @@ SAMPLE_RATE = 16000  # you confirmed 16kHz
 def verify_token(authorization: str) -> Dict[str, Any]:
     token = (authorization or "").replace("Bearer", "").strip()
     if not token:
-        raise HTTPException(status_code=401, detail="Missing token")
+        raise HTTPException(status_code=401, detail="Missing token", headers={"WWW-Authenticate": "Bearer"})
 
     try:
         user_response = supabase.auth.get_user(token)
@@ -210,14 +211,7 @@ app1 = FastAPI(title="Interview Agent - WS")
 
 app1.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:8080",
-        "http://127.0.0.1:8080",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
-    ],
+    allow_origins=["*"], # For testing, then narrow it down
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -877,7 +871,7 @@ async def process_utterance(sess: Session, audio: np.ndarray, ws: WebSocket):
             pass
 
 # ----------------- WebSocket Handler -----------------
-@app1.websocket("/ws")
+@app1.websocket("/interview")
 async def ws_handler(ws: WebSocket):
     await ws.accept()
     sess: Optional[Session] = None

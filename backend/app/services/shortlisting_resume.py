@@ -1,7 +1,3 @@
-#extract all the rating from database
-#check the deviation of the ratings
-#that decides the threshold for shortlisting
-# if the rating is above the threshold, then the resume is shortlisted
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from app.database.db_connection import supabase
@@ -9,217 +5,167 @@ from app.services.gmail_service import send_email
 from app.auth_middleware import auth_middleware
 from app.config.config import Settings
 from app.services.interview_link import generate_interview_token, verify_interview_token
+from app.models.appstage import AppStatus
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+# --- CONFIGURABLE THRESHOLDS ---
+RESUME_THRESHOLD = 75.0
+ASSESSMENT_THRESHOLD = 80.0
 
-def shortlist_resumes(job_id: str):
-    """Return processed candidates with computed shortlist/reject sets using mean+1 std-dev threshold."""
+# --- HELPER: CORE LOGIC ---
+
+def _process_shortlisting(job_id: str, current_status: str, score_column: str):
+    """Fetches candidates and splits them based on fixed thresholds."""
     rows = (
         supabase.table("job_applications")
-        .select("id,job_id,applicant_id,resume_score,status")
+        .select(f"id, job_id, applicant_id, {score_column}, status")
         .eq("job_id", job_id)
-        .eq("status", "processed")
+        .eq("status", current_status)
         .execute()
         .data
     ) or []
 
-    applicant_ids = [row.get("applicant_id") for row in rows if row.get("applicant_id") is not None]
-    applications_map = {}
-
-    if applicant_ids:
-        applications_rows = (
-            supabase.table("applications")
-            .select("id,name,email")
-            .in_("id", applicant_ids)
-            .execute()
-            .data
-        ) or []
-
-        applications_map = {row.get("id"): row for row in applications_rows}
-
-    for row in rows:
-        row["applications"] = applications_map.get(row.get("applicant_id"), {})
-
-    candidates = [row for row in rows if row.get("resume_score") is not None]
-    scores = [float(row["resume_score"]) for row in candidates]
-
-    if not scores:
+    if not rows:
         return {"threshold": None, "shortlisted": [], "rejected": []}
 
-    mean_score = sum(scores) / len(scores)
-    std_dev = (sum((x - mean_score) ** 2 for x in scores) / len(scores)) ** 0.5
-    threshold = mean_score + std_dev
+    # Map applicant details
+    applicant_ids = [r.get("applicant_id") for r in rows if r.get("applicant_id")]
+    apps_map = {}
+    if applicant_ids:
+        app_data = (supabase.table("applications").select("id, name, email").in_("id", applicant_ids).execute().data) or []
+        apps_map = {r["id"]: r for r in app_data}
 
-    shortlisted = [row for row in candidates if float(row["resume_score"]) >= threshold]
-    rejected = [row for row in candidates if float(row["resume_score"]) < threshold]
+    for row in rows:
+        row["applications"] = apps_map.get(row.get("applicant_id"), {})
+
+    # Determine threshold based on which stage we are in
+    threshold = RESUME_THRESHOLD if score_column == "resume_score" else ASSESSMENT_THRESHOLD
+
+    candidates = [row for row in rows if row.get(score_column) is not None]
+    shortlisted = [r for r in candidates if float(r[score_column]) >= threshold]
+    rejected = [r for r in candidates if float(r[score_column]) < threshold]
 
     return {"threshold": threshold, "shortlisted": shortlisted, "rejected": rejected}
 
+# --- EMAIL TEMPLATE BUILDERS ---
 
-def _build_shortlist_email_html(candidate_name: str, job_id: str, interview_url: str) -> str:
-    """Return an HTML email body for a shortlisted candidate."""
-    return f"""\
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
-        <h2 style="color: #2563eb;">Congratulations, {candidate_name}! 🎉</h2>
-        <p>
-            We are pleased to inform you that your resume has been <strong>shortlisted</strong>
-            for the position (Job Ref: <code>{job_id}</code>).
-        </p>
-        <p>
-            Our team was impressed with your qualifications, and we would like to
-            move forward with the next steps in the hiring process.
-        </p>
-        <p>
-            Please complete your AI interview within <strong>24 hours</strong> using this secure link:
-        </p>
-        <p>
-            <a href="{interview_url}" style="background:#2563eb;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;display:inline-block;">
-                Start AI Interview
-            </a>
-        </p>
-        <p>If the button does not work, copy this URL:<br/><code>{interview_url}</code></p>
-        <p><strong>Note:</strong> This interview link expires automatically after 24 hours.</p>
-        <br/>
-        <p>Best regards,<br/><strong>AI Hiring System</strong></p>
-    </div>
+def _build_test_email(name, job_id, url):
+    return f"""
+    <p>Good news, {name}!</p>
+    <p>Your resume has been <strong>shortlisted</strong> for the position (Job Ref: {job_id}).</p>
+    <p>To move forward in the hiring process, we invite you to complete a short AI-generated test.</p>
+    <p>Please take the test within the next <strong>24 hours</strong> using the secure link below:</p>
+    <p><a href="{url}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Start Your Test</a></p>
+    <p>If the button does not work, copy this URL:</p>
+    <p style="word-break: break-all; color: #007bff;">{url}</p>
+    <p><strong>Note:</strong> This test link expires automatically after 24 hours.</p>
     """
 
-
-def send_emails(shortlisted_resumes: list[dict], job_id: str = "N/A") -> dict:
+def _build_interview_email(name, job_id, url):
+    return f"""
+    <p>Congratulations, {name}!</p>
+    <p>You have successfully passed the assessment for the position (Job Ref: {job_id}).</p>
+    <p>The final step in our process is an AI-powered video interview.</p>
+    <p>Please complete this interview within the next <strong>24 hours</strong> using the secure link below:</p>
+    <p><a href="{url}" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Start Your Interview</a></p>
+    <p>If the button does not work, copy this URL:</p>
+    <p style="word-break: break-all; color: #28a745;">{url}</p>
+    <p><strong>Note:</strong> This interview link expires automatically after 24 hours.</p>
     """
-    Send shortlisting notification emails to all candidates via Gmail OAuth.
-
-    Parameters
-    ----------
-    shortlisted_resumes : list[dict]
-        Rows returned by `shortlist_resumes()`. Each row should contain
-        nested `applications` dict with `name` and `email`.
-    job_id : str
-        Job reference id (used in the email body).
-
-    Returns
-    -------
-    dict  –  {"sent": [...], "failed": [...]}
-    """
-    sent: list[str] = []
-    failed: list[dict] = []
-
-    for entry in shortlisted_resumes:
-        # Support both flat and nested (joined) shapes
-        applicant = entry.get("applications") or entry
-        candidate_email = applicant.get("email")
-        candidate_name = applicant.get("name", "Candidate")
-        applicant_id = entry.get("applicant_id")
-
-        if not candidate_email or not applicant_id:
-            logger.warning(f"Skipping entry with missing email/applicant_id: {entry}")
-            failed.append({"entry": entry, "reason": "missing email or applicant_id"})
-            continue
-
-        interview_token = generate_interview_token(
-            {
-                "purpose": "ai_interview",
-                "job_id": str(job_id),
-                "applicant_id": str(applicant_id),
-                "email": candidate_email,
-                "name": candidate_name,
-            }
-        )
-
-        base_url = Settings.FRONTEND_INTERVIEW_URL.rstrip("/")
-        interview_url = f"{base_url}?ivt={interview_token}"
-
-        subject = "You've Been Shortlisted! – Next Steps"
-        body_html = _build_shortlist_email_html(candidate_name, job_id, interview_url)
-
+# --- EXPORTED FLOW FUNCTIONS (Scheduler looks for these) ---
+def run_resume_to_assessment_flow(job_id: str):
+    """Stage 1: RESUME_GRADED -> ASSESSMENT_PENDING"""
+    data = _process_shortlisting(job_id, AppStatus.RESUME_GRADED.value, "resume_score")
+    
+    # Iterate through each shortlisted candidate
+    for entry in data["shortlisted"]:
+        # All logic using 'entry' MUST be indented here
         try:
-            send_email(to=candidate_email, subject=subject, body_html=body_html)
-            sent.append(candidate_email)
-            logger.info(f"✅ Email sent to {candidate_email}")
-        except Exception as exc:
-            logger.error(f"❌ Failed to send email to {candidate_email}: {exc}")
-            failed.append({"email": candidate_email, "reason": str(exc)})
+            # 1. Update status first to prevent double-processing
+            supabase.table("job_applications").update({
+                "status": AppStatus.ASSESSMENT_PENDING.value
+            }).eq("id", entry["id"]).execute()
 
-    logger.info(f"Email summary — sent: {len(sent)}, failed: {len(failed)}")
-    return {"sent": sent, "failed": failed}
-
-
-def shortlist_and_update_status(job_id: str, company_id: str) -> dict:
-    """For an open/active job: shortlist processed candidates, send email, set statuses."""
-    job = (
-        supabase.table("jobs")
-        .select("id")
-        .eq("id", job_id)
-        .eq("company_id", company_id)
-        .in_("status", ["open", "active"])
-        .limit(1)
-        .execute()
-        .data
-    )
-
-    if not job:
-        return {"job_id": job_id, "threshold": None, "shortlisted": 0, "rejected": 0, "errors": ["job not found or not open/active"]}
-
-    shortlisted_result = shortlist_resumes(job_id)
-    threshold = shortlisted_result["threshold"]
-    shortlisted_rows = shortlisted_result["shortlisted"]
-    rejected_rows = shortlisted_result["rejected"]
-
-    email_result = send_emails(shortlisted_rows, job_id=job_id) if shortlisted_rows else {"sent": [], "failed": []}
-
-    errors = []
-    updated_shortlisted = 0
-    updated_rejected = 0
-
-    for row in shortlisted_rows:
-        try:
-            (
-                supabase.table("job_applications")
-                .update({"status": "interview-stage"})
-                .eq("id", row["id"])
-                .execute()
+            # 2. Prepare the email
+            token = generate_interview_token({
+                "purpose": "ai_test", 
+                "job_id": job_id, 
+                "applicant_id": entry["applicant_id"], 
+                "email": entry["applications"].get("email"),
+                "name": entry["applications"].get("name")
+            })
+            
+            # Use your specific localhost URL format
+            url = f"http://{Settings.FRONTEND_URL}/interview.html/assessment?ivt={token}"
+            
+            send_email(
+                to=entry["applications"].get("email"), 
+                subject="Next Step: Assessment Test", 
+                body_html=_build_test_email(entry["applications"].get("name"), job_id, url)
             )
-            updated_shortlisted += 1
-        except Exception as exc:
-            errors.append({"applicant_id": row.get("applicant_id"), "error": str(exc)})
+            logger.info(f"Sent assessment invite to {entry['id']}")
+            
+        except Exception as e:
+            logger.error(f"Failed to process entry {entry.get('id')}: {e}")
 
-    for row in rejected_rows:
-        try:
-            (
-                supabase.table("job_applications")
-                .update({"status": "rejected"})
-                .eq("id", row["id"])
-                .execute()
-            )
-            updated_rejected += 1
-        except Exception as exc:
-            errors.append({"applicant_id": row.get("applicant_id"), "error": str(exc)})
+    # Process rejected candidates
+    for entry in data["rejected"]:
+        supabase.table("job_applications").update({
+            "status": AppStatus.REJECTED.value
+        }).eq("id", entry["id"]).execute()
+    
+    return data
 
-    return {
-        "job_id": job_id,
-        "threshold": threshold,
-        "shortlisted": updated_shortlisted,
-        "rejected": updated_rejected,
-        "emails_sent": len(email_result.get("sent", [])),
-        "email_failures": len(email_result.get("failed", [])),
-        "errors": errors,
-    }
+def run_assessment_to_interview_flow(job_id: str):
+    """Stage 2: ASSESSMENT_GRADED -> INTERVIEW_SCHEDULED"""
+    data = _process_shortlisting(job_id, AppStatus.ASSESSMENT_GRADED.value, "assessment_score")
+    
+    for entry in data["shortlisted"]:
+        token = generate_interview_token({"purpose": "ai_interview", "job_id": job_id, "applicant_id": entry["applicant_id"], "email": entry["applications"].get("email")})
+        url = f"{Settings.FRONTEND_INTERVIEW_URL.rstrip('/')}?ivt={token}"
+        send_email(to=entry["applications"].get("email"), subject="Next Step: Interview", body_html=_build_interview_email(entry["applications"].get("name"), job_id, url))
+        supabase.table("job_applications").update({"status": AppStatus.INTERVIEW_SCHEDULED.value}).eq("id", entry["id"]).execute()
+
+    for entry in data["rejected"]:
+        supabase.table("job_applications").update({"status": AppStatus.REJECTED.value}).eq("id", entry["id"]).execute()
+        
+    return data
 
 
 @router.post("/shortlist/{job_id}")
 def run_shortlisting_for_job(job_id: str, user=Depends(auth_middleware)):
+    """
+    Manually triggers the shortlisting process for both Resume -> Test 
+    and Test -> Interview for a specific job.
+    """
     company_id = getattr(user, "id", None)
     if not company_id:
         raise HTTPException(status_code=401, detail="Unauthorized user")
 
-    result = shortlist_and_update_status(job_id=job_id, company_id=str(company_id))
-    return result
+    # 1. Run Stage 1 (Resume Graded -> Assessment Pending)
+    stage_one_results = run_resume_to_assessment_flow(job_id)
+
+    # 2. Run Stage 2 (Assessment Graded -> Interview Pending)
+    stage_two_results = run_assessment_to_interview_flow(job_id)
+
+    return {
+        "job_id": job_id,
+        "resume_to_test": {
+            "shortlisted": len(stage_one_results.get("shortlisted", [])),
+            "rejected": len(stage_one_results.get("rejected", []))
+        },
+        "test_to_interview": {
+            "shortlisted": len(stage_two_results.get("shortlisted", [])),
+            "rejected": len(stage_two_results.get("rejected", []))
+        }
+    }
 
 
 @router.get("/interview-link/validate")
 def validate_interview_link(token: str):
+    """Validates the JWT token for either test or interview."""
     payload = verify_interview_token(token)
     return {
         "valid": True,
@@ -230,5 +176,3 @@ def validate_interview_link(token: str):
         "name": payload.get("name"),
         "exp": payload.get("exp"),
     }
-
-

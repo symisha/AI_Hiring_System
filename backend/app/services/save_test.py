@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List
 from app.database.db_connection import supabase
+from app.services.interview_link import verify_interview_token
 
 router = APIRouter()
 
@@ -18,6 +19,8 @@ class Question(BaseModel):
 class SaveTestRequest(BaseModel):
     job_id: str
     questions: List[Question]
+
+
 
 @router.post("/save-test-to-job")
 def save_test_to_job(data: SaveTestRequest):
@@ -49,31 +52,28 @@ def save_test_to_job(data: SaveTestRequest):
     except Exception as e:
         # Detailed error for debugging
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    
 
-@router.get("/get-test/{job_id}")
-def get_test(job_id: str):
-    """
-    Retrieves the test for a candidate, hiding the expected answers.
-    """
+
+@router.get("/get-test/{token}")
+def get_test(token: str):
+    """Retrieves the test using the token for identification."""
+    payload = verify_interview_token(token)
+    job_id = payload.get("job_id")
+    
     try:
         response = supabase.table("jobs").select("test").eq("id", job_id).single().execute()
-        
         if not response.data or not response.data.get("test"):
-            raise HTTPException(status_code=404, detail="No test found for this job")
+            raise HTTPException(status_code=404, detail="No test found")
         
-        full_test = response.data["test"]
-        
-        # Sanitize: Remove 'expected_output' and 'test_input' so candidates can't see them
         sanitized_test = [
             {
                 "id": q["id"],
-                "difficulty": q["difficulty"],
-                "question_text": q["question_text"],
-                "function_name": q["function_name"]
-            } for q in full_test
+                "difficulty": q.get("difficulty"),
+                "question_text": q.get("question_text"),
+                "function_name": q.get("function_name")
+            } for q in response.data["test"]
         ]
-        
-        return {"job_id": job_id, "questions": sanitized_test}
-        
+        return {"job_id": job_id, "questions": sanitized_test, "applicant_name": payload.get("name")}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

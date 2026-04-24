@@ -1324,9 +1324,10 @@ document.getElementById('startBtn').onclick = async () => {
     toggleSubmitButton(true);
 
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${protocol}//${window.location.hostname}:8000/interview/ws`;
+// Append the token as a query parameter so the backend can see it during the handshake
+  const wsUrl = `${protocol}//${window.location.hostname}:8000/ws/interview?token=${encodeURIComponent(authToken)}`;
   console.log('Connecting to WebSocket:', wsUrl);
-  ws = new WebSocket(wsUrl);
+  ws = new WebSocket(wsUrl);  
   ws.binaryType = 'arraybuffer';
 
   ws.onopen = () => {

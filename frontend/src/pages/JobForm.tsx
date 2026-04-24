@@ -125,8 +125,8 @@ const JobForm: React.FC<JobFormProps> = ({ token, editingJob, onEditComplete }) 
     // Determine endpoint and method based on whether we're editing or creating
     const isEditing = editingJob && editingJob.id;
     const endpoint = isEditing 
-      ? `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/routes/edit-job/${editingJob.id}`
-      : `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/services/upload-job`;
+      ? `${import.meta.env.VITE_BACKEND_URL}/routes/edit-job/${editingJob.id}`
+      : `${import.meta.env.VITE_BACKEND_URL}/services/upload-job`;
     const method = isEditing ? "PUT" : "POST";
 
     const res = await fetch(endpoint, {

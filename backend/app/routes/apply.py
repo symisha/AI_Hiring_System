@@ -68,14 +68,16 @@ def generate_apply_link(job_id: str, user=Depends(auth_middleware)):
 
 @router.get("/apply")
 def get_job_for_apply(token: str):
+
     """Public endpoint to return basic job info for a given token."""
+    
     job_id = _verify_token(token)
     if not job_id:
         raise HTTPException(status_code=400, detail="Invalid or expired token")
 
     try:
         # Not all schemas include a `description` column. Prefer returning structured `job_metadata` and `job_description_url`.
-        res = supabase.table("jobs").select("id,title,job_metadata,job_description_url,location,posted_on,status").eq("id", job_id).single().execute()
+        res = supabase.table("jobs").select("*").eq("id", job_id).single().execute()
         if not res.data:
             raise HTTPException(status_code=404, detail="Job not found")
         if res.data.get("status") != "open":
@@ -102,6 +104,7 @@ def submit_form_application(
     experiences: str = Form(None),
     skills: str = Form(None),
     projects: str = Form(None),
+    metadata: str = Form(None)
 ):
     """Accept candidate structured form application (no resume file required)."""
     import json as _json
@@ -134,14 +137,13 @@ def submit_form_application(
     except Exception:
         projects_data = []
 
-    record = {
-        "job_id": job_id,
+    
+    candidate_metadata = {
         "name": name,
         "email": email,
         "phone": phone,
         "city": city,
         "linkedin": linkedin,
-        "portfolio": portfolio,
         "degree": degree,
         "major": major,
         "university": university,
@@ -151,12 +153,36 @@ def submit_form_application(
         "skills": skills_data,
         "projects": projects_data,
         "applied_on": int(time.time()),
-        "status": "new",
+        "status": "new"
+    }
+    record_for_applications = {
+        "job_id": job_id,
+        "name": name,
+        "email": email,
+        "phone": phone,
+        "city": city,
+        "linkedin": linkedin,
+        "portfolio": portfolio,
+        "metadata" : candidate_metadata
     }
 
     try:
-        supabase.table("applications").insert(record).execute()
-        return {"status": "success", "message": "Application submitted."}
+        response = (
+            supabase.table("applications")
+            .insert(record_for_applications)
+            .execute()
+        )
+        supabase.table("job_applications").insert({
+            "job_id": job_id,
+            "applicant_id": response.data[0]["id"],
+           
+        }).execute()
+
+        if response.data:
+            return {
+                "status": "success", 
+                "message": "Record created in applications table.",
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error saving application: {str(e)}")
 
@@ -170,7 +196,8 @@ def submit_application(
     cover_letter: str = Form(None),
     resume: UploadFile = File(...),
 ):
-    """Accept candidate application + resume upload for the job identified by token."""
+    """Accept candidate application + resume upload for the job identified by token.
+        Application is saved to `applications` table and resume file is saved to Supabase Storage under `resumes` bucket."""
     job_id = _verify_token(token)
     if not job_id:
         raise HTTPException(status_code=400, detail="Invalid or expired token")

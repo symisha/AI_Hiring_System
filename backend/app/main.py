@@ -20,13 +20,16 @@ from app.database.db_connection import supabase  # Supabase client instance
 
 
 #Import from services 
-from app.services import job_description
+from app.services import job_description, save_test, submit_test
+
 
 # Auth middleware
-from app.auth_middleware import auth_middleware, get_current_user_id
+from app.auth_middleware import auth_middleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # Create FastAPI app instance
 app = FastAPI()
+app.add_middleware(BaseHTTPMiddleware, dispatch=auth_middleware)
 
 def _origin(url: str | None) -> str | None:
     if not url:
@@ -58,7 +61,10 @@ app.include_router(resume_extractor_router, prefix="/services", tags=["resume_ex
 app.include_router(shortlisting_router, prefix="/services", tags=["shortlisting"])
 app.include_router(dashboard_info_router, prefix="/routes/dashboard_essentials", tags=["complaints"])
 app.include_router(job_description.router, prefix="/services", tags=["job_description"])
-app.mount("/interview", interview_ws_app)
+app.include_router(save_test.router, prefix="/services", tags=["save_test"])
+app.include_router(submit_test.router, prefix="/services", tags=["submit_test"])
+
+app.mount("/ws", interview_ws_app)
 
 
 # Add CORS middleware
@@ -70,25 +76,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Root GET endpoint
-@app.get("/")
-async def read_root():
-    return {"Hello": "World"}
-
-# Root POST endpoint
-@app.post("/")
-async def create_item(item: dict):
-    return {"item_received": item}
-
-# Test endpoint to verify environment variable loading
-@app.get("/whoami")
-async def who_am_i(user=Depends(auth_middleware)):
-    return user
 
 
-@app.on_event("startup")
-async def _start_screening_scheduler():
-    app.state.screening_scheduler_task = asyncio.create_task(screening_scheduler_loop())
+#@app.on_event("startup")
+#async def _start_screening_scheduler():
+#    app.state.screening_scheduler_task = asyncio.create_task(screening_scheduler_loop())
 
 
 @app.on_event("shutdown")
@@ -100,7 +92,6 @@ async def _stop_screening_scheduler():
 # Run the app
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
 
 
 #submit the form for resume uplooad ------------------------
