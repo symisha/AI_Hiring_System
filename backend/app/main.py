@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware  # Middleware to handle CORS 
 from pydantic import BaseModel  # Used to define and validate data models (for requests/responses) with type checking
 from app.config.config import Settings # Import the settingsclass to access environment variables
 
+
 # Import routes (import nested routers directly to avoid circular/package import issues)
 from app.routes import rating_resume, apply
 from app.routes.dashboard_essentials.dashboard_info import router as dashboard_info_router
@@ -46,6 +47,7 @@ origins = [
     _origin(getattr(Settings, "FRONTEND_INTERVIEW_URL", None)),
     "http://localhost:8080",
     "http://127.0.0.1:8080",
+    "http://localhost:8081",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
