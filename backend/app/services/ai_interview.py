@@ -20,18 +20,11 @@ import math
 from playsound import playsound
 import os
 import uuid
-import pdfplumber
 import re
-import faiss
-from sentence_transformers import SentenceTransformer
 from faster_whisper import WhisperModel
+from app.services.interview_scale import INTERVIEW_SYSTEM_PROMPT, fetch_job_details
+from app.services.skill_graph import build_skill_map, build_interview_flow
 
-# --- PDF & FAISS Setup ---
-SERVICE_DIR = os.path.dirname(os.path.abspath(__file__))
-pdf_path = os.path.join(SERVICE_DIR, "associate_data_scientist.pdf")
-index_path = os.path.join(SERVICE_DIR, "faiss_index.bin")
-json_path = os.path.join(SERVICE_DIR, "questions1_.json")
-model_name = "paraphrase-multilingual-MiniLM-L12-v2"
 # --- Interview Prompts ---
 interview_prompt_ur = """
 ### ROLE & GOAL
@@ -147,6 +140,32 @@ Your primary task is to validate the candidate's answer based on the following r
 
 
 os.makedirs("conversation_logs", exist_ok=True)
+
+def format_interview_flow(interview_flow):
+    lines = []
+    for stage in ["core", "applied", "behavioral", "background"]:
+        if interview_flow.get(stage):
+            lines.append(f"{stage.upper()}:")
+            for skill in interview_flow[stage]:
+                lines.append(f"  - {skill['skill']} (score: {skill['score']})")
+    return "\n".join(lines)
+
+def build_system_prompt(job_id):
+    if not job_id:
+        return None
+    job = fetch_job_details(job_id)
+    if not job:
+        return None
+    skill_map = build_skill_map(job_id)
+    if skill_map is None:
+        return None
+    interview_flow = build_interview_flow(skill_map)
+    skill_graph_str = format_interview_flow(interview_flow)
+    return INTERVIEW_SYSTEM_PROMPT.format(
+        job_title=job.get("job_title", "N/A"),
+        seniority=job.get("seniority", "N/A"),
+        skill_graph=skill_graph_str,
+    )
 
 # ======================== QUESTION COUNTER SYSTEM ========================
 valid_question_count = 0
@@ -292,62 +311,6 @@ def transcribe_greeting():
     # Detect language based on greeting file
     lang = "en" if "english" in greeting_file.lower() else "ur"
     return transcribe(greeting_array, language=lang)
-
-def is_topic_heading(line: str) -> bool:
-    topics = ["TOPIC 1 : Machine Learning", "TOPIC 2 : Deep Learning", "TOPIC 3 : NLP", "TOPIC 4: Computer Vision"]
-    return line.strip() in topics
-
-def is_question(line: str) -> bool:
-    return re.match(r'^(\d+\.|\.?\d+)', line) is not None
-
-def parse_pdf(pdf_path):
-    with pdfplumber.open(pdf_path) as pdf:
-        text = "\n".join(page.extract_text() for page in pdf.pages if page.extract_text())
-    lines = [line.strip() for line in text.split("\n") if line.strip()]
-    topics = {}
-    current_topic = None
-    for line in lines:
-        if is_topic_heading(line):
-            current_topic = line.strip()
-            topics[current_topic] = []
-        elif is_question(line) and current_topic:
-            topics[current_topic].append(line.strip())
-    return topics
-
-def save_index_and_metadata(index, metadata, index_path, json_path):
-    faiss.write_index(index, index_path)
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(metadata, f, ensure_ascii=False, indent=4)
-    print(f"💾 Saved FAISS index -> {index_path}, metadata -> {json_path}")
-
-def load_index_and_metadata(index_path, json_path):
-    index = faiss.read_index(index_path)
-    with open(json_path, "r", encoding="utf-8") as f:
-        metadata = json.load(f)
-    return index, metadata
-
-def build_faiss_index_with_metadata(topics_dict, model_name=model_name):
-    embedding_model = SentenceTransformer(model_name)
-    all_questions = []
-    metadata = []
-    for topic, questions in topics_dict.items():
-        for q in questions:
-            all_questions.append(q)
-            metadata.append({"topic": topic, "question": q})
-    embeddings = embedding_model.encode(all_questions, convert_to_numpy=True)
-    faiss.normalize_L2(embeddings)
-    dim = embeddings.shape[1]
-    index = faiss.IndexFlatIP(dim)
-    index.add(embeddings)
-    return index, embedding_model, metadata
-
-def query_faiss(query, embedding_model, index, metadata, top_n=3):
-    q_emb = embedding_model.encode([query], convert_to_numpy=True)
-    faiss.normalize_L2(q_emb)
-    D, I = index.search(q_emb, top_n)
-    results = [(metadata[i]["question"], float(D[0][k])) for k, i in enumerate(I[0])]
-    return results
-
 
 
 # processor = WhisperProcessor.from_pretrained("openai/whisper-small",device="cpu")
@@ -737,13 +700,10 @@ def query_groq(user_input, context="", conversation_history=None, max_tokens=800
         if not any(msg.get("role") == "system" for msg in conversation_history):
             conversation_history.insert(0, {"role": "system", "content": interview_prompt})
 
-        # Build user message with context
+        # Build user message without RAG context (skill-graph prompt drives questions)
         user_message = f"""Candidate answer: "{user_input}"
 
-Relevant interview questions from knowledge base:
-{context}
-
-Keep it conversational. It should look like a natural conversation, not a scripted interview. Follow the instruction and flow."""
+    Keep it conversational and follow the system prompt and skill graph."""
 
         conversation_history.append({
             "role": "user",
