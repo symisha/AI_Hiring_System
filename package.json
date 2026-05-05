@@ -4,9 +4,9 @@
   "description": "---",
   "main": "index.js",
   "scripts": {
-    "predev:backend": "fuser -k 8000/tcp 2>/dev/null || true",
-    "dev:backend": "python3 -m uvicorn app.main:app --app-dir backend",
-    "predev:frontend": "fuser -k 8080/tcp 2>/dev/null || true",
+    "predev:backend": "echo Skipping port kill on Windows",
+    "dev:backend": "python -m uvicorn app.main:app --app-dir backend",
+    "predev:frontend": "echo Skipping port kill on Windows",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev": "concurrently -n backend,frontend -c green,cyan \"npm run dev:backend\" \"npm run dev:frontend\"",
     "test": "echo \"Error: no test specified\" && exit 1"

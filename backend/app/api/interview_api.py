@@ -638,9 +638,6 @@ class Session:
         self.messages = [{"role": "system", "content": self.system_prompt}]
         self.buffer = []  # legacy per-utterance chunks (still available for manual mode)
         self.utterance_active = False  # legacy flag
-        self.index = None
-        self.embedding_model = None
-        self.metadata = None
         self.conversation_history = []
         self.conversation_context = []
         self.previous_ai_question = None
@@ -704,7 +701,7 @@ class Session:
 # ----------------- Utterance Processing -----------------
 async def process_utterance(sess: Session, audio: np.ndarray, ws: WebSocket):
     """
-    Process a complete utterance: STT -> RAG -> LLM -> TTS -> send results.
+    Process a complete utterance: STT -> LLM -> TTS -> send results.
     This function is cancellable. If it is cancelled (due to interruption), it will attempt to stop gracefully.
     """
     try:
@@ -741,18 +738,10 @@ async def process_utterance(sess: Session, audio: np.ndarray, ws: WebSocket):
             if len(sess.conversation_context) > 2:
                 sess.conversation_context = sess.conversation_context[-2:]
 
-        # 3) Build FAISS/RAG context for this turn (safe to fail open)
+        # 3) No RAG context (skill-graph prompt drives questions)
         context = ""
-        try:
-            if sess.embedding_model is not None and sess.index is not None and sess.metadata is not None:
-                similar_qs = query_faiss(user_text, sess.embedding_model, sess.index, sess.metadata, top_n=5)
-                context = "\n".join([f"- {q[0]}" for q in similar_qs]) if similar_qs else ""
-        except Exception as _:
-            # non-fatal: proceed without RAG context
-            context = ""
 
-        # 4) LLM: call with context + running history (query_groq handles appending user message)
-        # 4) LLM: call with context + running history (query_groq handles appending user message)
+        # 4) LLM: call with running history (query_groq handles appending user message)
         ai_text, updated_history = query_groq(
             user_input=user_text,
             context=context,
@@ -938,6 +927,28 @@ async def ws_handler(ws: WebSocket):
                     lang = (data.get("language") or "en").lower()
                     sess = Session(lang, candidate_id)
                     sess.job_id = user_info.get("job_id")  # store job_id from token
+
+                    if not sess.job_id:
+                        await ws.send_text(json.dumps({
+                            "type": "status",
+                            "level": "err",
+                            "message": "Missing job_id for this candidate"
+                        }))
+                        await ws.close()
+                        return
+
+                    system_prompt = build_system_prompt(sess.job_id)
+                    if not system_prompt:
+                        await ws.send_text(json.dumps({
+                            "type": "status",
+                            "level": "err",
+                            "message": "Job not found or skill graph unavailable"
+                        }))
+                        await ws.close()
+                        return
+
+                    sess.system_prompt = system_prompt
+                    sess.messages = [{"role": "system", "content": system_prompt}]
                     
                     # Extract session_id from conversation filename
                     # Format: "interviews/interview_cand_20f6562e_20260219_003124.json"
@@ -964,13 +975,6 @@ async def ws_handler(ws: WebSocket):
                         interview_prompt = interview_prompt_ur
                         greet_text = "ہیلو! ہمارے انٹرویو میں خوش آمدید۔ کیا آپ مجھے اپنے تکنیکی پس منظر کے بارے میں بتا کر شروع کر سکتے ہیں اور آپ کو ڈیٹا سائنس تک کیا لایا ہے؟"
 
-                    # Build FAISS (once per session)
-                    topics_dict = parse_pdf(pdf_path)
-                    index, embedding_model, metadata = build_faiss_index_with_metadata(topics_dict)
-                    save_index_and_metadata(index, metadata, index_path, json_path)
-                    sess.index = index
-                    sess.embedding_model = embedding_model
-                    sess.metadata = metadata
                     # Initialize conversation history (system + assistant greeting)
                     sess.conversation_history = [
                         {"role": "system", "content": sess.system_prompt},
