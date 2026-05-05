@@ -5,6 +5,16 @@ from app.database.db_connection import supabase
 from app.services.resume_extractor import screen_new_applications_for_job
 # Import the new granular flow functions
 
+import logging
+
+# Configure logging to output to the console
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+logger = logging.getLogger(__name__)
+
 from app.services.shortlisting_resume import (
     run_resume_to_assessment_flow,
     run_assessment_to_interview_flow

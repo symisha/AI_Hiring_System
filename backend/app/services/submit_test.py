@@ -3,6 +3,7 @@ import traceback
 from typing import List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+import numpy as np # Needed for telemetry analysis
 
 from app.database.db_connection import supabase
 from app.services.judge0 import Judge0PublicService
@@ -18,6 +19,74 @@ class Solution(BaseModel):
 class TestSubmission(BaseModel):
     token: str
     solutions: List[Solution]
+
+class ViolationReport(BaseModel):
+    token: str
+    violation_type: str
+    details: str
+
+class TelemetryEvent(BaseModel):
+    key: str
+    timestamp: int
+
+class TelemetryData(BaseModel):
+    token: str
+    events: List[TelemetryEvent]
+
+@router.post("/log-violation")
+async def log_violation(report: ViolationReport):
+    try:
+        payload = verify_interview_token(report.token)
+        target_app_id = payload.get("applicant_id")
+
+        new_entry = {
+            "type": report.violation_type,
+            "details": report.details,
+            "timestamp": "now()"
+        }
+
+        # Use the RPC function to append to the security_logs JSONB column in the 'test' table
+        # Note: This assumes the 'test' row already exists. 
+        # If it doesn't yet, you might want to store these in job_applications temporarily
+        supabase.rpc('append_security_log', {
+            't_id': target_app_id, 
+            'new_log': new_entry
+        }).execute()
+
+        return {"status": "recorded"}
+    except Exception as e:
+        print(f"Violation Log Error: {e}")
+        return {"status": "error"}
+
+# --- NEW ENDPOINT: TELEMETRY (AI Typing Detection) ---
+@router.post("/telemetry")
+async def analyze_telemetry(data: TelemetryData):
+    try:
+        events = data.events
+        if len(events) < 5: return {"status": "short"}
+
+        # Analyze intervals for robotic rhythm
+        intervals = [events[i].timestamp - events[i-1].timestamp for i in range(1, len(events))]
+        avg_speed = np.mean(intervals)
+        std_dev = np.std(intervals)
+
+        # Logic: High speed (<50ms) and low variance (<10ms) indicates a bot or phone-reader
+        if avg_speed < 50 and std_dev < 10:
+            payload = verify_interview_token(data.token)
+            target_app_id = payload.get("applicant_id")
+            
+            violation = {
+                "type": "robotic_typing",
+                "details": f"Inhuman cadence detected. Avg: {int(avg_speed)}ms, StdDev: {int(std_dev)}ms",
+                "timestamp": "now()"
+            }
+            supabase.rpc('append_security_log', {'t_id': target_app_id, 'new_log': violation}).execute()
+
+        return {"status": "processed"}
+    except Exception:
+        return {"status": "error"}
+
+
 
 @router.post("/submit-test")
 async def submit_test(submission: TestSubmission):
@@ -72,13 +141,13 @@ async def submit_test(submission: TestSubmission):
         total_q = len(answer_key)
         final_percentage = round((passed_count / total_q) * 100, 2) if total_q > 0 else 0
 
-        # 7. Insert detailed results into 'test' table
-        # test_owner points to the unique job_application id
-        supabase.table("test").insert({
+        # 7. Update existing test record (to keep security_logs)
+        supabase.table("test").upsert({
+            "test_owner": target_app_id,
             "solution": [s.model_dump() for s in submission.solutions],
             "score": f"{passed_count}/{total_q}",
             "logs": results_log,
-            "test_owner": target_app_id
+            # Do NOT include security_logs here so the existing ones are preserved
         }).execute()
 
         # 8. Finalize the main application record
