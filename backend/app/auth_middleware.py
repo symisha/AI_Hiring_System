@@ -1,109 +1,70 @@
-from fastapi import Request, HTTPException, status
+from fastapi import HTTPException, status, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from supabase import create_client
 from app.database.db_connection import supabase_url, supabase_key
+from fastapi import Request # Add this import at the top
 
+security = HTTPBearer(auto_error=False)
 supabase = create_client(supabase_url, supabase_key)
+from fastapi import Request, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-# The "Public" whitelist - these NEVER check for tokens
+security = HTTPBearer(auto_error=False)
+
 bypass_paths = [
-    "/docs",                               # Allow API documentation
-    "/openapi.json",                       # Required for docs
-    "/static/",
-    "/public/"  
-    "/interview.html",
-    "/services/interview-link/validate",
-    "/ws/interview",  # WebSocket handshake
+    # --- Assessment Flow ---
     "/services/get-test",
     "/services/submit-test",
-<<<<<<< Updated upstream
     
     # --- Interview Flow (Candidates) ---
     "/interview.html",                     # The static page
     "/services/interview-link/validate",   # Token verification endpoint
     "/ws/interview",                       # THE CRITICAL FIX: WebSocket connection
-    
+    "/routes/apply/form",
     # --- Optional: Asset folders (if your HTML needs JS/CSS) ---
     "/static/",                            
     "/public/"
 ]
-async def auth_middleware(request: Request, call_next, credentials: HTTPAuthorizationCredentials = Depends(security)):
-    print(f"DEBUG: Middleware received request for {request.url.path}") # <--- ADD THIS
-    
-    path = request.url.path
-    
-    # BROAD BYPASS CHECK
-    # This catches /ws/interview, /ws/interview/, and even /interview/ws
-    is_websocket = "ws/interview" in path or "/ws/" in path
-    is_static = any(path.startswith(p) for p in ["/interview.html", "/static/", "/public/"])
-    is_api_bypass = any(path.startswith(p) for p in ["/services/get-test", "/services/submit-test", "/services/interview-link/validate"])
+from fastapi import Request, HTTPException, status
+from supabase import create_client
+import os
 
-    if is_websocket or is_static or is_api_bypass:
-        print(f"DEBUG: ✅ Bypassing auth for {path}")
-        return await call_next(request)
+# Ensure these match your actual config import
+from app.database.db_connection import supabase_url, supabase_key
 
-    # 2. THE RECRUITER CHECK: 403 status code prevents the browser popup
-    if not credentials:
-        raise HTTPException(status_code=403, detail="Recruiter login required")
-    
-    token = credentials.credentials
-    try:
-        # Assuming you have your supabase client imported
-        user_response = supabase.auth.get_user(token)
-        return user_response.user
-    except Exception:
-        raise HTTPException(status_code=403, detail="Invalid session")
-    
-    
-def get_current_user_id(user=Depends(auth_middleware)) -> str:
-    return user.id
-=======
-    "/favicon.ico",
-    "/",
-    "/routes/apply/form",
-]
+supabase = create_client(supabase_url, supabase_key)
 
-async def auth_middleware(request: Request, call_next):
-    path = request.url.path
-    
-    # 1. Check bypass list
-    # Matches exact paths or prefixes like /static/
-    if any(path == p or path.startswith(("/static/", "/public/")) for p in bypass_paths):
-        return await call_next(request)
-
-    # 2. Extract Bearer Token manually (since we are in middleware)
+async def auth_middleware(request: Request):
     auth_header = request.headers.get("Authorization")
+    
     if not auth_header or not auth_header.startswith("Bearer "):
-        # If it's a GET request to a route not in bypass, it's likely a recruiter page
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Missing or invalid bearer token"
+            detail="Missing or invalid token"
         )
 
     token = auth_header.split(" ")[1].strip()
 
-    # 3. Your original Supabase validation logic
     try:
+        # Get the user from Supabase
         user_response = supabase.auth.get_user(token)
         user = getattr(user_response, "user", None)
         
         if not user:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=401, detail="User not found")
         
-        # Store user in state so get_current_user_id can still find it
-        request.state.user = user
-        return await call_next(request)
+        # VERY IMPORTANT: 
+        # Return just the user.id if your DB queries expect a string, 
+        # or return the whole user object. 
+        # Based on your previous code, let's return the whole object.
+        return user
 
     except Exception as e:
+        print(f"Auth Error: {e}") # This will show in your terminal
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid or expired token: {str(e)}",
+            detail="Invalid session",
         )
-
-# Dependency to get current user from request.state
-from fastapi import Request
-def get_current_user(request: Request):
-    user = getattr(request.state, "user", None)
-    if user is None:
-        raise HTTPException(status_code=403, detail="User not authenticated")
-    return user
->>>>>>> Stashed changes
+    
+def get_current_user_id(user=Depends(auth_middleware)) -> str:
+    return user.id

@@ -29,7 +29,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 # Create FastAPI app instance
 app = FastAPI()
-app.add_middleware(BaseHTTPMiddleware, dispatch=auth_middleware)
+#app.add_middleware(BaseHTTPMiddleware, dispatch=auth_middleware)
 
 def _origin(url: str | None) -> str | None:
     if not url:
@@ -50,6 +50,7 @@ origins = [
     "http://127.0.0.1:5173",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "http://localhost:8081",
 ]
 origins = [o for o in origins if o]
 
