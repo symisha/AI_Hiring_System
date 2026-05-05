@@ -14,6 +14,9 @@ class AppSettings(BaseSettings):
     FRONTEND_INTERVIEW_URL: str = "http://localhost:8080/interview.html"
     INTERVIEW_LINK_SECRET: str = ""
     INTERVIEW_LINK_TTL_SECONDS: int = 86400
+    GEMINI_API_KEY: str
+    GMAIL_SENDER_EMAIL: str
+    GROQ_API_KEY: str
     
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",

@@ -50,6 +50,8 @@ origins = [
     "http://localhost:8081",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 origins = [o for o in origins if o]
 
@@ -77,7 +79,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 
 #@app.on_event("startup")
