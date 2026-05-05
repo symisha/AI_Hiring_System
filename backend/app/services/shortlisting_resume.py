@@ -96,7 +96,6 @@ def run_resume_to_assessment_flow(job_id: str):
                 "email": entry["applications"].get("email"),
                 "name": entry["applications"].get("name")
             })
-            print(f"Token generated: {token[:10]}...") # TRACE 3
             
             # Use your specific localhost URL format
             url = f"http://{Settings.FRONTEND_URL}/interview.html/assessment?ivt={token}"
