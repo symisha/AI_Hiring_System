@@ -1,0 +1,72 @@
+{
+  "session_id": "17633535-443f-42f3-8ec8-c986449af34b_20260506_235442",
+  "candidate_id": "17633535-443f-42f3-8ec8-c986449af34b",
+  "language": "en",
+  "started_at": "2026-05-06 23:54:42",
+  "conversations": [
+    {
+      "timestamp": "2026-05-06 23:55:30",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to data science?",
+      "user_answer": "I did my bachelor's in computer science from  class to university Karachi and I was drawn to data science through my interest  in understanding patterns and making better decisions using data.  I've always been curious about how raw information can be transformed into meaningful  insights, whether in everyday problems or in larger systems.",
+      "status": "valid",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-06 23:56:22",
+      "ai_question": "That's fascinating, so it sounds like your curiosity about patterns and decision-making led you to data science. Can you walk me through a project where you applied machine learning to solve a real-world problem, and what tools or programming languages you used for that project?",
+      "user_answer": "The project where I applied machine learning was building a house price prediction model.  I started by defining it as a supervised version problem where features like area,  number of rooms and locations were used to predict the final price.  After the collecting data set, I performed EDA to understand distribution,  detect missing values and identify relationships between variables,  then clean and preprocess the data.",
+      "status": "valid",
+      "valid_count_at_time": 1
+    },
+    {
+      "timestamp": "2026-05-06 23:57:14",
+      "ai_question": "It sounds like you took a structured approach to your house price prediction model, using exploratory data analysis to understand the relationships between variables. How did you handle the data visualization part of the project, and what tools or libraries did you use to communicate your findings and predictions to stakeholders?",
+      "user_answer": "Okay, so after the data visualization, during the data visualization, I did that to find  the missing values and all and for that I used path.nc1 also I cannot answer the second part of the question.",
+      "status": "valid",
+      "valid_count_at_time": 2
+    },
+    {
+      "timestamp": "2026-05-06 23:58:31",
+      "ai_question": "No worries about not being able to answer the second part of the question. It sounds like you used a library, possibly Matplotlib or Seaborn, but you mentioned 'path.nc1' which doesn't seem directly related to data visualization. Let's move on, can you tell me about a time when you had to work with a database, and how you used SQL to extract or manipulate data for analysis?",
+      "user_answer": "okay so data is stored in structured tables and SQL is used to query only the relevant information  required task by writing queries like commands like select join where in group by you can filter  data combine multiple tables and aggregate results efficiently this allows analysts to  clean the pool data set for further processing into like python excel making SQL a foundation  skill for turning raw data to action label inside",
+      "status": "valid",
+      "valid_count_at_time": 3
+    },
+    {
+      "timestamp": "2026-05-06 23:59:31",
+      "ai_question": "That's a great overview of SQL and its importance in data analysis. It sounds like you have a solid understanding of how to use SQL to extract and manipulate data. Let's talk about machine learning in Python, since you mentioned Python earlier. Can you walk me through how you would implement a simple machine learning model in Python, such as a linear regression model, and how you would evaluate its performance?",
+      "user_answer": "okay so linear regression model can be used for simple problems like housing prediction  and we can evaluate its performance by we can evaluate the performance by using  unseen data set to make predictions and also accuracy and ROC etc.",
+      "status": "valid",
+      "valid_count_at_time": 4
+    },
+    {
+      "timestamp": "2026-05-07 00:00:32",
+      "ai_question": "That's a good start, but ROC is typically used for classification problems, whereas linear regression is a regression problem. Let's dive a bit deeper into evaluation metrics for regression models. How would you handle a situation where your linear regression model is suffering from overfitting, and what techniques would you use to regularize the model and improve its performance on unseen data?",
+      "user_answer": "Okay, so we can use regularization techniques to prevent overfitting.  For example, I applied L1 and L2 regularization which adds a penalty to large model coefficients  and keep the model simpler and more generalizable. I also use cross-validation to ensure the  model performs consistently across differently test-tests rather than just one train test-tests.",
+      "status": "valid",
+      "valid_count_at_time": 5
+    },
+    {
+      "timestamp": "2026-05-07 00:01:11",
+      "ai_question": "That's a great approach to preventing overfitting. Using regularization techniques like L1 and L2 regularization, as well as cross-validation, can really help to ensure that your model is generalizable and performs well on unseen data. Now, let's talk about working with data in Python. Can you tell me about a time when you used the Pandas library to manipulate and analyze a dataset, and what specific functions or methods you used to achieve your goals?",
+      "user_answer": "I do not know the answer to this question",
+      "status": "discarded",
+      "valid_count_at_time": 6
+    },
+    {
+      "timestamp": "2026-05-07 00:01:37",
+      "ai_question": "No worries, let's move on to something else. You've mentioned working with data and machine learning models, which often involves working with algorithms. Can you tell me about a time when you had to implement an algorithm to solve a problem, and how you approached that implementation?",
+      "user_answer": "I think",
+      "status": "discarded",
+      "valid_count_at_time": 6
+    },
+    {
+      "timestamp": "2026-05-07 00:01:42",
+      "ai_question": "No worries, let's move on to something else. You've mentioned working with data and machine learning models, which often involves working with algorithms. Can you tell me about a time when you had to implement an algorithm to solve a problem, and how you approached that implementation?",
+      "user_answer": "I do not know the answer to this question as well.",
+      "status": "discarded",
+      "valid_count_at_time": 6
+    }
+  ],
+  "valid_question_count": 6
+}

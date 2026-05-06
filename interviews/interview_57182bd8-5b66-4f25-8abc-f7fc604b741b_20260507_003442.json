@@ -1,0 +1,23 @@
+{
+  "session_id": "57182bd8-5b66-4f25-8abc-f7fc604b741b_20260507_003442",
+  "candidate_id": "57182bd8-5b66-4f25-8abc-f7fc604b741b",
+  "language": "en",
+  "started_at": "2026-05-07 00:34:42",
+  "conversations": [
+    {
+      "timestamp": "2026-05-07 00:35:27",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to QA engineer?",
+      "user_answer": "Okay, so I did my bachelor's in computer science and I really liked working with  QA automation and testing stuff. Like I really wanted to know what causes the bugs and how  does that bug is covered and managed. Hence, I got into QA side.",
+      "status": "valid",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-07 00:36:10",
+      "ai_question": "That's interesting, so it sounds like you have a strong foundation in computer science and a curiosity about how bugs are identified and managed. Can you walk me through a specific project you've worked on that involved testing and QA, and what tools you used to identify and manage bugs?",
+      "user_answer": "Okay, so basically what I did was that I created an end-to-end framework to test, so I tested  on e-commerce website and I used Selenium for that.",
+      "status": "valid",
+      "valid_count_at_time": 1
+    }
+  ],
+  "valid_question_count": 1
+}

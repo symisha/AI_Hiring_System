@@ -1074,7 +1074,7 @@
           </div>
           
           <div class="interview-controls">
-            <button id="startBtn" class="btn-primary">
+            <button id="startBtn" class="btn-primary" disabled>
               <span>▶️</span>
               Start Interview
             </button>
@@ -1240,7 +1240,9 @@ function exitToDashboard() {
 
 // ✅ 4. CORE INTERVIEW FUNCTIONALITY
 const interviewToken = new URLSearchParams(window.location.search).get('ivt');
-const localAccessToken = localStorage.getItem('access_token');
+// React app stores Supabase access token as `localStorage["token"]`.
+// Keep `access_token` as a fallback for older builds.
+const localAccessToken = localStorage.getItem('token') || localStorage.getItem('access_token');
 const authToken = interviewToken || localAccessToken;
 const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8000`;
 
@@ -1549,6 +1551,131 @@ document.getElementById('startBtn').onclick = async () => {
   }
 };
 
+async function waitForVideoReady(videoEl, timeoutMs = 6000) {
+  const start = Date.now();
+
+  // Try to start playback (may already be playing)
+  try {
+    if (videoEl && videoEl.paused) {
+      await videoEl.play();
+    }
+  } catch (_) {
+    // ignore autoplay/play errors
+  }
+
+  while (Date.now() - start < timeoutMs) {
+    // HAVE_CURRENT_DATA = 2 (enough to draw current frame)
+    if (videoEl && videoEl.readyState >= 2 && videoEl.videoWidth > 0 && videoEl.videoHeight > 0) {
+      return true;
+    }
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    try {
+      if (videoEl && videoEl.paused) {
+        await videoEl.play();
+      }
+    } catch (_) {
+      // ignore autoplay/play errors
+    }
+  }
+
+  return !!(videoEl && videoEl.videoWidth > 0 && videoEl.videoHeight > 0);
+}
+
+async function captureFramesFromVideo(videoEl, count, intervalMs) {
+  const frames = [];
+  if (!videoEl) return frames;
+
+  const ready = await waitForVideoReady(videoEl, 6000);
+  if (!ready) return frames;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = videoEl.videoWidth;
+  canvas.height = videoEl.videoHeight;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return frames;
+
+  // Ensure we’re on a painted frame before first capture
+  await new Promise(requestAnimationFrame);
+
+  for (let i = 0; i < count; i++) {
+    ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+    frames.push(canvas.toDataURL('image/jpeg', 0.9));
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+
+  return frames;
+}
+
+function blockCnicVerification(message) {
+  document.body.innerHTML = `
+    <div style="
+      position:fixed;inset:0;background:#1a1a1a;
+      display:flex;align-items:center;justify-content:center;
+      font-family:Arial,sans-serif;color:white;text-align:center;padding:40px;
+    ">
+      <div>
+        <div style="font-size:40px;margin-bottom:16px;">❌</div>
+        <h2 style="font-size:22px;margin-bottom:10px;">Identity Verification Failed</h2>
+        <p style="opacity:0.85;max-width:560px;">${message}</p>
+      </div>
+    </div>
+  `;
+}
+
+function setStartEnabled(enabled) {
+  const startBtn = document.getElementById('startBtn');
+  if (startBtn) {
+    startBtn.disabled = !enabled;
+  }
+}
+
+async function verifyCnicIdentity() {
+  const liveVideo = document.getElementById('liveCameraFeed');
+  if (!liveVideo) {
+    addMessage('system', 'Camera feed not available for verification.');
+    return false;
+  }
+
+  addMessage('system', 'Verifying identity. Hold still and look at the camera...');
+
+  let frames = await captureFramesFromVideo(liveVideo, 8, 250);
+  if (frames.length < 5) {
+    await new Promise((r) => setTimeout(r, 500));
+    frames = await captureFramesFromVideo(liveVideo, 8, 250);
+  }
+
+  if (frames.length < 5) {
+    addMessage('system', 'Unable to capture enough frames for verification. Please wait 2 seconds and try again.');
+    return false;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/ws/verify-cnic`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ frames })
+    });
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const msg = result.detail || result.message || 'CNIC verification failed.';
+      blockCnicVerification(msg);
+      return false;
+    }
+
+    addMessage('system', `✅ Identity verified (similarity ${Number(result.similarity || 0).toFixed(2)}).`);
+    return true;
+  } catch (err) {
+    blockCnicVerification(err.message || 'Verification failed due to a network error.');
+    return false;
+  }
+}
+
 // ✅ CONSOLIDATED STOP AND EVALUATION FUNCTION
 async function stopInterviewAndEvaluate() {
   console.log('🛑 Submit interview clicked');
@@ -1630,7 +1757,7 @@ async function callStopAndEvaluateAPI() {
   evalContent.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">🔄 Submitting your interview... Please wait.</div>';
   
   try {
-    const response = await fetch(`${API_BASE_URL}/interview/stop`, {
+    const response = await fetch(`${API_BASE_URL}/ws/stop`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken}`,
@@ -1651,7 +1778,7 @@ async function callStopAndEvaluateAPI() {
         <div style="color: #dc2626; padding: 15px;">
           ❌ Authentication failed. Your session may have expired.
           <br><br>
-          <button onclick="localStorage.removeItem('access_token'); window.location.href='/login';" 
+          <button onclick="localStorage.removeItem('token'); localStorage.removeItem('access_token'); window.location.href='/login';" 
                   style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer;">
             Login Again
           </button>
@@ -2005,24 +2132,42 @@ async function requestCameraAccess() {
       preview.style.display = 'block';
       preview.srcObject = cameraStream;
 
-      allowBtn.textContent = '✅ Camera Active — Enter Interview';
+      try {
+        await preview.play();
+      } catch (_) {
+        // ignore autoplay/play errors
+      }
+
+      allowBtn.textContent = '🔍 Verifying identity... Hold still';
       allowBtn.style.background = '#10b981';
       updateSystemStatus('camera', true);
 
-      // After 1.5s, dismiss overlay, show live feed, start monitoring
-      setTimeout(() => {
-        overlay.style.display = 'none';
-
-        // Show live camera feed in main layout
-        const liveCard = document.getElementById('liveCameraCard');
-        const liveFeed = document.getElementById('liveCameraFeed');
-        if (liveCard && liveFeed) {
-          liveFeed.srcObject = cameraStream;
-          liveCard.style.display = 'block';
+      // Attach stream to the main live feed immediately (overlay may still be visible)
+      const liveCard = document.getElementById('liveCameraCard');
+      const liveFeed = document.getElementById('liveCameraFeed');
+      if (liveCard && liveFeed) {
+        liveFeed.srcObject = cameraStream;
+        try {
+          await liveFeed.play();
+        } catch (_) {
+          // ignore autoplay/play errors
         }
+        liveCard.style.display = 'block';
+      }
 
+      // Keep the overlay up until verification succeeds
+      const verified = await verifyCnicIdentity();
+      if (verified) {
+        overlay.style.display = 'none';
+        setStartEnabled(true);
         startCameraMonitoring();
-      }, 1500);
+      } else {
+        allowBtn.disabled = false;
+        allowBtn.textContent = '📷 Try Again';
+        allowBtn.style.background = '';
+        deniedMsg.textContent = '❌ CNIC verification could not complete. Please hold still, ensure your face is well-lit, and try again.';
+        deniedMsg.style.display = 'block';
+      }
 
     } catch (err) {
       console.error('❌ Camera error:', err.name, err.message);
@@ -2110,6 +2255,8 @@ function terminateInterviewDueToCamera() {
 document.addEventListener('DOMContentLoaded', function() {
   console.log('✅ AI Interview Assessment page initialized');
   initializeCandidate();
+
+  setStartEnabled(false);
   
   // Initialize system status as inactive
   updateSystemStatus('mic', false);

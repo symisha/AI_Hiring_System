@@ -1,0 +1,16 @@
+{
+  "session_id": "17633535-443f-42f3-8ec8-c986449af34b_20260506_233231",
+  "candidate_id": "17633535-443f-42f3-8ec8-c986449af34b",
+  "language": "en",
+  "started_at": "2026-05-06 23:32:31",
+  "conversations": [
+    {
+      "timestamp": "2026-05-06 23:32:59",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to data science?",
+      "user_answer": "Okay, so I did my bachelor's in computer science from Fast University Karachi,  and I liked working with data, hence I decided to pursue data science.",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    }
+  ],
+  "valid_question_count": 0
+}

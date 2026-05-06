@@ -1,0 +1,58 @@
+{
+  "session_id": "17633535-443f-42f3-8ec8-c986449af34b_20260506_233839",
+  "candidate_id": "17633535-443f-42f3-8ec8-c986449af34b",
+  "language": "en",
+  "started_at": "2026-05-06 23:38:39",
+  "conversations": [
+    {
+      "timestamp": "2026-05-06 23:39:07",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to data science?",
+      "user_answer": "Okay, so I did my bachelor's in computer science from  Fast University to Karachi and I liked working with data, hence I decided to pursue data science.",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-06 23:40:03",
+      "ai_question": "That's great that you have a strong foundation in computer science. Since you mentioned working with data, I'm curious - can you walk me through a project where you had to apply machine learning concepts to a real-world problem, and what tools or programming languages, such as Python, did you use to implement your solution?",
+      "user_answer": "Okay, so I basically what I did was I created a project.  The project was movie recommender systems  and I used a recommender system algorithm  which is collaborative filtering  to recommend the movies based  and I chose the data set from Kaggle.  I built this project in Python",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-06 23:40:10",
+      "ai_question": "That's great that you have a strong foundation in computer science. Since you mentioned working with data, I'm curious - can you walk me through a project where you had to apply machine learning concepts to a real-world problem, and what tools or programming languages, such as Python, did you use to implement your solution?",
+      "user_answer": "Basically, I use the Python's Basic Libraries and clean the data set as well via C1.",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-06 23:41:27",
+      "ai_question": "It sounds like you used some basic data cleaning techniques to prepare your dataset. I'd like to shift gears a bit and talk about data visualization. When you're working with a recommender system, it can be helpful to visualize the relationships between users and items to understand how the recommendations are being made. Can you tell me about a time when you used a data visualization tool, such as a library in Python, to help communicate insights or results from a project to someone else?",
+      "user_answer": "Okay, so I used matplot and C-borne library to give them the data and to give the insights  about the data like basic statistics like means and deviation and whether the data is embellished  or not and also whether the working if the data is embellished or if there is any what  are the columns and all so this is this is how I use the termination",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-06 23:42:14",
+      "ai_question": "It sounds like you've used matplotlib to create visualizations and communicate insights about your data. That's great for exploratory data analysis and understanding the distribution of your data. Let's talk about working with data at scale. Have you ever had to work with a database and write SQL queries to extract data for analysis, and if so, can you walk me through a scenario where you had to write a complex query to retrieve specific data?",
+      "user_answer": "So I did not have any question regarding that. I did not have any answer regarding that.",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-06 23:42:57",
+      "ai_question": "No worries, we can move on to something else. Since you mentioned earlier that you worked on a project in Python, I'd like to ask about a specific aspect of machine learning. Let's say you're training a model and you notice that the training loss is decreasing, but the validation loss is increasing - what steps would you take to investigate and address this issue, and how would you decide on the best course of action to improve the model's performance?",
+      "user_answer": "Okay, so I think when the validation loss is increasing, it means that a model is overfitting.",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-06 23:43:46",
+      "ai_question": "That's a great start. Overfitting is indeed a common issue when the validation loss is increasing while the training loss is decreasing. Can you take it a step further and tell me some strategies you would use to prevent or mitigate overfitting in this situation, such as regularization techniques or modifications to the model architecture, and how you would evaluate their effectiveness using tools like pandas or numpy to analyze the results?",
+      "user_answer": "Okay, so overfitting is done, basically overfitting can be prevented using regularization techniques  like dropout or using L2 or L1 regularization, so that is it.",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    }
+  ],
+  "valid_question_count": 0
+}

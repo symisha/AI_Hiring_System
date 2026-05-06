@@ -15,7 +15,7 @@ import requests
 import traceback
 from app.database.db_connection import supabase         # Import the Supabase client instance to interact with the database
 from fastapi import APIRouter, Depends, HTTPException                     # Import FastAPI class to create the web
-from app.auth_middleware import auth_middleware         # Import the authentication middleware to protect routes
+from app.auth_middleware import get_current_user         # Import the authentication dependency to protect routes
 from app.config.config import Settings
 from app.models.appstage import AppStatus
 
@@ -53,7 +53,7 @@ EVALS_DIR = "evaluations"                # individual evaluation JSON files
 
 
 model_id = "llama-3.3-70b-versatile"
-API_key = Settings.LLAMA_API_KEY
+API_key = Settings.GROQ_API_KEY
 DEBUG_PIPELINE = True
 
 
@@ -405,8 +405,10 @@ def _build_jd_text(job: dict) -> str:
 
 
 def _build_application_profile_text(meta: dict) -> str:
-    parent_data = meta.get("applications", {}) 
-    application = parent_data.get("metadata", {})
+    if meta.get("applications") and isinstance(meta.get("applications"), dict):
+        application = meta.get("applications", {}).get("metadata", {})
+    else:
+        application = meta
     return (
         f"Name: {application.get('name', '')}\n"
         f"Email: {application.get('email', '')}\n"
@@ -651,7 +653,7 @@ def screen_new_applications_for_job(job_id: str, company_id: str):
 
 
 @router.post("/process-job/{job_id}")
-def process_job_from_database(job_id: str, user=Depends(auth_middleware)):
+def process_job_from_database(job_id: str, user=Depends(get_current_user)):
     user_id = getattr(user, "id", None) if user is not None else None
     debug_log(f"process_job_from_database called with user_id={user_id}")
     if not user_id:

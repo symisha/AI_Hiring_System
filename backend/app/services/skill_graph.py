@@ -337,18 +337,77 @@ def extract_skills(jd_text, skill_lookup):
 def format_job_metadata(job):
     m = job.get("job_metadata", {})
 
-    def clean_list(items):
-        if isinstance(items, str):
-            return items
-        return " ".join(items)
+    def _flatten_to_strings(value):
+        if value is None:
+            return []
+        if isinstance(value, str):
+            return [value]
+        if isinstance(value, (list, tuple)):
+            out = []
+            for v in value:
+                out.extend(_flatten_to_strings(v))
+            return out
+        return [str(value)]
 
-    return " ".join([
-        job.get("job_title", ""),
-        clean_list(m.get("Key Skills", "")),
-        clean_list(m.get("Key Responsibilities", [])),
-        clean_list(m.get("Required Qualifications", [])),
-        clean_list(m.get("Preferred Qualifications", [])),
-    ])
+    def clean_list(value):
+        parts = []
+        for s in _flatten_to_strings(value):
+            s = str(s).strip()
+            if s:
+                parts.append(s)
+        return " ".join(parts)
+
+    def get_meta(*keys, default=""):
+        for k in keys:
+            if k in m and m.get(k) not in (None, "", [], {}):
+                return m.get(k)
+        return default
+
+    # Support both "Key X" and "Key X:" styles (some jobposts include trailing colons)
+    key_skills = get_meta(
+        "Key Skills",
+        "Key Skills:",
+        "Skills",
+        "Skills:",
+        "Qualifications",
+        "Qualifications:",
+        default="",
+    )
+    key_responsibilities = get_meta(
+        "Key Responsibilities",
+        "Key Responsibilities:",
+        "Responsibilities",
+        "Responsibilities:",
+        default=[],
+    )
+    required_qualifications = get_meta(
+        "Required Qualifications",
+        "Required Qualifications:",
+        "Requirements",
+        "Requirements:",
+        default=[],
+    )
+    preferred_qualifications = get_meta(
+        "Preferred Qualifications",
+        "Preferred Qualifications:",
+        default=[],
+    )
+    what_we_offer = get_meta(
+        "What We Offer",
+        "What We Offer:",
+        default="",
+    )
+
+    return " ".join(
+        [
+            job.get("job_title", ""),
+            clean_list(key_skills),
+            clean_list(key_responsibilities),
+            clean_list(required_qualifications),
+            clean_list(preferred_qualifications),
+            clean_list(what_we_offer),
+        ]
+    )
 
 def fetch_job_details(job_id):
     response = supabase.table("jobs").select(
@@ -426,7 +485,7 @@ def build_interview_flow(skill_map):
 
 
 if __name__ == "__main__":
-    job_id = "66132a84-d4bb-4aae-a879-129e7283fbde"
+    job_id = "4d9c7579-4844-4a06-bf5b-f3160694f296"
     skill_map = build_skill_map(job_id)
     print("=== Skill Map ===")
     print(skill_map)

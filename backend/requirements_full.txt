@@ -66,3 +66,5 @@ Jinja2==3.1.6
 pandas==2.2.0
 tqdm==4.67.1
 pillow==12.1.0
+deepface==0.0.93
+opencv-python==4.11.0.86

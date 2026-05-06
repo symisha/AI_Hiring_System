@@ -30,9 +30,11 @@ from faster_whisper import WhisperModel
 import edge_tts
 import requests
 import tempfile
+import threading
 from app.database.db_connection import supabase
 from app.services.interview_link import verify_interview_token
 from app.services.evaluating_interview import evaluate_and_save_interview
+from app.services.cnic_embedding import extract_cnic_embedding
 import traceback
 from fastapi import APIRouter
 
@@ -41,6 +43,41 @@ GROQ_API_KEY = "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"  # kee
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 SAMPLE_RATE = 16000  # you confirmed 16kHz
+CNIC_VERIFY_MIN_FRAMES = 5
+CNIC_VERIFY_THRESHOLD = float(os.getenv("CNIC_VERIFY_THRESHOLD", "0.5"))
+
+
+# ----------------- Global model caches -----------------
+# Load these once per process to avoid huge per-session overhead.
+_SILERO_VAD_MODEL: Optional[torch.nn.Module] = None
+_SILERO_VAD_LOCK = threading.Lock()
+
+
+def _get_silero_vad_model() -> torch.nn.Module:
+    global _SILERO_VAD_MODEL
+    if _SILERO_VAD_MODEL is not None:
+        return _SILERO_VAD_MODEL
+
+    with _SILERO_VAD_LOCK:
+        if _SILERO_VAD_MODEL is not None:
+            return _SILERO_VAD_MODEL
+
+        model, _utils = torch.hub.load(
+            "snakers4/silero-vad", "silero_vad", force_reload=False, trust_repo=True
+        )
+        model.eval()
+        for p in model.parameters():
+            p.requires_grad = False
+        _SILERO_VAD_MODEL = model
+        print("✅ Silero VAD model loaded globally")
+        return _SILERO_VAD_MODEL
+
+
+# Best-effort pre-load so the first interview doesn't pay the load cost.
+try:
+    _get_silero_vad_model()
+except Exception as _e:
+    print(f"⚠️ Could not pre-load Silero VAD model: {_e}")
 
 
 def verify_token(authorization: str) -> Dict[str, Any]:
@@ -78,6 +115,59 @@ def verify_token(authorization: str) -> Dict[str, Any]:
 class StopInterviewBody(BaseModel):
     session_id: str | None = None
     job_id: str | None = None  # optional; falls back to token's job_id
+
+
+class CnicVerifyBody(BaseModel):
+    frames: List[str]
+
+
+def _decode_data_url(data_url: str) -> tuple[bytes, str]:
+    if not data_url or "," not in data_url:
+        raise ValueError("Invalid frame data")
+    header, b64 = data_url.split(",", 1)
+    mime = ""
+    if ";base64" in header:
+        mime = header.split(":", 1)[-1].split(";", 1)[0]
+    ext = "png"
+    if mime.endswith("jpeg") or mime.endswith("jpg"):
+        ext = "jpg"
+    elif mime.endswith("webp"):
+        ext = "webp"
+    elif mime.endswith("png"):
+        ext = "png"
+    try:
+        return base64.b64decode(b64), ext
+    except Exception:
+        raise ValueError("Invalid base64 frame data")
+
+
+def _cosine_similarity(a: List[float], b: List[float]) -> float:
+    a_arr = np.array(a, dtype=float)
+    b_arr = np.array(b, dtype=float)
+    denom = (np.linalg.norm(a_arr) * np.linalg.norm(b_arr)) + 1e-8
+    if denom == 0:
+        return 0.0
+    return float(np.dot(a_arr, b_arr) / denom)
+
+
+def _mean_embedding(embeddings: List[List[float]]) -> List[float]:
+    arr = np.array(embeddings, dtype=float)
+    return np.mean(arr, axis=0).tolist()
+
+
+def _update_cnic_verification_metadata(app_id: str, metadata: dict, status: str, similarity: float | None):
+    payload = {
+        "status": status,
+        "similarity": similarity,
+        "checked_at": int(time.time()),
+        "threshold": CNIC_VERIFY_THRESHOLD,
+    }
+    updated = dict(metadata or {})
+    updated["cnic_verification"] = payload
+    try:
+        supabase.table("applications").update({"metadata": updated}).eq("id", app_id).execute()
+    except Exception:
+        pass
 
 # ======================== QUESTION COUNTER SYSTEM ========================
 MAX_QUESTIONS = 10
@@ -226,6 +316,69 @@ def home(request: Request):
     return {"message": "Welcome to the Interview Agent API. Please connect via WebSocket at /ws for the interview process."}
 
 
+@app1.post("/verify-cnic")
+async def verify_cnic(request: Request, body: CnicVerifyBody):
+    authorization = request.headers.get("Authorization", "")
+    user_info = verify_token(authorization=authorization)
+
+    candidate_id = user_info.get("candidate_id")
+    if not candidate_id:
+        raise HTTPException(status_code=401, detail="Missing candidate_id")
+
+    app_res = (
+        supabase.table("applications")
+        .select("id,cnic_embedding,metadata")
+        .eq("id", candidate_id)
+        .single()
+        .execute()
+    )
+    if not app_res.data:
+        raise HTTPException(status_code=404, detail="Candidate record not found")
+
+    stored_embedding = app_res.data.get("cnic_embedding")
+    if not stored_embedding:
+        raise HTTPException(status_code=404, detail="CNIC embedding not found")
+
+    if not body.frames or len(body.frames) < CNIC_VERIFY_MIN_FRAMES:
+        raise HTTPException(status_code=400, detail="Not enough frames for verification")
+
+    embeddings: List[List[float]] = []
+    for frame in body.frames:
+        try:
+            frame_bytes, frame_ext = _decode_data_url(frame)
+            emb = extract_cnic_embedding(frame_bytes, frame_ext)
+            embeddings.append(emb)
+        except ValueError:
+            continue
+        except Exception:
+            continue
+
+    if len(embeddings) < max(3, CNIC_VERIFY_MIN_FRAMES // 2):
+        _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "failed", None)
+        raise HTTPException(status_code=400, detail="Face not detected in enough frames")
+
+    stable_embedding = _mean_embedding(embeddings)
+    similarity = _cosine_similarity(stable_embedding, stored_embedding)
+
+    if similarity < CNIC_VERIFY_THRESHOLD:
+        _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "failed", similarity)
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "message": "CNIC verification failed",
+                "similarity": similarity,
+                "threshold": CNIC_VERIFY_THRESHOLD,
+            },
+        )
+
+    _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "passed", similarity)
+    return {
+        "ok": True,
+        "similarity": similarity,
+        "threshold": CNIC_VERIFY_THRESHOLD,
+    }
+
+
 @app1.post("/stop")
 async def stop_interview(request: Request, body: StopInterviewBody, background_tasks: BackgroundTasks):
     authorization = request.headers.get("Authorization", "")
@@ -302,19 +455,31 @@ def transcribe_from_wav(path: str, language: str = "en") -> str:
 
 
 async def tts_mp3_bytes(text: str, voice: str) -> bytes:
-    """Generate TTS audio using edge-tts with gTTS fallback."""
-    fn = f"tts_{uuid.uuid4().hex}.mp3"
+    """Generate TTS audio as MP3 bytes in-memory (no temp files)."""
     try:
-        # Try edge-tts first
         communicate = edge_tts.Communicate(text=text, voice=voice)
-        await communicate.save(fn)
-        with open(fn, "rb") as f:
-            return f.read()
-    finally:
+        audio = bytearray()
+        async for chunk in communicate.stream():
+            if chunk.get("type") == "audio":
+                audio.extend(chunk.get("data") or b"")
+        return bytes(audio)
+    except Exception as e:
+        # Fallback to file-based save to preserve compatibility if streaming fails.
+        print(f"⚠️ edge-tts streaming failed, falling back to save(): {e}")
+        fn = f"tts_{uuid.uuid4().hex}.mp3"
         try:
-            os.remove(fn)
-        except:
-            pass
+            communicate = edge_tts.Communicate(text=text, voice=voice)
+            await communicate.save(fn)
+            with open(fn, "rb") as f:
+                return f.read()
+        except Exception as e2:
+            print(f"❌ edge-tts fallback save failed: {e2}")
+            return b""
+        finally:
+            try:
+                os.remove(fn)
+            except Exception:
+                pass
 
 
 # Minimal MP3 header to force client to stop playback (used on interruptions)
@@ -338,7 +503,7 @@ class StreamingSileroVAD:
         speech_threshold: float = 0.6,
         silence_threshold: float = 0.25,
         min_speech_frames: int = 5,  # Increased from 3 to reduce false positives
-        turn_complete_frames: int = 120,  # Increased from 100 (now ~4.8s) to avoid premature cutoff
+        turn_complete_frames: int = 40,  # Increased from 100 (now ~4.8s) to avoid premature cutoff
         abandon_frames: int = 250,  # Increased from 150 (now ~8s)
     ):
         """
@@ -370,16 +535,10 @@ class StreamingSileroVAD:
         self.dynamic_speech_th = speech_threshold
         self.dynamic_silence_th = silence_threshold
 
-        # Load Silero model via torch.hub (CPU)
+        # Load Silero model once globally (CPU)
         try:
-            self.model, self.utils = torch.hub.load(
-                "snakers4/silero-vad", "silero_vad", force_reload=False, trust_repo=True
-            )
-            # make model eval and CPU
-            self.model.eval()
-            for p in self.model.parameters():
-                p.requires_grad = False
-            print("✅ Silero VAD model loaded successfully")
+            self.model = _get_silero_vad_model()
+            self.utils = None
         except Exception as e:
             print(f"❌ Could not load Silero VAD model: {e}")
             raise
@@ -426,7 +585,8 @@ class StreamingSileroVAD:
             
             audio_t = torch.from_numpy(chunk_f32).float()
             # model returns a tensor scalar or tensor(1)
-            out = self.model(audio_t, self.sample_rate)
+            with torch.no_grad():
+                out = self.model(audio_t, self.sample_rate)
             # convert to float f
             if isinstance(out, torch.Tensor):
                 prob = float(out.detach().cpu().numpy().item())
@@ -705,17 +865,14 @@ async def process_utterance(sess: Session, audio: np.ndarray, ws: WebSocket):
     This function is cancellable. If it is cancelled (due to interruption), it will attempt to stop gracefully.
     """
     try:
-        # 1) Save temp WAV
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-            temp_wav_path = tmp.name
-        sf.write(temp_wav_path, audio, SAMPLE_RATE)
-        sess.last_utterance_path = temp_wav_path
+        # 1) STT (in-memory, avoids slow temp WAV writes)
         duration_sec = len(audio) / SAMPLE_RATE
-        print(f"💾 Utterance: {duration_sec:.2f}s -> {temp_wav_path}")
+        print(f"🎙️ Utterance: {duration_sec:.2f}s (in-memory)")
 
-        # 2) STT
         lang_code = "en" if sess.lang == "en" else "ur"
-        user_text = transcribe_from_wav(temp_wav_path, language=lang_code)
+        # Ensure float32 mono array
+        audio_f32 = audio.astype(np.float32, copy=False)
+        user_text = transcribe_float(audio_f32, language=lang_code)
         print(f"📝 STT: {user_text}")
         await ws.send_text(json.dumps({"type": "stt", "text": user_text}))
 
@@ -724,10 +881,6 @@ async def process_utterance(sess: Session, audio: np.ndarray, ws: WebSocket):
             await ws.send_text(
                 json.dumps({"type": "status", "level": "warn", "message": "empty_or_unclear_audio"})
             )
-            try:
-                os.remove(temp_wav_path)
-            except:
-                pass
             return
 
         # Store user answer temporarily - we'll save it after getting AI response with status
@@ -797,11 +950,6 @@ async def process_utterance(sess: Session, audio: np.ndarray, ws: WebSocket):
                 print("⚠️ TTS generation failed for end message")
                 await ws.send_text(json.dumps({"type": "status", "level": "warn", "message": "tts_failed"}))
             
-            # Clean up and return
-            try:
-                os.remove(temp_wav_path)
-            except:
-                pass
             return
 
         # 5) Send clean AI text (without JSON metadata)
@@ -814,10 +962,6 @@ async def process_utterance(sess: Session, audio: np.ndarray, ws: WebSocket):
         # Before sending TTS bytes, check if task was cancelled
         if asyncio.current_task().cancelled():
             print("🚫 process_utterance cancelled before TTS send")
-            try:
-                os.remove(temp_wav_path)
-            except:
-                pass
             return
 
         # Check if TTS generation succeeded
@@ -832,24 +976,10 @@ async def process_utterance(sess: Session, audio: np.ndarray, ws: WebSocket):
         sess.previous_ai_question = clean_ai_question
         print(f"📌 Set previous_ai_question for next turn: {clean_ai_question[:100]}...")
 
-        # Cleanup
-        try:
-            os.remove(temp_wav_path)
-        except:
-            pass
-
     except asyncio.CancelledError:
         # Task was cancelled (e.g., user interrupted while AI speaking). Clean up and return.
         print("🚫 process_utterance: Cancelled")
-        try:
-            # best-effort remove temp wav
-            if 'temp_wav_path' in locals():
-                try:
-                    os.remove(temp_wav_path)
-                except:
-                    pass
-        finally:
-            raise
+        raise
     except Exception as e:
         print(f"❌ Error processing utterance: {e}")
         import traceback
@@ -949,6 +1079,16 @@ async def ws_handler(ws: WebSocket):
 
                     sess.system_prompt = system_prompt
                     sess.messages = [{"role": "system", "content": system_prompt}]
+
+                    # Fetch job title for a dynamic greeting (avoid hard-coded role names)
+                    job_title = None
+                    try:
+                        job = fetch_job_details(sess.job_id)
+                        if isinstance(job, dict):
+                            job_title = job.get("job_title")
+                    except Exception:
+                        job_title = None
+                    job_title = (job_title or "this role").strip()
                     
                     # Extract session_id from conversation filename
                     # Format: "interviews/interview_cand_20f6562e_20260219_003124.json"
@@ -969,11 +1109,11 @@ async def ws_handler(ws: WebSocket):
                     if sess.lang == "en":
                         sess.voice = "en-US-SteffanNeural"
                         interview_prompt = interview_prompt_en
-                        greet_text = "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to data science?"
+                        greet_text = f"Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to {job_title}?"
                     else:
                         sess.voice = "ur-PK-UzmaNeural"
                         interview_prompt = interview_prompt_ur
-                        greet_text = "ہیلو! ہمارے انٹرویو میں خوش آمدید۔ کیا آپ مجھے اپنے تکنیکی پس منظر کے بارے میں بتا کر شروع کر سکتے ہیں اور آپ کو ڈیٹا سائنس تک کیا لایا ہے؟"
+                        greet_text = f"ہیلو! ہمارے انٹرویو میں خوش آمدید۔ کیا آپ مجھے اپنے تکنیکی پس منظر کے بارے میں بتا کر شروع کر سکتے ہیں اور آپ کو {job_title} تک کیا لایا ہے؟"
 
                     # Initialize conversation history (system + assistant greeting)
                     sess.conversation_history = [
