@@ -43,6 +43,7 @@ async def auth_middleware(request: Request, call_next):
         if len(parts) != 2 or parts[0].lower() != "bearer":
             return JSONResponse(status_code=401, content={"detail":
 "Invalid auth header format"})
+            return JSONResponse(status_code=401, content={"detail": "Invalid auth header format"})
 
         token = parts[1]
 

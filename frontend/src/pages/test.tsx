@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
+import { useSecurityShield } from '../hooks/useSecurityShield'; // Adjust path as needed
 
 const AssessmentPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -11,10 +12,12 @@ const AssessmentPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  // Initialize the security shield using the token as the test identifier
+  const { handleKeyDown } = useSecurityShield(token || 'unknown');
+
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        // Using hardcoded URL to ensure connection during debugging
         const res = await fetch(`http://localhost:8000/services/get-test/${token}`);
         if (!res.ok) throw new Error("Failed to fetch assessment");
         
@@ -68,6 +71,8 @@ const AssessmentPage: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto p-10 bg-white shadow-lg rounded-xl my-10">
       <h1 className="text-4xl font-extrabold mb-8 text-gray-800 border-b pb-4">Technical Challenge</h1>
+      <p className="mb-4 text-sm text-gray-500">Note: This environment is monitored for security purposes.</p>
+      
       {questions.length === 0 ? (
         <p className="text-red-500">No questions found for this assessment.</p>
       ) : (
@@ -84,6 +89,17 @@ const AssessmentPage: React.FC = () => {
                 theme="vs-dark"
                 defaultValue={`def ${q.function_name}():\n    # Your code here\n    pass`}
                 onChange={(value) => setSolutions({ ...solutions, [q.id]: value || '' })}
+                // Use onMount to hook into Monaco's internal key events
+                onMount={(editor) => {
+                  editor.onKeyDown((e) => {
+                    // Monaco events aren't exactly React events, 
+                    // but we can pass the key and timestamp to our logic.
+                    handleKeyDown({
+                        key: e.browserEvent.key,
+                        timestamp: Date.now()
+                    } as any);
+                  });
+                }}
               />
             </div>
           </div>
