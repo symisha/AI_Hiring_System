@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from app.database.db_connection import supabase
 from app.services.gmail_service import send_email
-from app.auth_middleware import auth_middleware
+from app.auth_middleware import get_current_user
 from app.config.config import Settings
 from app.services.interview_link import generate_interview_token, verify_interview_token
 from app.models.appstage import AppStatus
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # --- CONFIGURABLE THRESHOLDS ---
-RESUME_THRESHOLD = 75.0
+RESUME_THRESHOLD = 70.0
 ASSESSMENT_THRESHOLD = 80.0
 
 # --- HELPER: CORE LOGIC ---
@@ -99,8 +99,7 @@ def run_resume_to_assessment_flow(job_id: str):
             print(f"Token generated: {token[:10]}...") # TRACE 3
             
             # Use your specific localhost URL format
-            url = f"http://{Settings.FRONTEND_URL}/interview.html/assessment?ivt={token}"
-            
+            url = f"{Settings.FRONTEND_URL.rstrip('/')}/assessment?ivt={token}"
             send_email(
                 to=entry["applications"].get("email"), 
                 subject="Next Step: Assessment Test", 
@@ -136,7 +135,7 @@ def run_assessment_to_interview_flow(job_id: str):
 
 
 @router.post("/shortlist/{job_id}")
-def run_shortlisting_for_job(job_id: str, user=Depends(auth_middleware)):
+def run_shortlisting_for_job(job_id: str, user=Depends(get_current_user)):
     """
     Manually triggers the shortlisting process for both Resume -> Test 
     and Test -> Interview for a specific job.

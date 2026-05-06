@@ -11,6 +11,7 @@ class AppSettings(BaseSettings):
     BACKEND_URL: str
     FRONTEND_URL: str
     LLAMA_API_KEY: str
+    GROQ_API_KEY: str
     FRONTEND_INTERVIEW_URL: str = "http://localhost:8080/interview.html"
     INTERVIEW_LINK_SECRET: str = ""
     INTERVIEW_LINK_TTL_SECONDS: int = 86400

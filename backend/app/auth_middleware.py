@@ -18,7 +18,8 @@ BYPASS_PATHS = {
     "/favicon.ico",
     "/",
     "/routes/apply/form",
-}
+    "/ws/verify-cnic",
+    "/ws/stop",}
 
 BYPASS_PREFIXES = ("/static/", "/public/")
 
@@ -40,6 +41,8 @@ async def auth_middleware(request: Request, call_next):
         parts = auth_header.split(" ")
 
         if len(parts) != 2 or parts[0].lower() != "bearer":
+            return JSONResponse(status_code=401, content={"detail":
+"Invalid auth header format"})
             return JSONResponse(status_code=401, content={"detail": "Invalid auth header format"})
 
         token = parts[1]
@@ -48,7 +51,8 @@ async def auth_middleware(request: Request, call_next):
         response = supabase.auth.get_user(token)
 
         if not response.user:
-            return JSONResponse(status_code=401, content={"detail": "User not found"})
+            return JSONResponse(status_code=401, content={"detail":
+"User not found"})
 
         # Attach user to request
         request.state.user = response.user
@@ -57,7 +61,8 @@ async def auth_middleware(request: Request, call_next):
 
     except Exception as e:
         print(f"Auth Middleware Error: {str(e)}")
-        return JSONResponse(status_code=401, content={"detail": "Invalid or expired token"})
+        return JSONResponse(status_code=401, content={"detail":
+"Invalid or expired token"})
 
 
 # 👇 Dependency (USED IN ROUTES)

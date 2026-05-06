@@ -676,7 +676,7 @@ def transcribe(audio_array, language="en"):
 GROQ_API_KEY = "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"
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
-def query_groq(user_input, context="", conversation_history=None, max_tokens=800, temperature=0.1, interview_prompt=interview_prompt_en):
+def query_groq(user_input, context="", conversation_history=None, max_tokens=300, temperature=0.1, interview_prompt=interview_prompt_en):
     """
     Query Groq API with conversation history and interview prompt.
     Returns: (response_text, updated_conversation_history)

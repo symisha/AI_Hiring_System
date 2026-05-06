@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import logo from "@/assets/logo-purple.svg";
-import { Mail, User, FileText, Phone, Hash } from "lucide-react";
+import { Mail, User, FileText, Phone } from "lucide-react";
 import { applyBasicInfoSchema } from "@/lib/validationSchemas";
 
 const Apply: React.FC = () => {
@@ -17,6 +17,7 @@ const Apply: React.FC = () => {
     "Experience",
     "Skills",
     "Projects",
+    "CNIC",
     "Declaration",
   ];
   const totalSteps = sectionLabels.length;
@@ -73,7 +74,7 @@ const Apply: React.FC = () => {
 
   // Declaration + resume
   const [agreed, setAgreed] = useState(false);
-//   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [cnicImageFile, setCnicImageFile] = useState<File | null>(null);
 
   const nextStep = async () => {
     setStepError("");
@@ -85,6 +86,17 @@ const Apply: React.FC = () => {
         );
       } catch (err: any) {
         setStepError(err?.errors?.[0] || "Please complete required fields.");
+        return;
+      }
+    }
+
+    if (step === 6) {
+      if (!cnicImageFile) {
+        setStepError("Please upload your CNIC image.");
+        return;
+      }
+      if (!cnicImageFile.type.startsWith("image/")) {
+        setStepError("CNIC must be an image file.");
         return;
       }
     }
@@ -139,6 +151,11 @@ const Apply: React.FC = () => {
       setStepError(err?.errors?.[0] || "Please complete required fields.");
       return;
     }
+    if (!cnicImageFile) {
+      setStep(6);
+      setStepError("Please upload your CNIC image.");
+      return;
+    }
     if (!agreed) return alert("Please agree to the terms and consent");
     if (!token) return alert("Invalid application link. Please use the link provided to you.");
 
@@ -150,6 +167,8 @@ const Apply: React.FC = () => {
     fd.append("city", city);
     fd.append("linkedin", linkedin);
     fd.append("portfolio", portfolio);
+
+    fd.append("cnic_image", cnicImageFile);
 
     fd.append("degree", degree);
     fd.append("major", major);
@@ -437,14 +456,31 @@ const Apply: React.FC = () => {
 
           {step === 6 && (
             <div className="space-y-4">
-              {/* <div> */}
-                {/* <label className="block text-sm font-medium mb-2">Resume (PDF/DOC)</label> */}
-                {/* <div className="relative">
+              <div>
+                <label className="block text-sm font-medium mb-2">CNIC Image</label>
+                <div className="relative">
                   <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input required type="file" accept=".pdf,.doc,.docx" onChange={(e) => setResumeFile(e.target.files ? e.target.files[0] : null)} className="pl-10" />
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setCnicImageFile(e.target.files ? e.target.files[0] : null)}
+                    className="pl-10 bg-secondary border-border"
+                  />
                 </div>
-              </div> */}
+                {cnicImageFile && (
+                  <p className="text-xs text-muted-foreground mt-2">Selected: {cnicImageFile.name}</p>
+                )}
+              </div>
 
+              <div className="flex justify-between">
+                <Button type="button" onClick={prevStep} variant="secondary">Back</Button>
+                <Button type="button" onClick={nextStep}>Next</Button>
+              </div>
+            </div>
+          )}
+
+          {step === 7 && (
+            <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <input id="agree" type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
                 <label htmlFor="agree" className="text-sm">I agree to the terms and consent to data usage for recruitment purposes.</label>

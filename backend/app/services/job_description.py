@@ -8,7 +8,7 @@ import base64
 from fastapi import Depends
 from app.models.upload_job import JobCreate
 from app.database.db_connection import supabase
-from app.auth_middleware import auth_middleware
+from app.auth_middleware import get_current_user
 from app.config.config import Settings
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
@@ -27,7 +27,7 @@ def _make_apply_token(job_id: str, ttl_seconds: int = 60 * 60 * 24 * 30):
 @router.post("/upload-job")
 async def upload_job(
     job_data: JobCreate, 
-    user=Depends(auth_middleware)
+    user=Depends(get_current_user)
 ):
     try:
         user_id = user.id 
@@ -75,7 +75,7 @@ async def upload_job(
 async def update_job(
     job_id: str, 
     job_data: JobCreate, 
-    user=Depends(auth_middleware)
+    user=Depends(get_current_user)
 ):
     try:
         user_id = user.id
