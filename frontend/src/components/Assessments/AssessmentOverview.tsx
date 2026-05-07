@@ -23,7 +23,6 @@ const AssessmentOverview = ({ candidates }: any) => {
           <div>Invited: <strong>{total}</strong></div>
           <div>Shortlisted: <strong>{shortlisted}</strong></div>
           <div>Rejected: <strong>{rejected}</strong></div>
-          <div>Avg Score: <strong>{Math.round(avgScore)}</strong></div>
         </div>
       </div>
 

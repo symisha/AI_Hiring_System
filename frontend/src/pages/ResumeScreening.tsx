@@ -43,26 +43,44 @@ const ResumeScreening = ({ jobId: propJobId, job }: { jobId?: string; job?: any 
         return;
       }
       try {
-        const { data: apps, error } = await supabase
+        const { data: jobApps, error: jobAppsError } = await supabase
           .from("job_applications")
           .select("*")
           .eq("job_id", jobId)
           .order("submitted_at", { ascending: false, nullsFirst: false });
 
-        if (error) throw error;
+        if (jobAppsError) throw jobAppsError;
 
-        const normalized = (apps || []).map((a: any) => {
+        const { data: applications, error: applicationsError } = await supabase
+          .from("applications")
+          .select("id, name, email, metadata")
+          .eq("job_id", jobId);
+
+        if (applicationsError) throw applicationsError;
+
+        const applicationsById = new Map(
+          (applications || []).map((app: any) => [app.id, app])
+        );
+
+        const normalized = (jobApps || []).map((a: any) => {
+          const application = applicationsById.get(a.applicant_id) || null;
+          const metadata = application?.metadata || {};
           const score = toNumberOrNull(a.resume_score);
           return {
             id: a.id || a.applicant_id,
-            name: a.name || a.applicant_name || "Unknown",
-            email: a.applicant_email || a.email || "",
+            name: application?.name || metadata.name || a.name || a.applicant_name || "Unknown",
+            email: application?.email || metadata.email || a.applicant_email || a.email || "",
             appliedDate: a.submitted_at || a.created_at || null,
-            experience: a.experience || null,
+            experience: metadata.experiences?.[0]?.years || a.experience || null,
             education: a.education || null,
-            skills: Array.isArray(a.skills) ? a.skills : [],
+            skills: Array.isArray(metadata.skills)
+              ? metadata.skills
+              : Array.isArray(a.skills)
+                ? a.skills
+                : [],
             aiScore: score,
             status: score !== null && score > SHORTLIST_THRESHOLD ? "Shortlisted" : "Rejected",
+            reviewStatus: a.status || null,
             resume: a.resume_url || a.resume_path || null,
             reasons: a.reasons || [],
             resumeEvaluation: a.resume_evaluation || null,

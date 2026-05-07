@@ -1,26 +1,99 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-const parseEvaluation = (evalData: any) => {
-  if (!evalData) return null;
-  
-  // If it's stored as raw markdown string, try to parse it
-  if (typeof evalData === 'string') {
-    try {
-      const jsonMatch = evalData.match(/json\n([\s\S]*?)\n/);
-      if (jsonMatch && jsonMatch[1]) {
-        return JSON.parse(jsonMatch[1]);
+const parseJsonSafely = (text: string) => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+};
+
+const parseMarkdownJsonBlocks = (text: string) => {
+  const blocks = [...text.matchAll(/```json\s*([\s\S]*?)\s*```/gi)].map((m) => m[1].trim());
+  if (!blocks.length) return null;
+
+  const parsedBlocks = blocks
+    .map((block) => parseJsonSafely(block))
+    .filter((item) => item && typeof item === "object");
+
+  if (!parsedBlocks.length) return null;
+  if (parsedBlocks.length === 1) return parsedBlocks[0];
+
+  return parsedBlocks.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+};
+
+const parseInlineSectionJson = (text: string) => {
+  const objects: any[] = [];
+  let depth = 0;
+  let start = -1;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+
+    if (ch === "{") {
+      if (depth === 0) start = i;
+      depth += 1;
+    } else if (ch === "}") {
+      depth -= 1;
+      if (depth === 0 && start !== -1) {
+        const candidate = text.slice(start, i + 1);
+        const parsed = parseJsonSafely(candidate);
+        if (parsed && typeof parsed === "object") {
+          objects.push(parsed);
+        }
+        start = -1;
       }
-    } catch (e) {
-      console.error("Failed to parse evaluation:", e);
     }
   }
-  
-  return evalData;
+
+  if (!objects.length) return null;
+  if (objects.length === 1) return objects[0];
+  return objects.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+};
+
+const parseEvaluation = (evalData: any) => {
+  if (!evalData) return { parsed: null, rawText: null };
+
+  if (typeof evalData === "object" && !Array.isArray(evalData)) {
+    const raw = typeof evalData.raw === "string" ? evalData.raw : null;
+    const fromRaw = raw ? parseEvaluation(raw).parsed : null;
+    const merged = { ...fromRaw, ...evalData };
+    delete merged.raw;
+    return {
+      parsed: Object.keys(merged).length ? merged : fromRaw,
+      rawText: raw,
+    };
+  }
+
+  if (typeof evalData === "string") {
+    const trimmed = evalData.trim();
+    const direct = parseJsonSafely(trimmed);
+    if (direct) return { parsed: direct, rawText: trimmed };
+
+    const blockParsed = parseMarkdownJsonBlocks(trimmed);
+    if (blockParsed) return { parsed: blockParsed, rawText: trimmed };
+
+    const jsonLikeSliceMatch = trimmed.match(/\{[\s\S]*\}/);
+    if (jsonLikeSliceMatch) {
+      const parsedSlice = parseJsonSafely(jsonLikeSliceMatch[0]);
+      if (parsedSlice) return { parsed: parsedSlice, rawText: trimmed };
+    }
+
+    const mergedInline = parseInlineSectionJson(trimmed);
+    if (mergedInline) return { parsed: mergedInline, rawText: trimmed };
+
+    return { parsed: null, rawText: trimmed };
+  }
+
+  return { parsed: null, rawText: null };
 };
 
 const CandidateDetailPanel = ({ candidate, onClose }: any) => {
-  const evaluation = parseEvaluation(candidate.resumeEvaluation?.raw || candidate.resumeEvaluation);
+  const { parsed: evaluation, rawText } = parseEvaluation(candidate.resumeEvaluation);
+  const displayStatus = candidate.reviewStatus || candidate.status || "N/A";
+  const overallFitScore =
+    evaluation?.overall_fit_score ?? candidate.resumeEvaluation?.overall_fit_score ?? candidate.aiScore ?? "N/A";
   
   return (
     <div className="fixed right-6 top-12 w-[900px] h-[80vh] bg-card rounded-2xl shadow-lg overflow-auto p-4">
@@ -44,12 +117,12 @@ const CandidateDetailPanel = ({ candidate, onClose }: any) => {
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">Overall Score:</span>
-              <div className="font-bold text-lg text-indigo-600 mt-1">{candidate.aiScore || (evaluation?.overall_fit_score ?? 'N/A')}</div>
+              <div className="font-bold text-lg text-indigo-600 mt-1">{overallFitScore}</div>
             </div>
             <div>
               <span className="text-muted-foreground">Status:</span>
-              <div className={`font-bold text-lg mt-1 ${candidate.status === 'Shortlisted' ? 'text-green-600' : 'text-red-600'}`}>
-                {candidate.status}
+              <div className={`font-bold text-lg mt-1 ${displayStatus === 'Shortlisted' || displayStatus === 'INTERVIEW_SCHEDULED' || displayStatus === 'ASSESSMENT_PENDING' ? 'text-green-600' : 'text-red-600'}`}>
+                {displayStatus}
               </div>
             </div>
             <div>
@@ -181,6 +254,20 @@ const CandidateDetailPanel = ({ candidate, onClose }: any) => {
             </Card>
           )}
         </div>
+
+        {!evaluation && rawText && (
+          <Card className="p-4">
+            <h5 className="font-semibold mb-2">Resume Evaluation (Raw)</h5>
+            <pre className="text-xs whitespace-pre-wrap break-words bg-muted p-3 rounded-md">{rawText}</pre>
+          </Card>
+        )}
+
+        {!evaluation && !rawText && (
+          <Card className="p-4">
+            <h5 className="font-semibold mb-2">Resume Evaluation</h5>
+            <p className="text-sm text-muted-foreground">No resume evaluation available for this candidate.</p>
+          </Card>
+        )}
       </div>
     </div>
   );

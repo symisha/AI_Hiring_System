@@ -17,7 +17,7 @@ const CandidateInterviewCard = ({ candidate, onView }: any) => {
           <div className="rounded-full h-10 w-10 bg-muted flex items-center justify-center">{candidate.name.split(' ').map((n: string)=>n[0]).slice(0,2).join('')}</div>
           <div>
             <div className="font-semibold">{candidate.name}</div>
-            <div className="text-sm text-muted-foreground">{candidate.email} • Score: {candidate.assessmentScore}</div>
+            <div className="text-sm text-muted-foreground">{candidate.email}</div>
           </div>
         </div>
 
