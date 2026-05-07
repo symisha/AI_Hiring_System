@@ -41,20 +41,33 @@ const Assessments = ({ jobId, job }: { jobId?: string; job?: any } = {}) => {
       }
       const id = job?.id ?? jobId;
       try {
-        const { data: apps, error } = await supabase
+        const { data: jobApps, error: jobAppsError } = await supabase
           .from("job_applications")
           .select("*")
           .eq("job_id", id)
           .order("submitted_at", { ascending: false, nullsFirst: false });
 
-        if (error) throw error;
+        if (jobAppsError) throw jobAppsError;
 
-        const normalized = (apps || []).map((a: any) => {
+        const { data: applications, error: applicationsError } = await supabase
+          .from("applications")
+          .select("id, name, email, metadata")
+          .eq("job_id", id);
+
+        if (applicationsError) throw applicationsError;
+
+        const applicationsById = new Map(
+          (applications || []).map((app: any) => [app.id, app])
+        );
+
+        const normalized = (jobApps || []).map((a: any) => {
+          const application = applicationsById.get(a.applicant_id) || null;
+          const metadata = application?.metadata || {};
           const score = toNumberOrNull(a.assessment_score);
           return {
             id: a.id || a.applicant_id,
-            name: a.name || a.applicant_name || "Unknown",
-            email: a.applicant_email || a.email || "",
+            name: application?.name || metadata.name || a.name || a.applicant_name || "Unknown",
+            email: application?.email || metadata.email || a.applicant_email || a.email || "",
             invitedDate: a.submitted_at || a.created_at || null,
             assessmentId: a.assessment_id || null,
             assessmentType: a.assessment_type || "AI-generated",

@@ -24,8 +24,6 @@ const AIInterviewOverview = ({ candidates }: any) => {
           <div>Invited: <strong>{total}</strong></div>
           <div>Shortlisted: <strong>{shortlisted}</strong></div>
           <div>Rejected: <strong>{rejected}</strong></div>
-          <div>Avg AI Score: <strong>{avgAiScore}</strong></div>
-          <div>Comm Avg: <strong>{avgComm}</strong> • Conf Avg: <strong>{avgConf}</strong></div>
         </div>
       </div>
 

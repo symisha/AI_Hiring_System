@@ -416,6 +416,26 @@ const Apply: React.FC = () => {
                 <Button type="button" onClick={addCustomSkill}>Add</Button>
               </div>
 
+              {selectedSkills.length > 0 && (
+                <div className="mt-4 p-3 bg-secondary rounded-md">
+                  <div className="text-sm font-medium mb-2">Selected Skills ({selectedSkills.length})</div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedSkills.map((skill) => (
+                      <div key={skill} className="flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm">
+                        <span>{skill}</span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedSkills((c) => c.filter((x) => x !== skill))}
+                          className="ml-1 font-bold hover:opacity-70"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-between">
                 <Button type="button" onClick={prevStep} variant="secondary">Back</Button>
                 <Button type="button" onClick={nextStep}>Next</Button>
