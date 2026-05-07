@@ -6,6 +6,7 @@ import Assessments from "./Assessments";
 import AIInterviews from "./AIInterviews";
 import Reports from "./Reports";
 import JobForm from "./JobForm";
+import CreateAssessment from "./CreateAssessment";
 import {
   LayoutDashboard,
   Users,
@@ -48,6 +49,7 @@ const Dashboard = () => {
 
   const jobOptions = [
     { title: "Resume Screening", key: "screening" },
+    { title: "Create Assessment", key: "createAssessment" },
     { title: "Assessments", key: "assessments" },
     { title: "AI Interviews", key: "interviews" },
     { title: "Reports", key: "reports" },
@@ -354,7 +356,11 @@ const Dashboard = () => {
 
       case "screening":
         return <ResumeScreening jobId={selectedJob?.id} job={selectedJob} />;
-
+      
+      case "createAssessment":
+        return (<CreateAssessment jobId={selectedJob?.id} jobTitle={selectedJob?.title || selectedJob?.job_title}  onSave={() => setActiveSection("assessments")} 
+          />
+        );
       case "assessments":
         return <Assessments jobId={selectedJob?.id} job={selectedJob} />;
 

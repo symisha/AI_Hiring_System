@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List
+from typing import Any, List
 from app.database.db_connection import supabase
 from app.services.interview_link import verify_interview_token
 
@@ -13,7 +13,7 @@ class Question(BaseModel):
     question_text: str
     function_name: str
     test_input: str
-    expected_output: str
+    expected_output: Any
 
 # 2. Define the Request Body for saving to a specific Job
 class SaveTestRequest(BaseModel):

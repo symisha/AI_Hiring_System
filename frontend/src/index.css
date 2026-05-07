@@ -81,3 +81,21 @@ All colors MUST be HSL.
     }
   }
 }
+
+@layer base {
+  body {
+    @apply bg-[#050505] text-slate-200;
+    /* Subtle Grid Pattern */
+    background-image: 
+      radial-gradient(circle at 2px 2px, rgba(139, 92, 246, 0.05) 1px, transparent 0);
+    background-size: 40px 40px;
+  }
+}
+
+.glass-card {
+  @apply bg-[#0f0f15]/80 backdrop-blur-xl border border-white/10 shadow-2xl;
+}
+
+.purple-glow {
+  box-shadow: 0 0 40px -10px rgba(139, 92, 246, 0.3);
+}
