@@ -22,6 +22,7 @@ import EmailConfirmationPending from "./pages/EmailConfirmationPending";
 import CompanyOnboarding from "./pages/CompanyOnboarding";
 import AssessmentPage from "./pages/test";
 import AIInterviews from "./pages/AIInterviews";
+import CreateAssessment from "./pages/CreateAssessment";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,9 @@ const App = () => (
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/assessment" element={<AssessmentPage />} />
           <Route path="/ai-interviews" element={<AIInterviews />} />
+          <Route path="/create-assessment" element={<CreateAssessment jobId={""} jobTitle={""} onSave={function (): void {
+            throw new Error("Function not implemented.");
+          } } />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

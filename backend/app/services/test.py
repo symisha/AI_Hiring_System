@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
 # Import your processor class
-from backend.app.services.testMakingProcess import AIInterviewProcessor 
+from backend.app.services.testMakingProcess import AITestProcessor 
 
 router = APIRouter()
-ai_processor = AIInterviewProcessor()
+ai_processor = AITestProcessor()
 
 @router.post("/generate-test/{job_id}")
 async def generate_test(job_id: str):

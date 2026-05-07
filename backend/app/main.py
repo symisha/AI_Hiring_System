@@ -16,6 +16,7 @@ from app.services.shortlisting_resume import router as shortlisting_router
 from app.api.interview_api import app1 as interview_ws_app
 from app.routes.specific_job_routes import delRouter
 from app.services.screening_scheduler import screening_scheduler_loop
+from app.routes import interview_process_route
 # Database
 from app.database.db_connection import supabase  # Supabase client instance
 
@@ -25,12 +26,11 @@ from app.services import job_description, save_test, submit_test
 
 
 # Auth middleware
-from app.auth_middleware import auth_middleware
+
 from starlette.middleware.base import BaseHTTPMiddleware
 
 # Create FastAPI app instance
 app = FastAPI()
-app.add_middleware(BaseHTTPMiddleware, dispatch=auth_middleware)
 
 def _origin(url: str | None) -> str | None:
     if not url:
@@ -67,6 +67,7 @@ app.include_router(dashboard_info_router, prefix="/routes/dashboard_essentials",
 app.include_router(job_description.router, prefix="/services", tags=["job_description"])
 app.include_router(save_test.router, prefix="/services", tags=["save_test"])
 app.include_router(submit_test.router, prefix="/services", tags=["submit_test"])
+app.include_router(interview_process_route.router, prefix="/routes", tags=["make_test"])
 
 app.mount("/ws", interview_ws_app)
 

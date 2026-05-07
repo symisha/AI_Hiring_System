@@ -1,21 +1,27 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
-from app.services.testMakingProcess import AIInterviewProcessor
+from typing import Any
+from app.services.testMakingProcess import AITestProcessor
 from app.services.judge0 import Judge0PublicService
+from app.auth_middleware import get_current_user
 
 
 router = APIRouter()
 
-class InterviewRequest(BaseModel):
+
+#improper naming , should be test 
+
+class testRequest(BaseModel):
     role: str  # Only role remains
 
-@router.post("/generate-interview/{job_id}")
-def generate_interview(
+@router.post("/generate-test/{job_id}")
+def generate_test(
     job_id: str, 
     num_questions: int = Query(default=3, ge=1), 
-    data: InterviewRequest = None
+    data: testRequest = None,
+    user=Depends(get_current_user)
 ):
-    ai = AIInterviewProcessor()
+    ai = AITestProcessor()
     judge = Judge0PublicService()
 
     # Pass the ID from URL and count from Query
@@ -36,10 +42,10 @@ class SubmissionRequest(BaseModel):
     candidate_code: str
     function_name: str
     test_input: str
-    expected_output: str
+    expected_output: Any
 
-@router.post("/test-submission")
-def test_submission(data: SubmissionRequest):
+@router.post("/test-submission-to-judge0")
+def test_submission(data: SubmissionRequest, user=Depends(get_current_user)):
     judge = Judge0PublicService()
     
     # This calls the polling logic we built
