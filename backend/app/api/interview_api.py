@@ -170,7 +170,7 @@ def _update_cnic_verification_metadata(app_id: str, metadata: dict, status: str,
         pass
 
 # ======================== QUESTION COUNTER SYSTEM ========================
-MAX_QUESTIONS = 10
+MAX_QUESTIONS = 5
 
 def parse_llm_response_for_status_and_question(ai_response):
     """
@@ -936,7 +936,17 @@ async def process_utterance(sess: Session, audio: np.ndarray, ws: WebSocket):
         
         # ✅ Check if interview should end
         if should_end_interview(sess.question_counter):
-            end_message = generate_interview_end_message(sess.lang)
+            end_message, updated_history = query_groq(
+                user_input="End the interview now.",
+                context="",
+                max_tokens=120,
+                conversation_history=sess.conversation_history,
+                interview_prompt=sess.system_prompt,
+                force_end_tool=True,
+                language=sess.lang,
+            )
+            sess.conversation_history = updated_history
+            sess.messages = list(sess.conversation_history)
             await ws.send_text(json.dumps({"type": "ai_text", "text": end_message}))
             await ws.send_text(json.dumps({"type": "interview_complete", "total_questions": sess.question_counter['count']}))
             print(f"🎉 Interview completed with {sess.question_counter['count']} valid answers")

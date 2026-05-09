@@ -676,7 +676,22 @@ def transcribe(audio_array, language="en"):
 GROQ_API_KEY = "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"
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
-def query_groq(user_input, context="", conversation_history=None, max_tokens=300, temperature=0.1, interview_prompt=interview_prompt_en):
+def _end_interview_tool(language: str) -> str:
+    if language == "ur":
+        return "Shukriya! Aap ne interview complete kar liya hai. Ab aap apna interview submit kar sakte hain."
+    return "Thanks for the conversation. You may submit your interview now."
+
+
+def query_groq(
+    user_input,
+    context="",
+    conversation_history=None,
+    max_tokens=300,
+    temperature=0.1,
+    interview_prompt=interview_prompt_en,
+    force_end_tool: bool = False,
+    language: str = "en",
+):
     """
     Query Groq API with conversation history and interview prompt.
     Returns: (response_text, updated_conversation_history)
@@ -710,6 +725,30 @@ def query_groq(user_input, context="", conversation_history=None, max_tokens=300
             "content": user_message
         })
 
+        tools = None
+        tool_choice = None
+        if force_end_tool:
+            tools = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "end_interview",
+                        "description": "Return the final closing message for the interview.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "language": {
+                                    "type": "string",
+                                    "enum": ["en", "ur"],
+                                }
+                            },
+                            "required": ["language"],
+                        },
+                    },
+                }
+            ]
+            tool_choice = {"type": "function", "function": {"name": "end_interview"}}
+
         payload = {
             "model": GROQ_MODEL,
             "messages": conversation_history,
@@ -717,13 +756,33 @@ def query_groq(user_input, context="", conversation_history=None, max_tokens=300
             "temperature": temperature,
             "stream": False,
         }
+        if tools:
+            payload["tools"] = tools
+        if tool_choice:
+            payload["tool_choice"] = tool_choice
 
         headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
         response = requests.post(url, headers=headers, json=payload)
 
         if response.status_code == 200:
             result = response.json()
-            choice = result["choices"][0]["message"]["content"]
+            message = result["choices"][0]["message"]
+            tool_calls = message.get("tool_calls") or []
+            if tool_calls:
+                # Only one tool is supported here.
+                tool_name = tool_calls[0].get("function", {}).get("name")
+                args_str = tool_calls[0].get("function", {}).get("arguments") or "{}"
+                try:
+                    args = json.loads(args_str)
+                except Exception:
+                    args = {}
+                if tool_name == "end_interview":
+                    tool_language = args.get("language") or language
+                    tool_reply = _end_interview_tool(tool_language)
+                    conversation_history.append({"role": "assistant", "content": tool_reply})
+                    return tool_reply.strip(), conversation_history
+
+            choice = message.get("content") or ""
             conversation_history.append({"role": "assistant", "content": choice})
             return choice.strip(), conversation_history
         else:
