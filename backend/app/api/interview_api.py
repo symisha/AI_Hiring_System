@@ -14,6 +14,8 @@ import asyncio
 import base64
 import uuid
 import re
+import tempfile
+from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple
 from app.services.ai_interview import *
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks
@@ -32,6 +34,7 @@ import requests
 import tempfile
 import threading
 from app.database.db_connection import supabase
+from app.models.appstage import AppStatus
 from app.services.interview_link import verify_interview_token
 from app.services.evaluating_interview import evaluate_and_save_interview
 from app.services.cnic_embedding import extract_cnic_embedding
@@ -121,6 +124,11 @@ class CnicVerifyBody(BaseModel):
     frames: List[str]
 
 
+class CheatingReportBody(BaseModel):
+    tab_switches: int | None = None
+    reason: str | None = None
+
+
 def _decode_data_url(data_url: str) -> tuple[bytes, str]:
     if not data_url or "," not in data_url:
         raise ValueError("Invalid frame data")
@@ -139,6 +147,97 @@ def _decode_data_url(data_url: str) -> tuple[bytes, str]:
         return base64.b64decode(b64), ext
     except Exception:
         raise ValueError("Invalid base64 frame data")
+
+
+def _extract_single_face_embedding(file_bytes: bytes, file_ext: str) -> list[float]:
+    if not file_bytes:
+        raise ValueError("empty_frame")
+
+    suffix = f".{file_ext}" if file_ext else ".jpg"
+    tmp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(file_bytes)
+            tmp_path = Path(tmp.name)
+
+        from deepface import DeepFace
+
+        reps = DeepFace.represent(
+            img_path=str(tmp_path),
+            model_name="ArcFace",
+            detector_backend="opencv",
+            enforce_detection=True,
+        )
+        if not reps:
+            raise ValueError("no_face")
+
+        if isinstance(reps, list):
+            if len(reps) > 1:
+                raise ValueError("multiple_faces")
+            embedding = reps[0].get("embedding")
+        else:
+            embedding = reps.get("embedding")
+
+        if not embedding:
+            raise ValueError("no_face")
+
+        return list(embedding)
+    finally:
+        if tmp_path:
+            tmp_path.unlink(missing_ok=True)
+
+
+def _verify_live_face_frames(frames: List[str], candidate_id: str) -> Dict[str, Any]:
+    if not frames:
+        return {"ok": False, "reason": "no_face"}
+    app_res = (
+        supabase.table("applications")
+        .select("id,cnic_embedding")
+        .eq("id", candidate_id)
+        .single()
+        .execute()
+    )
+    if not app_res.data:
+        return {"ok": False, "reason": "no_embedding"}
+
+    stored_embedding = app_res.data.get("cnic_embedding")
+    if not stored_embedding:
+        return {"ok": False, "reason": "no_embedding"}
+
+    embeddings: List[List[float]] = []
+    errors: List[str] = []
+    for frame in frames:
+        try:
+            frame_bytes, frame_ext = _decode_data_url(frame)
+            emb = _extract_single_face_embedding(frame_bytes, frame_ext)
+            embeddings.append(emb)
+        except ValueError as e:
+            errors.append(str(e))
+        except Exception:
+            continue
+
+    if any(err == "multiple_faces" for err in errors):
+        return {"ok": False, "reason": "multiple_faces"}
+
+    min_good = max(3, CNIC_VERIFY_MIN_FRAMES // 2)
+    if len(embeddings) < min_good:
+        return {"ok": False, "reason": "no_face"}
+
+    stable_embedding = _mean_embedding(embeddings)
+    similarity = _cosine_similarity(stable_embedding, stored_embedding)
+    if similarity < CNIC_VERIFY_THRESHOLD:
+        return {
+            "ok": False,
+            "reason": "mismatch",
+            "similarity": similarity,
+            "threshold": CNIC_VERIFY_THRESHOLD,
+        }
+
+    return {
+        "ok": True,
+        "similarity": similarity,
+        "threshold": CNIC_VERIFY_THRESHOLD,
+    }
 
 
 def _cosine_similarity(a: List[float], b: List[float]) -> float:
@@ -376,6 +475,31 @@ async def verify_cnic(request: Request, body: CnicVerifyBody):
         "ok": True,
         "similarity": similarity,
         "threshold": CNIC_VERIFY_THRESHOLD,
+    }
+
+
+@app1.post("/flag-cheating")
+async def flag_cheating(request: Request, body: CheatingReportBody):
+    authorization = request.headers.get("Authorization", "")
+    user_info = verify_token(authorization=authorization)
+
+    candidate_id = user_info.get("candidate_id")
+    job_id = user_info.get("job_id")
+    if not candidate_id or not job_id:
+        raise HTTPException(status_code=400, detail="Missing candidate_id or job_id")
+
+    try:
+        supabase.table("job_applications").update(
+            {"status": AppStatus.REJECTED.value}
+        ).eq("applicant_id", candidate_id).eq("job_id", job_id).execute()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update status: {str(e)}")
+
+    return {
+        "ok": True,
+        "status": AppStatus.REJECTED.value,
+        "tab_switches": body.tab_switches,
+        "reason": body.reason,
     }
 
 
@@ -1208,6 +1332,14 @@ async def ws_handler(ws: WebSocket):
                         await ws.send_text(json.dumps({"type": "session_ended", "filename": sess.conversation_filename, "message": "session closed"}))
                     await ws.send_text(json.dumps({"type": "status", "level": "ok", "message": "session closed"}))
                     break
+
+                elif typ == "face_check":
+                    if not sess:
+                        await ws.send_text(json.dumps({"type": "face_check_result", "ok": False, "reason": "no_session"}))
+                        continue
+                    frames = data.get("frames") or []
+                    result = _verify_live_face_frames(frames, sess.candidate_id)
+                    await ws.send_text(json.dumps({"type": "face_check_result", **result}))
 
                 else:
                     await ws.send_text(json.dumps({"type": "status", "level": "err", "message": f"unknown type {typ}"}))

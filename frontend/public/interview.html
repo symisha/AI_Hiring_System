@@ -1261,6 +1261,11 @@ let currentAudioSrc = null;
 const evalPanel = document.getElementById('evalPanel');
 const evalContent = document.getElementById('evalContent');
 const submitBtn = document.getElementById('submitBtn');
+const FACE_CHECK_INTERVAL_MS = 300000;
+
+let faceCheckInterval = null;
+let faceCheckTimeout = null;
+let faceCheckInProgress = false;
 
 // ✅ Handle autoplay restrictions by resuming audio context on first user interaction
 let audioContextResumed = false;
@@ -1370,6 +1375,7 @@ document.getElementById('startBtn').onclick = async () => {
             language: data.language
           };
           addMessage('system', `Session started for ${data.email} (${data.language})`);
+          startBackgroundFaceChecks();
           break;
 
         case "stt":
@@ -1406,6 +1412,9 @@ document.getElementById('startBtn').onclick = async () => {
               console.error('⚠️ Error stopping audio:', e);
             }
           }
+          break;
+        case "face_check_result":
+          handleFaceCheckResult(data);
           break;
           
         default:
@@ -1490,6 +1499,7 @@ document.getElementById('startBtn').onclick = async () => {
   ws.onclose = () => { 
     console.log("🔌 WebSocket closed");
     updateSystemStatus('connection', false);
+    stopBackgroundFaceChecks();
     // Stop audio on disconnect
     try {
       ttsPlayer.pause();
@@ -1712,6 +1722,83 @@ async function verifyCnicIdentity() {
   }
 }
 
+function startBackgroundFaceChecks() {
+  stopBackgroundFaceChecks();
+  faceCheckTimeout = setTimeout(() => {
+    runBackgroundFaceCheck();
+    faceCheckInterval = setInterval(runBackgroundFaceCheck, FACE_CHECK_INTERVAL_MS);
+  }, FACE_CHECK_INTERVAL_MS);
+}
+
+function stopBackgroundFaceChecks() {
+  if (faceCheckTimeout) {
+    clearTimeout(faceCheckTimeout);
+    faceCheckTimeout = null;
+  }
+  if (faceCheckInterval) {
+    clearInterval(faceCheckInterval);
+    faceCheckInterval = null;
+  }
+  faceCheckInProgress = false;
+}
+
+async function runBackgroundFaceCheck() {
+  if (faceCheckInProgress) return;
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  const liveVideo = document.getElementById('liveCameraFeed');
+  if (!liveVideo) return;
+
+  faceCheckInProgress = true;
+  try {
+    const frames = await captureFramesFromVideo(liveVideo, 6, 200);
+    ws.send(JSON.stringify({ type: 'face_check', frames }));
+  } catch (err) {
+    console.warn('⚠️ Background face check failed:', err);
+  } finally {
+    faceCheckInProgress = false;
+  }
+}
+
+function handleFaceCheckResult(data) {
+  if (data.ok) return;
+
+  let title = 'Face Verification Alert';
+  let message = 'We could not verify your identity. Please adjust your camera.';
+  let tone = 'warning';
+  let showAction = true;
+  let actionText = 'Try Again';
+  let onAction = () => runBackgroundFaceCheck();
+
+  if (data.reason === 'no_face') {
+    message = 'We could not detect your face. Please position the camera so your face is fully visible.';
+  } else if (data.reason === 'multiple_faces') {
+    message = 'Multiple faces were detected. Please ensure only you are visible during the interview.';
+  } else if (data.reason === 'mismatch') {
+    title = 'Interview Locked';
+    message = 'Your face does not match the verified identity. Please contact HR by email to proceed.';
+    tone = 'danger';
+    showAction = false;
+    actionText = 'OK';
+    onAction = null;
+  } else if (data.reason === 'no_embedding') {
+    message = 'We could not load your verification profile. Please contact HR for assistance.';
+    tone = 'danger';
+    showAction = false;
+    actionText = 'OK';
+    onAction = null;
+  }
+
+  showSystemModal({
+    title,
+    message,
+    icon: tone === 'danger' ? '🚨' : '⚠',
+    tone,
+    showAction,
+    actionText,
+    onAction
+  });
+}
+
 // ✅ CONSOLIDATED STOP AND EVALUATION FUNCTION
 async function stopInterviewAndEvaluate() {
   console.log('🛑 Submit interview clicked');
@@ -1754,6 +1841,7 @@ async function stopInterviewAndEvaluate() {
   // Disable tab switch detection — interview is over
   tabSwitchingEnabled = false;
   dismissTabWarning();
+  stopBackgroundFaceChecks();
   
   // Add ending message
   addMessage('ai', 'Interview session ended. Processing your evaluation...');
@@ -2075,10 +2163,32 @@ function updateTabSwitchBadge() {
   else if (tabSwitchCount >= 2) badge.classList.add('warning');
 }
 
+async function reportCheatingStatus() {
+  if (!authToken) return;
+  try {
+    await fetch(`${API_BASE_URL}/ws/flag-cheating`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({
+        tab_switches: tabSwitchCount,
+        reason: 'tab_switch_limit'
+      })
+    });
+  } catch (err) {
+    console.warn('⚠️ Failed to report cheating status:', err);
+  }
+}
+
 function terminateInterviewDueToTabSwitch() {
   tabSwitchingEnabled = false;
   clearInterval(cameraMonitorInterval);
   dismissTabWarning();
+  stopBackgroundFaceChecks();
+
+  reportCheatingStatus();
 
   // Stop WebSocket  
   if (ws && ws.readyState === WebSocket.OPEN) {
@@ -2095,8 +2205,8 @@ function terminateInterviewDueToTabSwitch() {
 
   if (submitBtn) submitBtn.disabled = true;
   showSystemModal({
-    title: 'Interview Terminated',
-    message: `You switched tabs or minimized the browser ${MAX_TAB_SWITCHES} times.\n\nThe interview has been automatically terminated due to suspicious activity. Please contact HR if you believe this was a mistake.`,
+    title: 'Interview Locked',
+    message: `Your interview has been locked due to repeated tab switching.\n\nPlease contact HR by email to proceed with next steps.`,
     icon: '🚨',
     tone: 'danger',
     showAction: false
@@ -2218,6 +2328,7 @@ function startCameraMonitoring() {
 function terminateInterviewDueToCamera() {
   clearInterval(cameraMonitorInterval);
   updateSystemStatus('camera', false);
+  stopBackgroundFaceChecks();
 
   // Stop WebSocket
   if (ws && ws.readyState === WebSocket.OPEN) {

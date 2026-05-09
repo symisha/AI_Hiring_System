@@ -1,0 +1,44 @@
+{
+  "session_id": "89c9f63b-2613-4ae4-940a-5430b5fcb04c_20260509_225027",
+  "candidate_id": "89c9f63b-2613-4ae4-940a-5430b5fcb04c",
+  "language": "en",
+  "started_at": "2026-05-09 22:50:27",
+  "conversations": [
+    {
+      "timestamp": "2026-05-09 22:51:32",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to Associate Data Scientist?",
+      "user_answer": "Thank you very much.",
+      "status": "discarded",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-09 22:52:21",
+      "ai_question": "That's great to hear you're excited, but can you tell me about a specific project you've worked on that involved machine learning, and what your role was in that project?",
+      "user_answer": "Interview log the app is just not messy, very bad.",
+      "status": "discarded",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-09 22:52:51",
+      "ai_question": "That's great to hear you're excited, but can you tell me about a specific project you've worked on that involved machine learning, and what your role was in that project?",
+      "user_answer": "eventually made it pasted in a file.",
+      "status": "discarded",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-09 22:57:57",
+      "ai_question": "It sounds like you might be referring to a data-related task, but I'd like to explore your experience with data analysis - can you walk me through a time when you had to perform exploratory data analysis on a dataset, perhaps using SQL to extract the data or Python to manipulate it?",
+      "user_answer": "Please try to catch the light because I'm not dead.",
+      "status": "discarded",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-09 23:00:44",
+      "ai_question": "I think we might have gotten a bit off track - let's try to focus on your experience with data science - can you tell me about a project where you had to work with data visualization, maybe using a library like pandas or numpy to create plots or charts?",
+      "user_answer": "All of them are just...",
+      "status": "discarded",
+      "valid_count_at_time": 0
+    }
+  ],
+  "valid_question_count": 0
+}
