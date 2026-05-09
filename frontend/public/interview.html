@@ -13,18 +13,22 @@
 
   body { 
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
+    background:
+      radial-gradient(circle at 8% 5%, rgba(99, 102, 241, 0.16), transparent 35%),
+      radial-gradient(circle at 92% 10%, rgba(16, 185, 129, 0.12), transparent 32%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    color: #1f2937;
     line-height: 1.6;
     min-height: 100vh;
   }
 
   /* ===== HEADER ===== */
   .header {
-    background: white;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+    padding: 22px 24px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    backdrop-filter: blur(8px);
   }
 
   .header-content {
@@ -36,105 +40,28 @@
   }
 
   .header-left h1 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 4px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 2px;
+    letter-spacing: -0.02em;
   }
 
   .header-info {
     font-size: 14px;
-    color: #666;
+    color: #64748b;
   }
 
   .candidate-badge {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: #e8f4f8;
-    color: #2563eb;
-    padding: 8px 16px;
-    border-radius: 20px;
+    background: linear-gradient(135deg, #eef2ff, #ecfeff);
+    color: #312e81;
+    padding: 10px 16px;
+    border: 1px solid #c7d2fe;
+    border-radius: 999px;
     font-size: 14px;
-    font-weight: 500;
-  }
-
-  /* ===== PROGRESS TRACKER ===== */
-  .progress-header {
-    background: white;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 16px 24px;
-  }
-
-  .progress-content {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .progress-stepper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-  }
-
-  .progress-stepper::before {
-    content: '';
-    position: absolute;
-    top: 16px;
-    left: 32px;
-    right: 32px;
-    height: 2px;
-    background: #e0e0e0;
-    z-index: 1;
-  }
-
-  .progress-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    position: relative;
-    z-index: 2;
-    flex: 1;
-    max-width: 140px;
-  }
-
-  .progress-step-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
-    background: white;
-    border: 2px solid #e0e0e0;
-    color: #999;
-  }
-
-  .progress-step.completed .progress-step-icon {
-    background: #10b981;
-    border-color: #10b981;
-    color: white;
-  }
-
-  .progress-step.active .progress-step-icon {
-    background: #2563eb;
-    border-color: #2563eb;
-    color: white;
-  }
-
-  .progress-step-label {
-    font-size: 12px;
-    color: #666;
-    text-align: center;
-    font-weight: 500;
-  }
-
-  .progress-step.active .progress-step-label {
-    color: #2563eb;
     font-weight: 600;
   }
 
@@ -142,17 +69,17 @@
   .container {
     max-width: 1140px;
     margin: 0 auto;
-    padding: 32px 24px;
+    padding: 28px 24px;
   }
 
   .main-layout {
     display: grid;
-    grid-template-columns: 1fr 420px;
+    grid-template-columns: 1.25fr 1fr;
     grid-template-areas:
-      'interview camera'
-      'instructions instructions';
+      'instructions interview'
+      'camera camera';
     gap: 28px;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     align-items: start;
   }
 
@@ -170,10 +97,10 @@
 
   /* ===== CARDS ===== */
   .card {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -185,16 +112,17 @@
   }
 
   .card-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 8px;
+    font-size: 21px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 7px;
     line-height: 1.3;
+    letter-spacing: -0.01em;
   }
 
   .card-subtitle {
     font-size: 14px;
-    color: #666;
+    color: #64748b;
     margin-bottom: 24px;
     line-height: 1.4;
   }
@@ -208,7 +136,7 @@
 
   /* ===== INTERVIEW CARD ===== */
   .interview-card {
-    height: 380px;
+    min-height: 340px;
   }
 
   .language-selector {
@@ -218,17 +146,19 @@
   .language-selector label {
     display: block;
     margin-bottom: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 
   select {
     width: 100%;
     padding: 14px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    background: #ffffff;
     color: #374151;
     font-size: 14px;
     cursor: pointer;
@@ -243,9 +173,9 @@
 
   .interview-controls {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     margin-top: auto;
-    padding-top: 20px;
+    padding-top: 10px;
   }
 
   button {
@@ -264,13 +194,24 @@
   }
 
   .btn-primary {
-    background: #2563eb;
+    background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
     color: white;
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.28);
   }
 
   .btn-primary:hover {
-    background: #1d4ed8;
-    transform: translateY(-1px);
+    transform: translateY(-1px) scale(1.01);
+  }
+
+  .btn-status,
+  .btn-status:disabled,
+  .btn-status:hover {
+    background: linear-gradient(135deg, #0f766e 0%, #0f9f8f 100%);
+    color: white;
+    opacity: 1;
+    cursor: default;
+    transform: none;
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.24);
   }
 
   .btn-danger {
@@ -306,8 +247,9 @@
     gap: 12px;
     margin-bottom: 14px;
     padding: 14px;
-    background: #f9fafb;
-    border-radius: 8px;
+    background: linear-gradient(135deg, #f8fafc, #eef2ff);
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
     font-size: 14px;
     line-height: 1.5;
   }
@@ -363,7 +305,7 @@
   /* ===== CONVERSATION SECTION ===== */
   .conversation-section {
     grid-column: 1 / -1;
-    margin-top: 8px;
+    margin-top: 10px;
   }
 
   .conversation-section .card-header {
@@ -375,12 +317,12 @@
   }
 
   #conversation {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 28px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 14px;
+    padding: 24px;
     height: 480px;
     overflow-y: auto;
-    background: #fafbfc;
+    background: linear-gradient(180deg, #f8fafc, #f1f5f9);
     display: flex;
     flex-direction: column;
     gap: 18px;
@@ -494,12 +436,10 @@
   /* ===== BOTTOM ACTIONS ===== */
   .bottom-actions {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 20px;
-    padding: 32px 24px;
-    background: white;
-    border-top: 1px solid #e0e0e0;
-    margin-top: 40px;
+    padding: 20px 24px 34px;
+    margin-top: 22px;
     max-width: 1140px;
     margin-left: auto;
     margin-right: auto;
@@ -513,42 +453,35 @@
     font-weight: 600;
   }
 
-  .btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
-    border: 1px solid #d1d5db;
-  }
-
-  .btn-secondary:hover {
-    background: #e5e7eb;
-    transform: translateY(-1px);
-  }
-
   /* ===== RESPONSIVE ===== */
   @media (max-width: 1024px) {
     .main-layout {
       grid-template-columns: 1fr;
       grid-template-areas:
+        'instructions'
         'interview'
         'camera'
-        'instructions';
+        'conversation';
       gap: 24px;
     }
-    
-    .progress-stepper {
-      flex-wrap: wrap;
-      gap: 16px;
+
+    .bottom-actions {
+      justify-content: stretch;
     }
-    
-    .progress-step {
-      max-width: none;
-      flex: none;
+
+    .btn-large {
+      width: 100%;
+      min-width: 0;
     }
   }
 
   @media (max-width: 768px) {
     .container {
       padding: 16px;
+    }
+
+    #liveCameraFeed {
+      height: 360px;
     }
     
     .header-content {
@@ -607,12 +540,12 @@
 
   /* ===== LIVE CAMERA FEED ===== */
   .live-camera-card {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
     overflow: hidden;
-    margin-bottom: 24px;
+    margin-bottom: 0;
   }
 
   .live-camera-header {
@@ -648,7 +581,7 @@
 
   #liveCameraFeed {
     width: 100%;
-    height: 200px;
+    height: 460px;
     object-fit: cover;
     display: block;
     background: #000;
@@ -737,6 +670,87 @@
     font-size: 13px;
     margin-bottom: 16px;
     display: none;
+  }
+
+  /* ===== SYSTEM MODAL ===== */
+  .system-modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(2, 6, 23, 0.76);
+    backdrop-filter: blur(6px);
+    z-index: 10001;
+  }
+
+  .system-modal-overlay.active {
+    display: flex;
+  }
+
+  .system-modal {
+    width: min(100%, 480px);
+    border-radius: 22px;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    background: hsl(var(--card));
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.45);
+    overflow: hidden;
+  }
+
+  .system-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 24px 24px 12px;
+  }
+
+  .system-modal-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: hsl(var(--danger) / 0.16);
+    color: hsl(var(--danger));
+    flex-shrink: 0;
+  }
+
+  .system-modal-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: hsl(var(--foreground));
+  }
+
+  .system-modal-body {
+    padding: 0 24px 24px;
+  }
+
+  .system-modal-message {
+    font-size: 15px;
+    line-height: 1.7;
+    color: hsl(var(--muted-foreground));
+    white-space: pre-line;
+  }
+
+  .system-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 22px;
+  }
+
+  .system-modal[data-tone="warning"] .system-modal-icon {
+    background: hsl(var(--warning) / 0.16);
+    color: hsl(var(--warning));
+  }
+
+  .system-modal[data-tone="success"] .system-modal-icon {
+    background: hsl(var(--success) / 0.16);
+    color: hsl(var(--success));
   }
 
   /* ===== SCROLLBAR ===== */
@@ -992,6 +1006,21 @@
     <span class="warning-close" onclick="dismissTabWarning()">✕</span>
   </div>
 
+  <div id="systemModalOverlay" class="system-modal-overlay" aria-hidden="true">
+    <div id="systemModal" class="system-modal" data-tone="danger" role="alertdialog" aria-modal="true" aria-labelledby="systemModalTitle" aria-describedby="systemModalMessage">
+      <div class="system-modal-header">
+        <div id="systemModalIcon" class="system-modal-icon">⚠</div>
+        <div id="systemModalTitle" class="system-modal-title">System Notice</div>
+      </div>
+      <div class="system-modal-body">
+        <div id="systemModalMessage" class="system-modal-message"></div>
+        <div class="system-modal-actions">
+          <button id="systemModalAction" class="btn-primary" type="button">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== CAMERA ACCESS OVERLAY ===== -->
   <div id="cameraOverlay">
     <div class="camera-modal">
@@ -1012,57 +1041,40 @@
   <header class="header">
     <div class="header-content">
       <div class="header-left">
-        <h1>AI Interview Assessment</h1>
-        <div class="header-info">Software Engineer Position</div>
+        <h1>AI Screening Interview</h1>
+        <div class="header-info">Complete your assessment in one session</div>
       </div>
       <div class="candidate-badge">
-        <span>👤</span>
-        <span id="candidateName">Candidate Interview</span>
+        <span>✉</span>
+        <span id="candidateName">candidate@email.com</span>
       </div>
     </div>
   </header>
 
-  <!-- ===== PROGRESS TRACKER ===== -->
-  <section class="progress-header">
-    <div class="progress-content">
-      <div class="progress-stepper">
-        <div class="progress-step completed">
-          <div class="progress-step-icon">✓</div>
-          <div class="progress-step-label">Applied</div>
-        </div>
-        <div class="progress-step completed">
-          <div class="progress-step-icon">✓</div>
-          <div class="progress-step-label">Screening</div>
-        </div>
-        <div class="progress-step active">
-          <div class="progress-step-icon">3</div>
-          <div class="progress-step-label">AI Interview</div>
-        </div>
-        <div class="progress-step">
-          <div class="progress-step-icon">4</div>
-          <div class="progress-step-label">Technical Test</div>
-        </div>
-        <div class="progress-step">
-          <div class="progress-step-icon">5</div>
-          <div class="progress-step-label">HR Review</div>
-        </div>
-        <div class="progress-step">
-          <div class="progress-step-icon">6</div>
-          <div class="progress-step-label">Decision</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ===== MAIN CONTAINER ===== -->
   <div class="container">
     <div class="main-layout">
-      
-      <!-- ===== LEFT: INTERVIEW CARD ===== -->
+
+      <!-- ===== SECTION: INTERVIEW INSTRUCTIONS ===== -->
+      <div class="card instructions-card">
+        <div class="card-header">
+          <h3 class="card-title">Interview Instructions</h3>
+          <p class="card-subtitle">Read these points before you begin</p>
+        </div>
+        <div class="card-content">
+          <ul class="instructions-list">
+            <li>Ensure you're in a quiet environment</li>
+            <li>Speak clearly and at a normal pace</li>
+            <li>Do NOT switch tabs — interview will be terminated</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ===== SECTION: LANGUAGE + START ===== -->
       <div class="card interview-card">
         <div class="card-header">
-          <h2 class="card-title">AI Interview Session</h2>
-          <p class="card-subtitle">Complete your AI-powered interview assessment</p>
+          <h2 class="card-title">Select Language</h2>
+          <p class="card-subtitle">Choose your preferred interview language and start</p>
         </div>
         <div class="card-content">
           <div class="language-selector">
@@ -1072,24 +1084,18 @@
               <option value="ur">Urdu</option>
             </select>
           </div>
-          
+
           <div class="interview-controls">
             <button id="startBtn" class="btn-primary" disabled>
               <span>▶️</span>
               Start Interview
             </button>
-            <button id="submitBtn2" class="btn-primary" style="display:none;">
-              <span>📤</span>
-              Submit Interview
-            </button>
           </div>
         </div>
       </div>
 
-      <!-- ===== RIGHT: LIVE CAMERA ===== -->
+      <!-- ===== SECTION: LIVE CAMERA FEED ===== -->
       <div class="camera-panel">
-
-        <!-- Live Camera Feed -->
         <div class="live-camera-card" id="liveCameraCard" style="display:none;">
           <div class="live-camera-header">
             <h4>📷 Live Camera Feed</h4>
@@ -1101,23 +1107,17 @@
             <span class="count-badge" id="tabSwitchBadge">0 / 3</span>
           </div>
         </div>
+
+        <!-- Keep status indicators hidden but available for existing JS hooks -->
+        <div style="display:none;">
+          <div class="status-dot" id="micStatus"></div>
+          <div class="status-dot" id="connectionStatus"></div>
+          <div class="status-dot" id="cameraStatus"></div>
+        </div>
       </div>
 
-      <!-- Instructions Card -->
-      <div class="card instructions-card">
-        <div class="card-header">
-          <h3 class="card-title">Interview Instructions</h3>
-          <p class="card-subtitle">Please read before starting</p>
-        </div>
-        <div class="card-content">
-          <ul class="instructions-list">
-            <li>Ensure you're in a quiet environment</li>
-            <li>Speak clearly and at a normal pace</li>
-            <li>Answer questions thoughtfully and completely</li>
-            <li>Do NOT switch tabs — interview will be terminated</li>
-          </ul>
-          
-          <!-- <div class="system-status">
+      <!--
+      <div class="system-status">
             <div class="system-status-title">System Status</div>
             <div class="status-indicators">
               <div class="status-indicator">
@@ -1133,9 +1133,8 @@
                 <span>Camera</span>
               </div>
             </div>
-          </div> -->
-        </div>
-      </div>
+          </div>
+      -->
     </div>
 
     <!-- ===== CONVERSATION SECTION ===== -->
@@ -1165,9 +1164,6 @@
   <div class="bottom-actions">
     <button class="btn-primary btn-large" onclick="submitInterview()" disabled id="submitBtn">
       Submit Interview
-    </button>
-    <button class="btn-secondary btn-large" id="exitBtn">
-      Exit to Dashboard
     </button>
   </div>
 
@@ -1203,7 +1199,14 @@ function initializeCandidate() {
         if (nameElement) nameElement.textContent = data.name || data.email || "Candidate Interview";
       })
       .catch((error) => {
-        document.body.innerHTML = `<div style="padding:32px;font-family:Arial,sans-serif;"><h2>Interview link is invalid or expired.</h2><p>${error.message}</p></div>`;
+        showSystemModal({
+          title: 'Interview Link Unavailable',
+          message: error.message,
+          icon: '🔒',
+          tone: 'warning',
+          actionText: 'Refresh Page',
+          onAction: () => window.location.reload()
+        });
       });
     return;
   }
@@ -1229,12 +1232,6 @@ function submitInterview() {
   if (confirm('Are you ready to submit your interview?\n\nThis action cannot be undone.')) {
     // Trigger stop and evaluation in one call
     stopInterviewAndEvaluate();
-  }
-}
-
-function exitToDashboard() {
-  if (confirm('Are you sure you want to exit?\n\nAny unsaved progress will be lost.')) {
-    window.location.href = '/dashboard';
   }
 }
 
@@ -1311,6 +1308,15 @@ document.getElementById('startBtn').onclick = async () => {
   console.log('🚀 Starting session...');
   console.log('Language:', langInput.value);
 
+  const startBtn = document.getElementById('startBtn');
+  if (startBtn) {
+    startBtn.disabled = true;
+    startBtn.classList.remove('btn-primary');
+    startBtn.classList.add('btn-status');
+    startBtn.innerHTML = '<span>●</span>Interview in Process';
+    startBtn.onclick = null;
+  }
+
   // Update system status
   updateSystemStatus('connection', true);
 
@@ -1323,7 +1329,6 @@ document.getElementById('startBtn').onclick = async () => {
   
 // Enable submit buttons
     if (submitBtn) submitBtn.disabled = false;
-    toggleSubmitButton(true);
 
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 // Append the token as a query parameter so the backend can see it during the handshake
@@ -1609,19 +1614,50 @@ async function captureFramesFromVideo(videoEl, count, intervalMs) {
 }
 
 function blockCnicVerification(message) {
-  document.body.innerHTML = `
-    <div style="
-      position:fixed;inset:0;background:#1a1a1a;
-      display:flex;align-items:center;justify-content:center;
-      font-family:Arial,sans-serif;color:white;text-align:center;padding:40px;
-    ">
-      <div>
-        <div style="font-size:40px;margin-bottom:16px;">❌</div>
-        <h2 style="font-size:22px;margin-bottom:10px;">Identity Verification Failed</h2>
-        <p style="opacity:0.85;max-width:560px;">${message}</p>
-      </div>
-    </div>
-  `;
+  showSystemModal({
+    title: 'Identity Verification Failed',
+    message: '',
+    icon: '❌',
+    tone: 'danger',
+    actionText: 'OK'
+  });
+}
+
+function showSystemModal({ title, message, icon = '⚠', tone = 'danger', actionText = 'OK', onAction, showAction = true } = {}) {
+  const overlay = document.getElementById('systemModalOverlay');
+  const modal = document.getElementById('systemModal');
+  const titleEl = document.getElementById('systemModalTitle');
+  const messageEl = document.getElementById('systemModalMessage');
+  const iconEl = document.getElementById('systemModalIcon');
+  const actionBtn = document.getElementById('systemModalAction');
+
+  if (!overlay || !modal || !titleEl || !messageEl || !iconEl || !actionBtn) return;
+
+  modal.dataset.tone = tone;
+  titleEl.textContent = title || 'System Notice';
+  messageEl.textContent = message || '';
+  iconEl.textContent = icon;
+  actionBtn.textContent = actionText;
+  actionBtn.style.display = showAction ? '' : 'none';
+  actionBtn.disabled = !showAction;
+  actionBtn.onclick = () => {
+    hideSystemModal();
+    if (typeof onAction === 'function') onAction();
+  };
+
+  overlay.classList.add('active');
+  overlay.setAttribute('aria-hidden', 'false');
+}
+
+function hideSystemModal() {
+  const overlay = document.getElementById('systemModalOverlay');
+  const actionBtn = document.getElementById('systemModalAction');
+  if (!overlay || !actionBtn) return;
+  overlay.classList.remove('active');
+  overlay.setAttribute('aria-hidden', 'true');
+  actionBtn.style.display = '';
+  actionBtn.disabled = false;
+  actionBtn.onclick = null;
 }
 
 function setStartEnabled(enabled) {
@@ -1724,24 +1760,10 @@ async function stopInterviewAndEvaluate() {
   
   // Disable submit buttons
   if (submitBtn) submitBtn.disabled = true;
-  if (document.getElementById('submitBtn2')) document.getElementById('submitBtn2').disabled = true;
   
   // ✅ CALL CONSOLIDATED STOP AND EVALUATE API
   await callStopAndEvaluateAPI();
 }
-
-// Set up submit button in interview controls
-document.addEventListener('DOMContentLoaded', function() {
-  const submitBtn2 = document.getElementById('submitBtn2');
-  if (submitBtn2) {
-    submitBtn2.onclick = submitInterview;
-  }
-  
-  const exitBtn = document.getElementById('exitBtn');
-  if (exitBtn) {
-    exitBtn.onclick = exitToDashboard;
-  }
-});
 
 // ✅ CALL CONSOLIDATED STOP AND EVALUATE API
 async function callStopAndEvaluateAPI() {
@@ -1811,14 +1833,6 @@ async function callStopAndEvaluateAPI() {
   } catch (err) {
     console.error('❌ Interview submission error:', err);
     evalContent.innerHTML = `<div style="color: #dc2626;">❌ Network error: ${err.message}</div>`;
-  }
-}
-
-// ✅ Show/hide submit button during interview
-function toggleSubmitButton(show) {
-  const submitBtn2 = document.getElementById('submitBtn2');
-  if (submitBtn2) {
-    submitBtn2.style.display = show ? 'block' : 'none';
   }
 }
 
@@ -2079,23 +2093,14 @@ function terminateInterviewDueToTabSwitch() {
     cameraStream = null;
   }
 
-  document.body.innerHTML = `
-    <div style="
-      position:fixed;inset:0;background:#1a1a1a;
-      display:flex;align-items:center;justify-content:center;
-      font-family:Arial,sans-serif;color:white;text-align:center;padding:40px;
-    ">
-      <div>
-        <div style="font-size:64px;margin-bottom:24px;">🚨</div>
-        <h1 style="font-size:28px;margin-bottom:16px;color:#ef4444;">Interview Terminated</h1>
-        <p style="font-size:16px;color:#ccc;max-width:420px;line-height:1.6;">
-          You switched tabs or minimized the browser ${MAX_TAB_SWITCHES} times.<br><br>
-          The interview has been automatically terminated due to suspicious activity.
-          Please contact HR if you believe this was a mistake.
-        </p>
-      </div>
-    </div>
-  `;
+  if (submitBtn) submitBtn.disabled = true;
+  showSystemModal({
+    title: 'Interview Terminated',
+    message: `You switched tabs or minimized the browser ${MAX_TAB_SWITCHES} times.\n\nThe interview has been automatically terminated due to suspicious activity. Please contact HR if you believe this was a mistake.`,
+    icon: '🚨',
+    tone: 'danger',
+    showAction: false
+  });
 }
 
 // Register tab/focus listeners
@@ -2231,24 +2236,15 @@ function terminateInterviewDueToCamera() {
     cameraStream = null;
   }
 
-  // Block page with message
-  document.body.innerHTML = `
-    <div style="
-      position:fixed;inset:0;background:#1a1a1a;
-      display:flex;align-items:center;justify-content:center;
-      font-family:Arial,sans-serif;color:white;text-align:center;padding:40px;
-    ">
-      <div>
-        <div style="font-size:64px;margin-bottom:24px;">🚫</div>
-        <h1 style="font-size:28px;margin-bottom:16px;color:#ef4444;">Interview Terminated</h1>
-        <p style="font-size:16px;color:#ccc;max-width:400px;line-height:1.6;">
-          Your camera was turned off during the interview.<br><br>
-          The interview has been automatically terminated.
-          Please contact HR if you believe this was a mistake.
-        </p>
-      </div>
-    </div>
-  `;
+  if (submitBtn) submitBtn.disabled = true;
+  showSystemModal({
+    title: 'Interview Terminated',
+    message: 'Your camera was turned off during the interview.\n\nThe interview has been automatically terminated. Please contact HR if you believe this was a mistake.',
+    icon: '🚫',
+    tone: 'danger',
+    actionText: 'Refresh Page',
+    onAction: () => window.location.reload()
+  });
 }
 
 // ✅ 5. INITIALIZE ON PAGE LOAD
