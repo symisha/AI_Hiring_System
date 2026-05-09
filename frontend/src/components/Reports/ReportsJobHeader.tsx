@@ -16,10 +16,10 @@ const ReportsJobHeader = ({ jobTitle, jobId, totalEvaluated, topCandidates }: an
         </div>
       </div>
 
-      <div className="flex gap-2">
+      {/* <div className="flex gap-2">
         <Button onClick={() => alert('Download full report')}>Download Full Report</Button>
-        {/* <Button onClick={() => alert('Download individual')} className="bg-indigo-600 text-white">Download Individual</Button> */}
-      </div>
+        <Button onClick={() => alert('Download individual')} className="bg-indigo-600 text-white">Download Individual</Button>
+      </div> */}
     </div>
   );
 };
