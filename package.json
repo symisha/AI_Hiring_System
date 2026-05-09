@@ -4,11 +4,11 @@
   "description": "---",
   "main": "index.js",
   "scripts": {
-    "predev:backend": "echo Skipping port kill on Windows",
-    "dev:backend": "python -m uvicorn app.main:app --app-dir backend",
-    "predev:frontend": "echo Skipping port kill on Windows",
+    "dev:backend": "cmd /c \"cd backend && venv\\Scripts\\python.exe -m uvicorn app.main:app --reload\"",
+    "install:backend": "cmd /c \"cd backend && venv\\Scripts\\python.exe -m pip install -r requirements_core.txt\"",
+    "install:backend:full": "cmd /c \"cd backend && venv\\Scripts\\python.exe -m pip install -r requirements_full.txt\"",
     "dev:frontend": "npm --prefix frontend run dev",
-    "dev": "concurrently -n backend,frontend -c green,cyan \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev": "concurrently --restart-tries -1 --restart-after 2000 -n backend,frontend -c green,cyan \"npm run dev:backend\" \"npm run dev:frontend\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

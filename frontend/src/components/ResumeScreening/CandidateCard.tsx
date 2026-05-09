@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const statusColor = (s: string) => {
@@ -11,19 +10,26 @@ const statusColor = (s: string) => {
 };
 
 const CandidateCard = ({ candidate, onView }: any) => {
+  const initials = (candidate.name || "U")
+    .split(" ")
+    .filter(Boolean)
+    .map((n: string) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   return (
     <div className="p-4 rounded-lg border bg-background flex items-start justify-between">
       <div>
         <div className="flex items-center gap-4">
-          <div className="rounded-full h-10 w-10 bg-muted flex items-center justify-center">{candidate.name.split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
+          <div className="rounded-full h-10 w-10 bg-muted flex items-center justify-center">{initials}</div>
           <div>
             <div className="font-semibold">{candidate.name}</div>
-            <div className="text-sm text-muted-foreground">{candidate.email} • {candidate.experience} yrs</div>
+            <div className="text-sm text-muted-foreground">{candidate.email || "No email"}</div>
           </div>
         </div>
 
         <div className="mt-2 text-sm">
-          <div>Top skills: {candidate.skills.slice(0,5).join(', ')}</div>
           <div className="mt-1">AI score: <strong>{candidate.aiScore}</strong></div>
         </div>
       </div>

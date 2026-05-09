@@ -12,7 +12,6 @@ const CandidateAssessmentDetail = ({ candidate, onClose }: any) => {
 
         <div className="flex gap-2">
           <Button onClick={() => alert('Approve')}>Approve</Button>
-          <Button onClick={() => alert('Flag')} className="bg-red-600 text-white">Flag</Button>
           <Button onClick={onClose} className="bg-gray-200 text-black">Close</Button>
         </div>
       </div>
@@ -23,7 +22,6 @@ const CandidateAssessmentDetail = ({ candidate, onClose }: any) => {
             <h4 className="font-semibold mb-2">Assessment Overview</h4>
             <div className="text-sm space-y-2">
               <div><strong>Type:</strong> {candidate.assessmentType}</div>
-              <div><strong>Assessment ID:</strong> {candidate.assessmentId}</div>
               <div><strong>Status:</strong> {candidate.status}</div>
               <div><strong>Score:</strong> {candidate.score ?? 'N/A'}</div>
             </div>
@@ -35,7 +33,7 @@ const CandidateAssessmentDetail = ({ candidate, onClose }: any) => {
           </Card>
         </div>
 
-        <div>
+        {/* <div>
           <Card className="p-3">
             <h4 className="font-semibold">Analytics & Insights</h4>
             <div className="mt-2 text-sm space-y-2">
@@ -44,7 +42,7 @@ const CandidateAssessmentDetail = ({ candidate, onClose }: any) => {
               <div><strong>Time taken:</strong> 32m</div>
             </div>
           </Card>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -35,10 +35,8 @@ const ScreeningOverview = ({ candidates }: { candidates: Candidate[] }) => {
 
           <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
             <div>Total fetched: <span className="font-medium">{total}</span></div>
-            <div>AI-parsed: <span className="font-medium">{parsedCount}</span></div>
             <div>Shortlisted: <span className="font-medium">{shortlisted}</span></div>
             <div>Rejected: <span className="font-medium">{rejected}</span></div>
-            <div>Awaiting HR review: <span className="font-medium">{awaiting}</span></div>
           </div>
         </div>
       </div>
