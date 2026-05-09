@@ -8,37 +8,23 @@ import {
   PieChart,
   Pie,
   Cell,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
   Legend,
 } from "recharts";
 
-const COLORS = ["#10b981", "#3b82f6", "#ef4444", "#f59e0b", "#8b5cf6"];
+const PIE_COLORS = ["#10b981", "#ef4444"];
 
-const ReportsCharts = ({ candidates }: any) => {
+const ReportsCharts = ({ candidates, rejectedCount = 0 }: any) => {
+  const shortlistedCount = candidates.filter((c: any) => c.isShortlisted).length;
+
   const pipelineData = [
-    { name: "Applied", value: candidates.length * 1.6 },
-    { name: "Shortlisted", value: Math.round(candidates.length * 0.6) },
-    { name: "Assessed", value: candidates.filter((c:any)=>c.assessment!=null).length },
-    { name: "Interviewed", value: candidates.filter((c:any)=>c.interview!=null).length },
-    { name: "Recommended", value: Math.min(3, candidates.length) },
+    { name: "Graded", value: candidates.length },
+    { name: "Shortlisted", value: shortlistedCount },
+    { name: "Rejected", value: rejectedCount },
   ];
-
   const pieData = [
-    { name: "Strong", value: candidates.filter((c:any)=>c.recommendation==='Strong').length },
-    { name: "Moderate", value: candidates.filter((c:any)=>c.recommendation==='Moderate').length },
-    { name: "Weak", value: candidates.filter((c:any)=>c.recommendation==='Weak').length },
-  ];
-
-  const radarData = candidates.slice(0,3).map((c:any) => ({
-    subject: c.name,
-    Assessment: c.assessment || 0,
-    Interview: c.interview || 0,
-    Resume: c.resumeMatch || 0,
-  }));
+    { name: "Shortlisted (≥80)", value: shortlistedCount },
+    { name: "Rejected", value: rejectedCount },
+  ].filter((d) => d.value > 0);
 
   return (
     <div className="space-y-4">
@@ -58,16 +44,17 @@ const ReportsCharts = ({ candidates }: any) => {
 
       <div className="grid grid-cols-1 gap-4">
         <div>
-          <h4 className="text-md font-semibold">Final Categories (pie)</h4>
-          <div style={{ width: "100%", height: 160 }}>
+          <h4 className="text-md font-semibold">Shortlisted vs Rejected (pie)</h4>
+          <div style={{ width: "100%", height: 180 }}>
             <ResponsiveContainer>
               <PieChart>
-                <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={30} outerRadius={60}>
+                <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={35} outerRadius={65} label={({ name, value }) => `${value}`}>
                   {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip formatter={(value: any, name: any) => [value, name]} />
+                <Legend />
               </PieChart>
             </ResponsiveContainer>
           </div>

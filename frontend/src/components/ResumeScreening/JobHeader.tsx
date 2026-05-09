@@ -18,8 +18,9 @@ const JobHeader = ({ jobTitle, applicationsCount }: Props) => {
       </div>
 
       <div className="flex gap-2">
-        <Button onClick={() => window.location.reload()}>Refresh</Button>
-        <Button onClick={() => alert('Fetch new resumes')} className="bg-indigo-600 text-white">Fetch</Button>
+        <Button onClick={() => alert("Run evaluator")} className="bg-indigo-600 text-white">
+          Run Evaluator
+        </Button>
       </div>
     </div>
   );

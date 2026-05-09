@@ -265,7 +265,8 @@ const Dashboard = () => {
               {/* Add Job Button */}
               <Button
                 onClick={() => setActiveSection("uploadJob")}
-                className="bg-purple-600/50 text-white hover:bg-purple-500/70 flex items-center gap-2 rounded-md hover:shadow-none"
+                variant="hero"
+                className="flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
                 Add Job
