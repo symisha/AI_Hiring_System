@@ -1241,7 +1241,7 @@ const interviewToken = new URLSearchParams(window.location.search).get('ivt');
 // Keep `access_token` as a fallback for older builds.
 const localAccessToken = localStorage.getItem('token') || localStorage.getItem('access_token');
 const authToken = interviewToken || localAccessToken;
-const API_BASE_URL = "https://run-evaluator.up.railway.app";
+const API_BASE_URL = "https://ai-hiring.up.railway.app";
 
 console.log('🔐 Token source:', interviewToken ? '✅ Interview link token' : (localAccessToken ? '✅ localStorage token' : '❌ not found'));
 
@@ -1337,7 +1337,7 @@ document.getElementById('startBtn').onclick = async () => {
 
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 // Append the token as a query parameter so the backend can see it during the handshake
-  const wsUrl = `${protocol}//${window.location.hostname}:8000/ws/interview?token=${encodeURIComponent(authToken)}`;
+const wsUrl = `wss://ai-hiring.up.railway.app/ws/interview?token=${encodeURIComponent(authToken)}`;
   console.log('Connecting to WebSocket:', wsUrl);
   ws = new WebSocket(wsUrl);  
   ws.binaryType = 'arraybuffer';
@@ -1698,7 +1698,7 @@ async function verifyCnicIdentity() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/verify-cnic`, {
+    const response = await fetch(`${API_BASE_URL}/ws/verify-cnic`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

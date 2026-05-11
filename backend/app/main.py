@@ -1,9 +1,7 @@
 import uvicorn  # ASGI server used to run FastAPI apps (like "npm start" for Node)
-import asyncio
 from urllib.parse import urlparse
 from fastapi import FastAPI, Depends  # Main FastAPI class used to create the web application instance
 from fastapi.middleware.cors import CORSMiddleware  # Middleware to handle CORS (Cross-Origin Resource Sharing)
-from pydantic import BaseModel  # Used to define and validate data models (for requests/responses) with type checking
 from app.config.config import Settings # Import the settingsclass to access environment variables
 
 
@@ -15,11 +13,12 @@ from app.services.resume_extractor import router as resume_extractor_router
 from app.services.shortlisting_resume import router as shortlisting_router
 from app.api.interview_api import app1 as interview_ws_app
 from app.routes.specific_job_routes import delRouter
-from app.services.screening_scheduler import screening_scheduler_loop
+#from app.services.screening_scheduler import screening_scheduler_loop
 from app.routes import interview_process_route
 # Database
 from app.database.db_connection import supabase  # Supabase client instance
 
+from app.api.interview_api import app1
 
 #Import from services 
 from app.services import job_description, save_test, submit_test
@@ -27,7 +26,6 @@ from app.services import job_description, save_test, submit_test
 
 # Auth middleware
 
-from starlette.middleware.base import BaseHTTPMiddleware
 
 # Create FastAPI app instance
 app = FastAPI()
@@ -70,7 +68,7 @@ app.include_router(job_description.router, prefix="/services", tags=["job_descri
 app.include_router(save_test.router, prefix="/services", tags=["save_test"])
 app.include_router(submit_test.router, prefix="/services", tags=["submit_test"])
 app.include_router(interview_process_route.router, prefix="/routes", tags=["make_test"])
-
+app.include_router(app1)
 app.mount("/ws", interview_ws_app)
 
 
