@@ -8,7 +8,7 @@ import websockets
 import json
 
 async def test_interview():
-    uri = "ws://localhost:8000/ws/interview"
+    uri = "ws://localhost:8080/ws/interview"
     
     try:
         async with websockets.connect(uri) as websocket:

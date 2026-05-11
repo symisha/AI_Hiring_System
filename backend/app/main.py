@@ -44,12 +44,12 @@ origins = [
     _origin(getattr(Settings, "FRONTEND_URL", None)),
     _origin(getattr(Settings, "FRONTEND_INTERVIEW_URL", None)),
     "http://localhost:8080",
-    "http://127.0.0.1:8080",
+    "http://0.0.0.0:8080",
     "http://localhost:8081",
     "http://localhost:5173",
-    "http://127.0.0.1:5173",
+    "http://0.0.0.0:5173",
     "http://localhost:8000",
-    "http://127.0.0.1:8000",
+    "http://0.0.0.0:8000",
     "https://ai-hiring-system-1trg.vercel.app",
     "http://localhost:3000",  
 ]
@@ -68,7 +68,7 @@ app.include_router(job_description.router, prefix="/services", tags=["job_descri
 app.include_router(save_test.router, prefix="/services", tags=["save_test"])
 app.include_router(submit_test.router, prefix="/services", tags=["submit_test"])
 app.include_router(interview_process_route.router, prefix="/routes", tags=["make_test"])
-app.include_router(app1)
+app.include_router(app1, prefix="/ws", tags=["interview_websocket"])
 #app.mount("/ws", interview_ws_app)
 
 

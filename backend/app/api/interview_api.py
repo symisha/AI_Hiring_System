@@ -480,6 +480,7 @@ async def verify_cnic(request: Request, body: CnicVerifyBody):
         "ok": True,
         "similarity": similarity,
         "threshold": CNIC_VERIFY_THRESHOLD,
+        "message": "CNIC verification successful",
     }
 
 
@@ -1463,10 +1464,10 @@ async def ws_handler(ws: WebSocket):
         except:
             pass
 
-
+""" 
 # ----------------- Run Server -----------------
 if __name__ == "__main__":
     import uvicorn
 
     print("🚀 Starting VAD + Turn Detection Server on http://localhost:8000")
-    uvicorn.run(app1, host="0.0.0.0", port=8000)
+    uvicorn.run(app1, host="0.0.0.0", port=8000) """

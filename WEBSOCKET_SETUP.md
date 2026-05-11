@@ -180,7 +180,7 @@ curl curl ${BACKEND_URL}/
 
 # Check WebSocket endpoint (requires wscat)
 npm install -g wscat
-wscat -c ws://localhost:8000/ws/interview
+wscat -c ws://localhost:8080/ws/interview
 
 # Test with Python
 python -c "
@@ -189,7 +189,7 @@ import websockets
 import json
 
 async def test():
-    async with websockets.connect('ws://localhost:8000/ws/interview') as ws:
+    async with websockets.connect('ws://localhost:8080/ws/interview') as ws:
         await ws.send(json.dumps({
             'type': 'init',
             'language': 'en',
