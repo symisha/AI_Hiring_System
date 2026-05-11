@@ -1,15 +1,20 @@
 import os
 import json
-import google.generativeai as genai
+#import google.generativeai as genai
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from langchain_google_genai import ChatGoogleGenerativeAI
+import os
 
 load_dotenv()
 
 class AITestProcessor:
     def __init__(self):
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        self.model = genai.GenerativeModel("gemini-3-flash-preview")
+        self.model = ChatGoogleGenerativeAI(
+            google_api_key=os.getenv("GEMINI_API_KEY"),
+            model="gemini-3-flash-preview"
+        )
+        # self.model = genai.GenerativeModel("gemini-3-flash-preview")
         self.supabase: Client = create_client(
             os.getenv("SUPABASE_URL"), 
             os.getenv("SUPABASE_KEY")

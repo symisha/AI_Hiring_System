@@ -42,7 +42,6 @@ google-api-python-client==2.193.0
 google-auth==2.48.0
 google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.3.0
-google-generativeai
 
 # --- PDF Processing ---
 pdfplumber==0.10.3
