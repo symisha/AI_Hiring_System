@@ -40,6 +40,10 @@ from app.services.evaluating_interview import evaluate_and_save_interview
 from app.services.cnic_embedding import extract_cnic_embedding
 import traceback
 from fastapi import APIRouter
+import io
+from pydub import AudioSegment
+import numpy as np
+
 
 # ----------------- Config -----------------
 GROQ_API_KEY = "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"  # keep env in prod
@@ -54,6 +58,18 @@ CNIC_VERIFY_THRESHOLD = float(os.getenv("CNIC_VERIFY_THRESHOLD", "0.5"))
 # Load these once per process to avoid huge per-session overhead.
 _SILERO_VAD_MODEL: Optional[torch.nn.Module] = None
 _SILERO_VAD_LOCK = threading.Lock()
+
+
+def convert_webm_to_pcm(base64_audio):
+    # 1. Decode the base64 string from the frontend
+    audio_bytes = base64.b64decode(base64_audio)
+    # 2. Use pydub to read the WebM blob
+    audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="webm")
+    # 3. Resample to 16kHz Mono (required by Whisper)
+    audio = audio.set_frame_rate(16000).set_channels(1)
+    # 4. Convert to float32 array
+    return np.array(audio.get_array_of_samples()).astype(np.float32) / 32768.0
+
 
 
 def _get_silero_vad_model() -> torch.nn.Module:
