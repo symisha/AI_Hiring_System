@@ -20,7 +20,7 @@ const AssessmentPage: React.FC = () => {
   const reportViolation = useCallback(async (type: string) => {
     console.warn("Anti-cheat trigger:", type);
     try {
-      await fetch(`http://localhost:8000/services/log-violation`, {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/services/log-violation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, violation_type: type })
@@ -56,7 +56,7 @@ const AssessmentPage: React.FC = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/services/get-test/${token}`);
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/services/get-test/${token}`);
         if (!res.ok) throw new Error("Failed to fetch assessment");
         const data = await res.json();
         setQuestions(data.questions || []);
@@ -81,7 +81,7 @@ const AssessmentPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch(`http://localhost:8000/services/submit-test`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/services/submit-test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

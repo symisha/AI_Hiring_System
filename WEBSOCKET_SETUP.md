@@ -71,7 +71,7 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ### Step 3: Open Test Page
 ```
-http://localhost:8000/interview-test
+${process.env.BACKEND_URL}/interview-test
 ```
 
 ### Step 4: Test the Interview
