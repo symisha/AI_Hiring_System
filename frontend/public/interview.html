@@ -1186,7 +1186,7 @@ function initializeCandidate() {
   //   window.location.href = "/login_page.html";
   //   return;
   // }
-  const API_BASE_URL = "https://ai-hiring.up.railway.app";
+
   // If user came from secure shortlist email link, validate token first
   if (interviewToken) {
     fetch(`${API_BASE_URL}/services/interview-link/validate?token=${encodeURIComponent(interviewToken)}`)
@@ -1241,16 +1241,8 @@ const interviewToken = new URLSearchParams(window.location.search).get('ivt');
 // Keep `access_token` as a fallback for older builds.
 const localAccessToken = localStorage.getItem('token') || localStorage.getItem('access_token');
 const authToken = interviewToken || localAccessToken;
+const API_BASE_URL = "https://ai-hiring.up.railway.app";
 
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-// Note: We use 8080 now to match your backend
-const API_BASE_URL = isLocal ? 'http://localhost:8080' : 'https://ai-hiring.up.railway.app';
-const WS_BASE_URL = isLocal ? 'ws://localhost:8080' : 'wss://ai-hiring.up.railway.app';
-
-const protocol = isLocal ? 'http:' : 'https:';
-const wsProtocol = isLocal ? 'ws:' : 'wss:';
-const host = isLocal ? 'localhost:8080' : 'ai-hiring.up.railway.app';
 console.log('🔐 Token source:', interviewToken ? '✅ Interview link token' : (localAccessToken ? '✅ localStorage token' : '❌ not found'));
 
 let ws;
@@ -1342,23 +1334,14 @@ document.getElementById('startBtn').onclick = async () => {
   
 // Enable submit buttons
     if (submitBtn) submitBtn.disabled = false;
-  // Define your Railway domain (without https:// and without :8000)
-  const PRODUCTION_BACKEND_DOMAIN = 'ai-hiring.up.railway.app';
 
-  // Check if we are running locally
-  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-  // Determine the protocol (wss for production, ws for local)
-  const protocol = isLocal ? 'ws:' : 'wss:';
-
-  // Determine the host (localhost:8080 for local, Railway domain for production)
-  const host = isLocal ? `${window.location.hostname}:8080` : PRODUCTION_BACKEND_DOMAIN;
-
-  const wsUrl = `${protocol}//${host}/ws/interview?token=${encodeURIComponent(authToken)}`;
-
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+// Append the token as a query parameter so the backend can see it during the handshake
+  const wsUrl = `${protocol}//${window.location.hostname}:8000/ws/interview?token=${encodeURIComponent(authToken)}`;
   console.log('Connecting to WebSocket:', wsUrl);
   ws = new WebSocket(wsUrl);  
   ws.binaryType = 'arraybuffer';
+
   ws.onopen = () => {
     console.log('✅ WebSocket connected');
     ws.send(JSON.stringify({
@@ -1693,10 +1676,11 @@ function setStartEnabled(enabled) {
     startBtn.disabled = !enabled;
   }
 }
+
 async function verifyCnicIdentity() {
   const liveVideo = document.getElementById('liveCameraFeed');
   if (!liveVideo) {
-    addMessage('system', 'Camera feed not available.');
+    addMessage('system', 'Camera feed not available for verification.');
     return false;
   }
 
@@ -1709,63 +1693,33 @@ async function verifyCnicIdentity() {
   }
 
   if (frames.length < 5) {
-    addMessage('system', 'Unable to capture enough frames for verification.');
+    addMessage('system', 'Unable to capture enough frames for verification. Please wait 2 seconds and try again.');
     return false;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/ws/verify-cnic`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ frames })
+    });
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const msg = result.detail || result.message || 'CNIC verification failed.';
+      blockCnicVerification(msg);
+      return false;
     }
-  return new Promise((resolve) => {
-          // CLEAN URL CONSTRUCTION: Ensure we don't double up on slashes
-          const cleanHost = host.replace(/\/$/, ''); // Remove trailing slash if exists
-          const cleanProtocol = wsProtocol.endsWith(':') ? wsProtocol : `${wsProtocol}:`;
-          const cnicWsUrl = `${cleanProtocol}//${cleanHost}/ws/verify-cnic`;
-          
-          console.log('Attempting connection to:', cnicWsUrl);
-          
-          const cnicSocket = new WebSocket(cnicWsUrl);
 
-          // Add a timeout - if the server is "Killed" (OOM), this won't hang forever
-          const timeout = setTimeout(() => {
-              if (cnicSocket.readyState !== WebSocket.CLOSED) {
-                  console.error('Verification timed out - Server likely crashed (OOM)');
-                  cnicSocket.close();
-                  blockCnicVerification('Verification timed out. Please try again.');
-                  resolve(false);
-              }
-          }, 20000); // 20 seconds
-
-          cnicSocket.onopen = () => {
-              console.log('Socket opened, sending frames...');
-              cnicSocket.send(JSON.stringify({ 
-                  token: authToken, 
-                  frames: frames 
-              }));
-          };
-
-          cnicSocket.onmessage = (event) => {
-              clearTimeout(timeout);
-              try {
-                  const result = JSON.parse(event.data);
-                  if (result.valid || result.status === 'success') {
-                      addMessage('system', `✅ Identity verified.`);
-                      cnicSocket.close();
-                      resolve(true);
-                  } else {
-                      blockCnicVerification(result.message || 'Verification failed.');
-                      cnicSocket.close();
-                      resolve(false);
-                  }
-              } catch (e) {
-                  console.error("Failed to parse server response:", e);
-                  resolve(false);
-              }
-          };
-
-          cnicSocket.onerror = (err) => {
-              clearTimeout(timeout);
-              console.error('WebSocket Handshake failed. Check Railway Logs for "Killed" or "CORS" errors.');
-              cnicSocket.close();
-              resolve(false);
-          };
-      });
+    addMessage('system', `✅ Identity verified (similarity ${Number(result.similarity || 0).toFixed(2)}).`);
+    return true;
+  } catch (err) {
+    blockCnicVerification(err.message || 'Verification failed due to a network error.');
+    return false;
+  }
 }
 
 function startBackgroundFaceChecks() {
@@ -2212,7 +2166,7 @@ function updateTabSwitchBadge() {
 async function reportCheatingStatus() {
   if (!authToken) return;
   try {
-    await fetch(`wss://ai-hiring.up.railway.app/ws/flag-cheating`, {
+    await fetch(`${API_BASE_URL}/ws/flag-cheating`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
