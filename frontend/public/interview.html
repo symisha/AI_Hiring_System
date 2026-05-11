@@ -1698,7 +1698,7 @@ async function verifyCnicIdentity() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/ws/verify-cnic`, {
+    const response = await fetch(`${API_BASE_URL}/verify-cnic`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
