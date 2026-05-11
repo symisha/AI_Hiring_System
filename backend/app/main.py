@@ -97,7 +97,7 @@ async def _stop_screening_scheduler():
 
 # Run the app
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
 
 
 #submit the form for resume uplooad ------------------------

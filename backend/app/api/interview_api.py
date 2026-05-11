@@ -1481,5 +1481,5 @@ async def ws_handler(ws: WebSocket):
 if __name__ == "__main__":
     import uvicorn
 
-    print("🚀 Starting VAD + Turn Detection Server on http://localhost:8000")
-    uvicorn.run(app1, host="0.0.0.0", port=8000)
+    print("🚀 Starting VAD + Turn Detection Server on http://localhost:8080")
+    uvicorn.run(app1, host="0.0.0.0", port=8080)
