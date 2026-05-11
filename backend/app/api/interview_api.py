@@ -418,6 +418,9 @@ def home(request: Request):
 @app1.post("/verify-cnic")
 async def verify_cnic(request: Request, body: CnicVerifyBody):
     authorization = request.headers.get("Authorization", "")
+    
+    # Use 'body' directly. FastAPI handles the JSON parsing for you.
+    # No need to manually parse request.json()
     user_info = verify_token(authorization=authorization)
 
     candidate_id = user_info.get("candidate_id")
