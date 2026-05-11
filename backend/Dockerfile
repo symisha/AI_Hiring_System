@@ -23,4 +23,4 @@ COPY . .
 
 # 6. Start the server
 # Railway/Koyeb will provide the $PORT variable automatically
-CMD uvicorn main:app --host 0.0.0.0 --port $PORT
+CMD uvicorn app.main:app --host 0.0.0.0 --port $PORT
