@@ -396,15 +396,17 @@ def save_conversation_with_status(question, answer, status, filename, valid_coun
 whisper_model = WhisperModel("small", device="cpu", compute_type="int8")
 
 # ----------------- FastAPI Setup -----------------
-app1 = FastAPI(title="Interview Agent - WS")
+#app1 = FastAPI(title="Interview Agent - WS")
+app1 = APIRouter(prefix="/ws", tags=["interview"])
 
-app1.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], # For testing, then narrow it down
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+#app1.add_middleware(
+#    CORSMiddleware,
+#    allow_origins=["*"], # For testing, then narrow it down
+#    allow_credentials=True,
+#    allow_methods=["*"],
+#    allow_headers=["*"],
+#)
 
 templates = Jinja2Templates(directory="templates")
 #app1.mount("/static", StaticFiles(directory="static"), name="static")
