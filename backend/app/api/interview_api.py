@@ -431,7 +431,7 @@ def home(request: Request):
     return {"message": "Welcome to the Interview Agent API. Please connect via WebSocket at /ws for the interview process."}
 
 
-@app1.websocket("verify-cnic")
+@app1.websocket("/verify-cnic")
 async def verify_cnic(websocket: WebSocket):
     # 1. Accept the connection IMMEDIATELY
     await websocket.accept()
