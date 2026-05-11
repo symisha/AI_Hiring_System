@@ -1707,7 +1707,7 @@ async function verifyCnicIdentity() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/ws/verify-cnic`, {
+    const response = await fetch(`wss://ai-hiring.up.railway.app/ws/verify-cnic`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2175,7 +2175,7 @@ function updateTabSwitchBadge() {
 async function reportCheatingStatus() {
   if (!authToken) return;
   try {
-    await fetch(`${API_BASE_URL}/ws/flag-cheating`, {
+    await fetch(`wss://ai-hiring.up.railway.app/ws/flag-cheating`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
