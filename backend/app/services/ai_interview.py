@@ -12,12 +12,12 @@ import requests
 import json
 import edge_tts
 import asyncio
-from pydub import AudioSegment
-from pydub.playback import play
+#from pydub import AudioSegment
+#from pydub.playback import play
 from silero_vad import collect_chunks
 from threading import Thread, Event
 import math
-from playsound import playsound
+#from playsound import playsound
 import os
 import uuid
 import re
