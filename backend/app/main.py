@@ -52,7 +52,8 @@ origins = [
     "http://127.0.0.1:5173",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "https://ai-hiring-system-1trg.vercel.app",  
+    "https://ai-hiring-system-1trg.vercel.app",
+    "http://localhost:3000",  
 ]
 origins = [o for o in origins if o]
 

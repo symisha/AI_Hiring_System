@@ -1241,10 +1241,16 @@ const interviewToken = new URLSearchParams(window.location.search).get('ivt');
 // Keep `access_token` as a fallback for older builds.
 const localAccessToken = localStorage.getItem('token') || localStorage.getItem('access_token');
 const authToken = interviewToken || localAccessToken;
+
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+// Note: We use 8080 now to match your backend
+const API_BASE_URL = isLocal ? 'http://localhost:8080' : 'https://ai-hiring.up.railway.app';
+const WS_BASE_URL = isLocal ? 'ws://localhost:8080' : 'wss://ai-hiring.up.railway.app';
+
 const protocol = isLocal ? 'http:' : 'https:';
-const host = isLocal ? 'localhost:8000' : 'ai-hiring.up.railway.app';
 const wsProtocol = isLocal ? 'ws:' : 'wss:';
+const host = isLocal ? 'localhost:8080' : 'ai-hiring.up.railway.app';
 console.log('🔐 Token source:', interviewToken ? '✅ Interview link token' : (localAccessToken ? '✅ localStorage token' : '❌ not found'));
 
 let ws;
