@@ -431,93 +431,63 @@ def home(request: Request):
     return {"message": "Welcome to the Interview Agent API. Please connect via WebSocket at /ws for the interview process."}
 
 
-@app1.websocket("/verify-cnic")
-async def verify_cnic(websocket: WebSocket):
-    # 1. Accept the connection IMMEDIATELY
-    await websocket.accept()
+class CnicVerifyBody(BaseModel):
+    token: str
+    frames: List[str]
 
+@app1.post("/verify-cnic")
+async def verify_cnic(body: CnicVerifyBody):
+    # 1. AUTHENTICATION
+    # We use 'body.token' because it's easier than headers for this setup
     try:
-        # 2. Manually receive the JSON data from the frontend
-        # This replaces the 'body: CnicVerifyBody' argument
-        data = await websocket.receive_json()
-        token = data.get("token")
-        frames = data.get("frames", [])
-
-        # 3. Handle Auth manually inside the socket
-        # You cannot use 'request.headers' reliably here
-        user_info = verify_token(authorization=f"Bearer {token}")
+        user_info = verify_token(authorization=f"Bearer {body.token}")
         candidate_id = user_info.get("candidate_id")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Authentication failed")
 
-        if not candidate_id:
-            await websocket.send_json({"ok": False, "message": "Auth failed"})
-            await websocket.close()
-            return
-        app_res = (
-            supabase.table("applications")
-            .select("id,cnic_embedding,metadata")
-            .eq("id", candidate_id)
-            .single()
-            .execute()
-        )
-        if not app_res.data:
-            raise HTTPException(status_code=404, detail="Candidate record not found")
-
-        stored_embedding = app_res.data.get("cnic_embedding")
-        if not stored_embedding:
-            raise HTTPException(status_code=404, detail="CNIC embedding not found")
-
-        if not body.frames or len(body.frames) < CNIC_VERIFY_MIN_FRAMES:
-            raise HTTPException(status_code=400, detail="Not enough frames for verification")
-
-        embeddings: List[List[float]] = []
-        for frame in body.frames:
-            try:
-                frame_bytes, frame_ext = _decode_data_url(frame)
-                emb = extract_cnic_embedding(frame_bytes, frame_ext)
-                embeddings.append(emb)
-            except ValueError:
-                continue
-            except Exception:
-                continue
-
-        if len(embeddings) < max(3, CNIC_VERIFY_MIN_FRAMES // 2):
-            _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "failed", None)
-            raise HTTPException(status_code=400, detail="Face not detected in enough frames")
-
-        stable_embedding = _mean_embedding(embeddings)
-        similarity = _cosine_similarity(stable_embedding, stored_embedding)
-
-        if similarity < CNIC_VERIFY_THRESHOLD:
-            _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "failed", similarity)
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "message": "CNIC verification failed",
-                    "similarity": similarity,
-                    "threshold": CNIC_VERIFY_THRESHOLD,
-                },
-            )
-# 1. Update your database
-        _update_cnic_verification_metadata(
-            app_res.data.get("id"), 
-            app_res.data.get("metadata"), 
-            "passed", 
-            float(similarity)
-        )
-
-        # 2. Push the result to the frontend
-        await websocket.send_json({
-            "ok": True,
-            "similarity": float(similarity),
-            "threshold": CNIC_VERIFY_THRESHOLD,
-        })
-
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        await websocket.close()
+    # 2. DB LOOKUP
+    app_res = (
+        supabase.table("applications")
+        .select("id,cnic_embedding,metadata")
+        .eq("id", candidate_id)
+        .single()
+        .execute()
+    )
     
+    if not app_res.data:
+        raise HTTPException(status_code=404, detail="Candidate not found")
 
+    stored_embedding = app_res.data.get("cnic_embedding")
+    
+    # 3. PROCESSING
+    embeddings = []
+    for frame in body.frames:
+        try:
+            frame_bytes, frame_ext = _decode_data_url(frame)
+            emb = extract_cnic_embedding(frame_bytes, frame_ext)
+            embeddings.append(emb)
+        except:
+            continue
+
+    if not embeddings:
+        raise HTTPException(status_code=400, detail="No faces detected")
+
+    # 4. SIMILARITY
+    stable_embedding = _mean_embedding(embeddings)
+    similarity = _cosine_similarity(stable_embedding, stored_embedding)
+    
+    # Cast to float for JSON compatibility
+    result_similarity = float(similarity)
+
+    # 5. RESPONSE
+    is_passed = result_similarity >= CNIC_VERIFY_THRESHOLD
+    _update_cnic_verification_metadata(candidate_id, app_res.data.get("metadata"), "passed" if is_passed else "failed", result_similarity)
+
+    return {
+        "ok": is_passed,
+        "similarity": result_similarity,
+        "threshold": CNIC_VERIFY_THRESHOLD
+    }
 
 @app1.post("/flag-cheating")
 async def flag_cheating(request: Request, body: CheatingReportBody):
