@@ -1242,9 +1242,9 @@ const interviewToken = new URLSearchParams(window.location.search).get('ivt');
 const localAccessToken = localStorage.getItem('token') || localStorage.getItem('access_token');
 const authToken = interviewToken || localAccessToken;
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE_URL = isLocal ? `http://localhost:8000` : `https://ai-hiring.up.railway.app`;
-const WS_BASE_URL = isLocal ? `ws://localhost:8000` : `wss://ai-hiring.up.railway.app`;
-
+const protocol = isLocal ? 'http:' : 'https:';
+const host = isLocal ? 'localhost:8000' : 'ai-hiring.up.railway.app';
+const wsProtocol = isLocal ? 'ws:' : 'wss:';
 console.log('🔐 Token source:', interviewToken ? '✅ Interview link token' : (localAccessToken ? '✅ localStorage token' : '❌ not found'));
 
 let ws;
@@ -1687,11 +1687,10 @@ function setStartEnabled(enabled) {
     startBtn.disabled = !enabled;
   }
 }
-
 async function verifyCnicIdentity() {
   const liveVideo = document.getElementById('liveCameraFeed');
   if (!liveVideo) {
-    addMessage('system', 'Camera feed not available for verification.');
+    addMessage('system', 'Camera feed not available.');
     return false;
   }
 
@@ -1708,61 +1707,41 @@ async function verifyCnicIdentity() {
     return false;
   }
 
-  // Use a Promise to make the WebSocket act like an 'await' call
   return new Promise((resolve) => {
-    // Determine the correct WS protocol (wss or ws)
-    const wsProtocol = protocol.includes('https') ? 'wss:' : 'ws:';
-    const cnicWsUrl = `${wsProtocol}//${host}/ws/verify-cnic`;
-    
-    console.log('Connecting to verification socket:', cnicWsUrl);
-    const cnicSocket = new WebSocket(cnicWsUrl);
+      // Now 'wsProtocol' and 'host' are defined globally
+      const cnicWsUrl = `${wsProtocol}//${host}/ws/verify-cnic`;
+      
+      console.log('Connecting to:', cnicWsUrl);
+      const cnicSocket = new WebSocket(cnicWsUrl);
 
-    // 1. Connection opened: Send the data
-    cnicSocket.onopen = () => {
-      cnicSocket.send(JSON.stringify({ 
-        token: authToken, 
-        frames: frames 
-      }));
-    };
+      cnicSocket.onopen = () => {
+        cnicSocket.send(JSON.stringify({ 
+          token: authToken, 
+          frames: frames 
+        }));
+      };
 
-    // 2. Message received: Success or Failure
-    cnicSocket.onmessage = (event) => {
-      try {
+      cnicSocket.onmessage = (event) => {
         const result = JSON.parse(event.data);
         if (result.valid || result.status === 'success') {
-          addMessage('system', `✅ Identity verified (similarity ${Number(result.similarity || 0).toFixed(2)}).`);
+          addMessage('system', `✅ Identity verified.`);
           cnicSocket.close();
           resolve(true);
         } else {
-          const msg = result.detail || result.message || 'CNIC verification failed.';
-          blockCnicVerification(msg);
+          blockCnicVerification(result.message || 'Verification failed.');
           cnicSocket.close();
           resolve(false);
         }
-      } catch (e) {
-        console.error("Error parsing verification response", e);
-        resolve(false);
-      }
-    };
+      };
 
-    // 3. Error Handling
-    cnicSocket.onerror = (err) => {
-      console.error('WebSocket Error:', err);
-      blockCnicVerification('Verification failed due to a network error.');
-      cnicSocket.close();
-      resolve(false);
-    };
-
-    // Set a timeout so it doesn't hang forever if the backend is OOM
-    setTimeout(() => {
-      if (cnicSocket.readyState !== WebSocket.CLOSED) {
+      cnicSocket.onerror = (err) => {
+        console.error('Socket Error:', err);
         cnicSocket.close();
-        blockCnicVerification('Verification timed out.');
         resolve(false);
-      }
-    }, 30000); // 30 second timeout
-  });
+      };
+    });
 }
+
 
 function startBackgroundFaceChecks() {
   stopBackgroundFaceChecks();
