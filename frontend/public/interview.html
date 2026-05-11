@@ -1351,7 +1351,7 @@ document.getElementById('startBtn').onclick = async () => {
   // Determine the protocol (wss for production, ws for local)
   const protocol = isLocal ? 'ws:' : 'wss:';
 
-  // Determine the host (localhost:8000 for local, Railway domain for production)
+  // Determine the host (localhost:8080 for local, Railway domain for production)
   const host = isLocal ? `${window.location.hostname}:8080` : PRODUCTION_BACKEND_DOMAIN;
 
   const wsUrl = `${protocol}//${host}/ws/interview?token=${encodeURIComponent(authToken)}`;
