@@ -1334,14 +1334,23 @@ document.getElementById('startBtn').onclick = async () => {
   
 // Enable submit buttons
     if (submitBtn) submitBtn.disabled = false;
+  // Define your Railway domain (without https:// and without :8000)
+  const PRODUCTION_BACKEND_DOMAIN = 'ai-hiring.up.railway.app';
 
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-// Append the token as a query parameter so the backend can see it during the handshake
-  const wsUrl = `${protocol}//${window.location.hostname}:8000/ws/interview?token=${encodeURIComponent(authToken)}`;
+  // Check if we are running locally
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+  // Determine the protocol (wss for production, ws for local)
+  const protocol = isLocal ? 'ws:' : 'wss:';
+
+  // Determine the host (localhost:8000 for local, Railway domain for production)
+  const host = isLocal ? `${window.location.hostname}:8000` : PRODUCTION_BACKEND_DOMAIN;
+
+  const wsUrl = `${protocol}//${host}/ws/interview?token=${encodeURIComponent(authToken)}`;
+
   console.log('Connecting to WebSocket:', wsUrl);
   ws = new WebSocket(wsUrl);  
   ws.binaryType = 'arraybuffer';
-
   ws.onopen = () => {
     console.log('✅ WebSocket connected');
     ws.send(JSON.stringify({
