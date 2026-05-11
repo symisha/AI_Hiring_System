@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy requirements from the Backend folder
-COPY Backend/requirements_full.txt .
-RUN pip install --no-cache-dir -r requirements_full.txt --extra-index-url https://download.pytorch.org/whl/cpu
+COPY Backend/requirements_full1.txt .
+RUN pip install --no-cache-dir -r requirements_full1.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
 # Copy the entire Backend folder content into the Docker /app directory
 COPY Backend/ .
