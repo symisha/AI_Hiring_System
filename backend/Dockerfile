@@ -1,14 +1,26 @@
-# 1. Use a Python base image
+# 1. Use a stable Python base
 FROM python:3.10-slim
 
-# 2. Set the directory inside the container
+# 2. Install system-level dependencies
+# we need build-essential for gcc, and portaudio for PyAudio
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    portaudio19-dev \
+    python3-all-dev \
+    libasound2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 3. Set working directory
 WORKDIR /app
 
-# 3. Copy your requirements and install them
+# 4. Copy and install dependencies
+# We use the extra-index-url specifically for the +cpu torch version
 COPY requirements_full.txt .
 RUN pip install --no-cache-dir -r requirements_full.txt --extra-index-url https://download.pytorch.org/whl/cpu
-# 4. Copy the rest of your code
+
+# 5. Copy the rest of your backend code
 COPY . .
 
-# 5. Start the app (Railway provides the PORT)
+# 6. Start the server
+# Railway/Koyeb will provide the $PORT variable automatically
 CMD uvicorn main:app --host 0.0.0.0 --port $PORT
