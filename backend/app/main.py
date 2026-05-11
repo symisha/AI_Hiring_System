@@ -69,7 +69,7 @@ app.include_router(save_test.router, prefix="/services", tags=["save_test"])
 app.include_router(submit_test.router, prefix="/services", tags=["submit_test"])
 app.include_router(interview_process_route.router, prefix="/routes", tags=["make_test"])
 app.include_router(app1)
-app.mount("/ws", interview_ws_app)
+#app.mount("/ws", interview_ws_app)
 
 
 # Add CORS middleware
