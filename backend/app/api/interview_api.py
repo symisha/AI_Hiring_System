@@ -430,68 +430,110 @@ templates = Jinja2Templates(directory="templates")
 def home(request: Request):
     return {"message": "Welcome to the Interview Agent API. Please connect via WebSocket at /ws for the interview process."}
 
+from typing import List
 
 @app1.websocket("/verify-cnic")
-async def verify_cnic(request: Request, body: CnicVerifyBody):
-    authorization = request.headers.get("Authorization", "")
-    user_info = verify_token(authorization=authorization)
+async def verify_cnic(websocket: WebSocket):
+    # 1. MUST accept the connection first to stop the 405 error
+    await websocket.accept()
 
-    candidate_id = user_info.get("candidate_id")
-    if not candidate_id:
-        raise HTTPException(status_code=401, detail="Missing candidate_id")
+    try:
+        # 2. Receive the data (token and frames) from the frontend
+        data = await websocket.receive_json()
+        token = data.get("token")
+        frames = data.get("frames", [])
 
-    app_res = (
-        supabase.table("applications")
-        .select("id,cnic_embedding,metadata")
-        .eq("id", candidate_id)
-        .single()
-        .execute()
-    )
-    if not app_res.data:
-        raise HTTPException(status_code=404, detail="Candidate record not found")
-
-    stored_embedding = app_res.data.get("cnic_embedding")
-    if not stored_embedding:
-        raise HTTPException(status_code=404, detail="CNIC embedding not found")
-
-    if not body.frames or len(body.frames) < CNIC_VERIFY_MIN_FRAMES:
-        raise HTTPException(status_code=400, detail="Not enough frames for verification")
-
-    embeddings: List[List[float]] = []
-    for frame in body.frames:
+        # 3. Handle Authentication (since we can't use headers in WS easily)
         try:
-            frame_bytes, frame_ext = _decode_data_url(frame)
-            emb = extract_cnic_embedding(frame_bytes, frame_ext)
-            embeddings.append(emb)
-        except ValueError:
-            continue
+            # We prefix 'Bearer ' because your verify_token likely expects it
+            user_info = verify_token(authorization=f"Bearer {token}")
+            candidate_id = user_info.get("candidate_id")
+            if not candidate_id:
+                await websocket.send_json({"valid": False, "message": "Missing candidate_id"})
+                await websocket.close()
+                return
         except Exception:
-            continue
+            await websocket.send_json({"valid": False, "message": "Authentication failed"})
+            await websocket.close()
+            return
 
-    if len(embeddings) < max(3, CNIC_VERIFY_MIN_FRAMES // 2):
-        _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "failed", None)
-        raise HTTPException(status_code=400, detail="Face not detected in enough frames")
-
-    stable_embedding = _mean_embedding(embeddings)
-    similarity = _cosine_similarity(stable_embedding, stored_embedding)
-
-    if similarity < CNIC_VERIFY_THRESHOLD:
-        _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "failed", similarity)
-        raise HTTPException(
-            status_code=403,
-            detail={
-                "message": "CNIC verification failed",
-                "similarity": similarity,
-                "threshold": CNIC_VERIFY_THRESHOLD,
-            },
+        # 4. Database Lookup
+        app_res = (
+            supabase.table("applications")
+            .select("id,cnic_embedding,metadata")
+            .eq("id", candidate_id)
+            .single()
+            .execute()
         )
+        
+        if not app_res.data:
+            await websocket.send_json({"valid": False, "message": "Candidate record not found"})
+            await websocket.close()
+            return
 
-    _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "passed", similarity)
-    return {
-        "ok": True,
-        "similarity": similarity,
-        "threshold": CNIC_VERIFY_THRESHOLD,
-    }
+        stored_embedding = app_res.data.get("cnic_embedding")
+        if not stored_embedding:
+            await websocket.send_json({"valid": False, "message": "CNIC embedding not found"})
+            await websocket.close()
+            return
+
+        # 5. Frame Validation
+        if not frames or len(frames) < 3: # Changed to 3 to be safer with RAM
+            await websocket.send_json({"valid": False, "message": "Not enough frames"})
+            await websocket.close()
+            return
+
+        # 6. Processing (Heavy Logic)
+        embeddings: List[List[float]] = []
+        for frame in frames:
+            try:
+                frame_bytes, frame_ext = _decode_data_url(frame)
+                emb = extract_cnic_embedding(frame_bytes, frame_ext)
+                embeddings.append(emb)
+            except Exception:
+                continue
+
+        if len(embeddings) < 2: # Minimum threshold to calculate mean
+            _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "failed", None)
+            await websocket.send_json({"valid": False, "message": "Face not detected in frames"})
+            await websocket.close()
+            return
+
+        # 7. Similarity Math
+        stable_embedding = _mean_embedding(embeddings)
+        similarity = _cosine_similarity(stable_embedding, stored_embedding)
+
+        if similarity < CNIC_VERIFY_THRESHOLD:
+            _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "failed", similarity)
+            await websocket.send_json({
+                "valid": False,
+                "message": "CNIC verification failed",
+                "similarity": float(similarity)
+            })
+        else:
+            # 8. Success!
+            _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "passed", similarity)
+            await websocket.send_json({
+                "valid": True,
+                "status": "success",
+                "similarity": float(similarity)
+            })
+
+    except WebSocketDisconnect:
+        print("Client disconnected from CNIC verification")
+    except Exception as e:
+        print(f"Server Error: {e}")
+        # Send a generic error if possible before closing
+        try:
+            await websocket.send_json({"valid": False, "message": "Internal server error"})
+        except:
+            pass
+    finally:
+        # Always close the socket when the verification process is done
+        try:
+            await websocket.close()
+        except:
+            pass
 
 
 @app1.post("/flag-cheating")
