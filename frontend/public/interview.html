@@ -1186,7 +1186,7 @@ function initializeCandidate() {
   //   window.location.href = "/login_page.html";
   //   return;
   // }
-
+  const API_BASE_URL = "https://ai-hiring.up.railway.app";
   // If user came from secure shortlist email link, validate token first
   if (interviewToken) {
     fetch(`${API_BASE_URL}/services/interview-link/validate?token=${encodeURIComponent(interviewToken)}`)
