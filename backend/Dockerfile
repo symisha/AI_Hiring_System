@@ -6,8 +6,7 @@ WORKDIR /app
 
 # 3. Copy your requirements and install them
 COPY requirements_full.txt .
-RUN pip install --no-cache-dir -r requirements_full.txt
-
+RUN pip install --no-cache-dir -r requirements_full.txt --extra-index-url https://download.pytorch.org/whl/cpu
 # 4. Copy the rest of your code
 COPY . .
 
