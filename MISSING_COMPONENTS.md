@@ -38,9 +38,33 @@ _whisper_model = None
 
 def get_whisper_model():
     global _whisper_model
+    # 2. Only load it when actually called
     if _whisper_model is None:
-        _whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
+        with _model_lock:
+            if _whisper_model is None:
+                print("📥 Loading Whisper 'small' (int8) for the first time...")
+                # compute_type="int8" is the secret to saving 50% RAM
+                _whisper_model = WhisperModel("small", device="cpu", compute_type="int8")
     return _whisper_model
+
+
+# Optional: If you use the standalone VAD model elsewhere in the file
+_vad_model_cache = None
+
+def get_vad_model():
+    global _vad_model_cache
+    if _vad_model_cache is None:
+        with _model_lock:
+            if _vad_model_cache is None:
+                print("📥 Loading Silero VAD...")
+                model, utils = torch.hub.load(
+                    repo_or_dir='snakers4/silero-vad',
+                    model='silero_vad',
+                    trust_repo=True,
+                    source='github'
+                )
+                _vad_model_cache = (model, utils)
+    return _vad_model_cache
 ```
 
 ---

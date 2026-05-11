@@ -25,6 +25,44 @@ from faster_whisper import WhisperModel
 from app.services.interview_scale import INTERVIEW_SYSTEM_PROMPT, fetch_job_details
 from app.services.skill_graph import build_skill_map, build_interview_flow
 
+import threading
+from faster_whisper import WhisperModel
+
+# 1. Global variables for lazy loading
+_whisper_model = None
+_model_lock = threading.Lock()
+
+# 2. This is the missing function
+def get_whisper_model():
+    global _whisper_model
+    if _whisper_model is None:
+        with _model_lock:
+            if _whisper_model is None:
+                print("📥 Loading Whisper 'small' (int8) for the first time...")
+                # Using int8 and CPU to stay within Railway RAM limits
+                _whisper_model = WhisperModel("small", device="cpu", compute_type="int8")
+    return _whisper_model
+
+
+
+# Optional: If you use the standalone VAD model elsewhere in the file
+_vad_model_cache = None
+
+def get_vad_model():
+    global _vad_model_cache
+    if _vad_model_cache is None:
+        with _model_lock:
+            if _vad_model_cache is None:
+                print("📥 Loading Silero VAD...")
+                model, utils = torch.hub.load(
+                    repo_or_dir='snakers4/silero-vad',
+                    model='silero_vad',
+                    trust_repo=True,
+                    source='github'
+                )
+                _vad_model_cache = (model, utils)
+    return _vad_model_cache
+
 # --- Interview Prompts ---
 interview_prompt_ur = """
 ### ROLE & GOAL
@@ -316,17 +354,17 @@ def transcribe_greeting():
 # processor = WhisperProcessor.from_pretrained("openai/whisper-small",device="cpu")
 # whisper_model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-small")
 
-whisper_model = WhisperModel("small", device="cpu", compute_type="int8")
+#whisper_model = WhisperModel("small", device="cpu", compute_type="int8")
 
-vad_model, utils = torch.hub.load(
+#vad_model, utils = torch.hub.load(
     repo_or_dir='snakers4/silero-vad',
     model='silero_vad',
     trust_repo=True,
     source='github',
     force_reload=False
-)
+#)
 
-(get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
+#(get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
 
 SAMPLE_RATE = 16000
 FRAME_DURATION = 0.032                  # 32 ms frames = 512 samples for VAD
@@ -555,7 +593,7 @@ def calculate_ai_playback_threshold(audio_file, multiplier=1.2, silence_rms_cuto
         print(f"Error calculating playback threshold: {e}")
         return None
 
-
+ 
 # ✅ Update the transcribe function
 def transcribe(audio_array, language="en"):
     """
@@ -564,8 +602,9 @@ def transcribe(audio_array, language="en"):
     language: "en" for English, "ur" for Urdu
     """
     try:
+        model = get_whisper_model()
         # faster-whisper expects audio as numpy array
-        segments, info = whisper_model.transcribe(
+        segments, info = model.transcribe(
             audio_array,
             language=language,
             beam_size=5,
