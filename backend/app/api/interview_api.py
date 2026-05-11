@@ -431,7 +431,7 @@ def home(request: Request):
     return {"message": "Welcome to the Interview Agent API. Please connect via WebSocket at /ws for the interview process."}
 
 
-@app1.websocket("/ws/verify-cnic")
+@app1.websocket("/verify-cnic")
 async def verify_cnic(request: Request, body: CnicVerifyBody):
     authorization = request.headers.get("Authorization", "")
     user_info = verify_token(authorization=authorization)
