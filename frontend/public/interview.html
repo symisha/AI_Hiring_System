@@ -1711,43 +1711,62 @@ async function verifyCnicIdentity() {
   if (frames.length < 5) {
     addMessage('system', 'Unable to capture enough frames for verification.');
     return false;
-  }
-
+    }
   return new Promise((resolve) => {
-      // Now 'wsProtocol' and 'host' are defined globally
-      const cnicWsUrl = `${wsProtocol}//${host}/ws/verify-cnic`;
-      
-      console.log('Connecting to:', cnicWsUrl);
-      const cnicSocket = new WebSocket(cnicWsUrl);
+          // CLEAN URL CONSTRUCTION: Ensure we don't double up on slashes
+          const cleanHost = host.replace(/\/$/, ''); // Remove trailing slash if exists
+          const cleanProtocol = wsProtocol.endsWith(':') ? wsProtocol : `${wsProtocol}:`;
+          const cnicWsUrl = `${cleanProtocol}//${cleanHost}/ws/verify-cnic`;
+          
+          console.log('Attempting connection to:', cnicWsUrl);
+          
+          const cnicSocket = new WebSocket(cnicWsUrl);
 
-      cnicSocket.onopen = () => {
-        cnicSocket.send(JSON.stringify({ 
-          token: authToken, 
-          frames: frames 
-        }));
-      };
+          // Add a timeout - if the server is "Killed" (OOM), this won't hang forever
+          const timeout = setTimeout(() => {
+              if (cnicSocket.readyState !== WebSocket.CLOSED) {
+                  console.error('Verification timed out - Server likely crashed (OOM)');
+                  cnicSocket.close();
+                  blockCnicVerification('Verification timed out. Please try again.');
+                  resolve(false);
+              }
+          }, 20000); // 20 seconds
 
-      cnicSocket.onmessage = (event) => {
-        const result = JSON.parse(event.data);
-        if (result.valid || result.status === 'success') {
-          addMessage('system', `✅ Identity verified.`);
-          cnicSocket.close();
-          resolve(true);
-        } else {
-          blockCnicVerification(result.message || 'Verification failed.');
-          cnicSocket.close();
-          resolve(false);
-        }
-      };
+          cnicSocket.onopen = () => {
+              console.log('Socket opened, sending frames...');
+              cnicSocket.send(JSON.stringify({ 
+                  token: authToken, 
+                  frames: frames 
+              }));
+          };
 
-      cnicSocket.onerror = (err) => {
-        console.error('Socket Error:', err);
-        cnicSocket.close();
-        resolve(false);
-      };
-    });
+          cnicSocket.onmessage = (event) => {
+              clearTimeout(timeout);
+              try {
+                  const result = JSON.parse(event.data);
+                  if (result.valid || result.status === 'success') {
+                      addMessage('system', `✅ Identity verified.`);
+                      cnicSocket.close();
+                      resolve(true);
+                  } else {
+                      blockCnicVerification(result.message || 'Verification failed.');
+                      cnicSocket.close();
+                      resolve(false);
+                  }
+              } catch (e) {
+                  console.error("Failed to parse server response:", e);
+                  resolve(false);
+              }
+          };
+
+          cnicSocket.onerror = (err) => {
+              clearTimeout(timeout);
+              console.error('WebSocket Handshake failed. Check Railway Logs for "Killed" or "CORS" errors.');
+              cnicSocket.close();
+              resolve(false);
+          };
+      });
 }
-
 
 function startBackgroundFaceChecks() {
   stopBackgroundFaceChecks();
