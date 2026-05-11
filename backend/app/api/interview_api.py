@@ -1362,10 +1362,12 @@ async def ws_handler(ws: WebSocket):
 
             # --------- Binary messages (PCM16 frames) ----------
             elif "bytes" in msg and msg["bytes"] is not None:
-                # Convert PCM16 -> float32 mono [-1, 1]
-                f32 = pcm16_bytes_to_float32(msg["bytes"])
+                try:
+                    f32 = convert_webm_to_pcm(msg["bytes"])
+                except Exception as e:
+                    print(f"⚠️ Audio conversion failed: {e}")
+                    continue # Skip this chunk if it's corrupted
 
-                # If no session yet, ignore
                 if not sess:
                     continue
 
