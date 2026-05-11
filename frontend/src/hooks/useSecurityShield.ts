@@ -21,7 +21,7 @@ export const useSecurityShield = (token: string) => {
     if (!token || token === 'unknown') return;
     
     try {
-      await fetch('http://localhost:8000/services/log-violation', {
+      await fetch('${import.meta.env.VITE_BACKEND_URL}/services/log-violation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -93,7 +93,7 @@ export const useSecurityShield = (token: string) => {
       };
 
       try {
-        await fetch('http://localhost:8000/services/telemetry', {
+        await fetch('${import.meta.env.VITE_BACKEND_URL}/services/telemetry', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
