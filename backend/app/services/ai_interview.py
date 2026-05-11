@@ -42,26 +42,7 @@ def get_whisper_model():
                 # Using int8 and CPU to stay within Railway RAM limits
                 _whisper_model = WhisperModel("small", device="cpu", compute_type="int8")
     return _whisper_model
-
-
-
-# Optional: If you use the standalone VAD model elsewhere in the file
-_vad_model_cache = None
-
-def get_vad_model():
-    global _vad_model_cache
-    if _vad_model_cache is None:
-        with _model_lock:
-            if _vad_model_cache is None:
-                print("📥 Loading Silero VAD...")
-                model, utils = torch.hub.load(
-                    repo_or_dir='snakers4/silero-vad',
-                    model='silero_vad',
-                    trust_repo=True,
-                    source='github'
-                )
-                _vad_model_cache = (model, utils)
-    return _vad_model_cache
+    
 
 # --- Interview Prompts ---
 interview_prompt_ur = """
