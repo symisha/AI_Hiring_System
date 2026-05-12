@@ -1169,7 +1169,7 @@
 
 <audio id="ttsPlayer" autoplay></audio>
 
-<script>
+<script type="module">
 
 const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
 
@@ -1189,6 +1189,7 @@ function initializeCandidate() {
   //   window.location.href = "/login_page.html";
   //   return;
   // }
+  const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
 
   // If user came from secure shortlist email link, validate token first
   if (interviewToken) {
