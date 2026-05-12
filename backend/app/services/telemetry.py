@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from supabase import create_client, Client
 from app.database.db_connection import supabase
 import os
+from typing import Optional
 
 router = APIRouter()
 
@@ -12,9 +13,12 @@ key: str = os.environ.get("SUPABASE_KEY")
 
 
 class ViolationReport(BaseModel):
-    test_id: str
+    # The frontend uses 'token', but some scripts use 'test_id'
+    token: Optional[str] = None
+    test_id: Optional[str] = None
     violation_type: str
-    details: str
+    # Set a default for details to prevent errors if the field is missing
+    details: Optional[str] = "No additional details"
 
 @router.post("/api/v1/log-violation")
 async def log_violation(report: ViolationReport):
