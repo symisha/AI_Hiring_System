@@ -1170,6 +1170,10 @@
 <audio id="ttsPlayer" autoplay></audio>
 
 <script>
+
+
+const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
+
 // ✅ 1. AUTHENTICATION & USER SETUP
 function parseJwt(token) {
   try {
@@ -1241,7 +1245,6 @@ const interviewToken = new URLSearchParams(window.location.search).get('ivt');
 // Keep `access_token` as a fallback for older builds.
 const localAccessToken = localStorage.getItem('token') || localStorage.getItem('access_token');
 const authToken = interviewToken || localAccessToken;
-const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
 
 console.log('🔐 Token source:', interviewToken ? '✅ Interview link token' : (localAccessToken ? '✅ localStorage token' : '❌ not found'));
 
