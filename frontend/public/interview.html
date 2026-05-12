@@ -1192,14 +1192,12 @@ function initializeCandidate() {
 
   // If user came from secure shortlist email link, validate token first
   if (interviewToken) {
-    fetch(`${API_BASE_URL}/services/interview-link/validate?token=${encodeURIComponent(interviewToken)}`)
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok || !data.valid) {
-          throw new Error(data.detail || "Interview link is invalid or expired.");
-        }
-        const nameElement = document.getElementById('candidateName');
-        if (nameElement) nameElement.textContent = data.name || data.email || "Candidate Interview";
+    fetch(`${API_BASE_URL}/services/interview-link/validate?token=${encodeURIComponent(interviewToken)}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true" // THIS IS THE KEY
+      }
       })
       .catch((error) => {
         showSystemModal({
