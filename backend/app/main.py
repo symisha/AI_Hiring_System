@@ -11,14 +11,12 @@ from app.routes.dashboard_essentials.dashboard_info import router as dashboard_i
 from app.routes.dashboard_essentials.profile_preview_router import router as profile_preview_router
 from app.services.resume_extractor import router as resume_extractor_router
 from app.services.shortlisting_resume import router as shortlisting_router
-from app.api.interview_api import app1 as interview_ws_app
+from app.api.interview_api import app1
 from app.routes.specific_job_routes import delRouter
 #from app.services.screening_scheduler import screening_scheduler_loop
 from app.routes import interview_process_route
 # Database
 from app.database.db_connection import supabase  # Supabase client instance
-
-from app.api.interview_api import app1
 
 #Import from services 
 from app.services import job_description, save_test, submit_test
