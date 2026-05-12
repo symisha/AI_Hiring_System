@@ -397,7 +397,7 @@ whisper_model = WhisperModel("small", device="cpu", compute_type="int8")
 
 # ----------------- FastAPI Setup -----------------
 #app1 = FastAPI(title="Interview Agent - WS")
-app1 = APIRouter(prefix="/ws", tags=["interview"])
+app1 = APIRouter()
 
 
 #app1.add_middleware(
@@ -426,7 +426,7 @@ async def verify_cnic(request: Request, body: CnicVerifyBody):
     # No need to manually parse request.json()
     user_info = verify_token(authorization=authorization)
 
-    candidate_id = user_info.get("id")
+    candidate_id = user_info.get("candidate_id")
     if not candidate_id:
         raise HTTPException(status_code=401, detail="Missing candidate_id")
 
