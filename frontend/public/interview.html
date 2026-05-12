@@ -1337,7 +1337,7 @@ document.getElementById('startBtn').onclick = async () => {
 
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 // Append the token as a query parameter so the backend can see it during the handshake
-const wsUrl = `https://ai-hiring.up.railway.app/ws/ws/interview?token=${encodeURIComponent(authToken)}`;
+const wsUrl = `https://ai-hiring.up.railway.app/ws/interview?token=${encodeURIComponent(authToken)}`;
   console.log('Connecting to WebSocket:', wsUrl);
   ws = new WebSocket(wsUrl);  
   ws.binaryType = 'arraybuffer';
@@ -1698,7 +1698,7 @@ async function verifyCnicIdentity() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/ws/ws/verify-cnic`, {
+    const response = await fetch(`${API_BASE_URL}/ws/verify-cnic`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1867,7 +1867,7 @@ async function callStopAndEvaluateAPI() {
   evalContent.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">🔄 Submitting your interview... Please wait.</div>';
   
   try {
-    const response = await fetch(`${API_BASE_URL}/ws/ws/stop`, {
+    const response = await fetch(`${API_BASE_URL}/ws/stop`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken}`,
@@ -2166,7 +2166,7 @@ function updateTabSwitchBadge() {
 async function reportCheatingStatus() {
   if (!authToken) return;
   try {
-    await fetch(`${API_BASE_URL}/ws/ws/flag-cheating`, {
+    await fetch(`${API_BASE_URL}/ws/flag-cheating`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
