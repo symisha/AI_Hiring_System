@@ -22,7 +22,7 @@ from app.services.shortlisting_resume import (
 
 logger = logging.getLogger(__name__)
 
-SCHEDULER_INTERVAL_SECONDS = 10
+SCHEDULER_INTERVAL_SECONDS = 1800
 
 async def screening_scheduler_loop():
     logger.info("[scheduler] Multi-stage screening scheduler started")
