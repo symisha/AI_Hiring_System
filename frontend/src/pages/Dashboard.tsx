@@ -71,6 +71,7 @@ const Dashboard = () => {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true"
   },
     });
 
