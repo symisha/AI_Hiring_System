@@ -1,0 +1,30 @@
+{
+  "session_id": "89c9f63b-2613-4ae4-940a-5430b5fcb04c_20260512_224157",
+  "candidate_id": "89c9f63b-2613-4ae4-940a-5430b5fcb04c",
+  "language": "en",
+  "started_at": "2026-05-12 22:41:57",
+  "conversations": [
+    {
+      "timestamp": "2026-05-12 22:42:33",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to Associate Data Scientist?",
+      "user_answer": "Okay, so I did my bachelor's in computer science from  Fast University Karachi and I like working with data, hence I decided to pursue data science.",
+      "status": "valid",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-12 22:43:53",
+      "ai_question": "That's great, working with data can be fascinating. Can you tell me about a project you've worked on that involved machine learning, and what kind of data did you have to work with?",
+      "user_answer": "Okay, so basically I worked on a machine learning project  during my coursework and it was regarding  a house prediction model.  The first of all, I took a data set and I cleaned it.  I removed all the missing values and all the values  and I converted them into categorical variables.  And then I basically filled those missing values  with mean and mode.  And then I applied exit boost.  And before that, basically what I did was  to get the note to get to know my data.  I basically did few things like I use Metcord library  to know how many values, how the data is distributed  and how can I work with it.  So that is what I did.",
+      "status": "valid",
+      "valid_count_at_time": 1
+    },
+    {
+      "timestamp": "2026-05-12 22:44:31",
+      "ai_question": "It sounds like you did some exploratory data analysis to understand your data distribution and handled missing values, which is great. Can you walk me through how you visualized your data, perhaps using a library like Matplotlib or Seaborn, to get a better sense of the relationships between the features and the target variable in your house prediction model?",
+      "user_answer": "Misha",
+      "status": "discarded",
+      "valid_count_at_time": 2
+    }
+  ],
+  "valid_question_count": 2
+}
