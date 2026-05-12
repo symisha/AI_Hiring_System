@@ -774,7 +774,7 @@ def query_groq(
         if tool_choice:
             payload["tool_choice"] = tool_choice
 
-        headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
+        headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json", "ngrok-skip-browser-warning": "true"}
         response = requests.post(url, headers=headers, json=payload)
 
         if response.status_code == 200:
