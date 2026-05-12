@@ -26,11 +26,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi import Request
 from pydantic import BaseModel
 import numpy as np
-import soundfile as sf
+#import soundfile as sf
 import torch
 from faster_whisper import WhisperModel
 import edge_tts
-import requests
+#import requests
 import tempfile
 import threading
 from app.database.db_connection import supabase
@@ -419,6 +419,7 @@ def home(request: Request):
 
 @app1.post("/verify-cnic")
 async def verify_cnic(request: Request, body: CnicVerifyBody):
+
     authorization = request.headers.get("Authorization", "")
     
     # Use 'body' directly. FastAPI handles the JSON parsing for you.
