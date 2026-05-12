@@ -25,7 +25,7 @@ export const useSecurityShield = (token: string) => {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          "ngrok-skip-browser-warning": "true"
+          "ngrok-skip-browser-warning": "true",
         },
         
         body: JSON.stringify({
@@ -99,8 +99,9 @@ export const useSecurityShield = (token: string) => {
       try {
         await fetch('${import.meta.env.VITE_BACKEND_URL}/services/telemetry', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' ,
-            "ngrok-skip-browser-warning": "true"
+          headers: {
+            'Content-Type': 'application/json' ,
+            "ngrok-skip-browser-warning": "true",
           },
           body: JSON.stringify(payload),
         });

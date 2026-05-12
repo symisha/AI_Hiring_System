@@ -134,7 +134,8 @@ def evaluate_interview(conversation):
     try:
         headers = {
             "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
         }
         
         payload = {

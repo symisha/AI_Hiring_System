@@ -1196,7 +1196,7 @@ function initializeCandidate() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "true" // THIS IS THE KEY
+        "ngrok-skip-browser-warning": "true", // THIS IS THE KEY
       }
       })
       .catch((error) => {
@@ -1703,7 +1703,7 @@ async function verifyCnicIdentity() {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`,
-        "ngrok-skip-browser-warning": "true"
+        "ngrok-skip-browser-warning": "true",
       },
       body: JSON.stringify({ frames })
     });
@@ -1873,7 +1873,7 @@ async function callStopAndEvaluateAPI() {
       headers: {
         'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json',
-        "ngrok-skip-browser-warning": "true"
+        "ngrok-skip-browser-warning": "true",
       },
       body: JSON.stringify({ session_id: window.sessionInfo.session_id })
     });
@@ -2173,7 +2173,7 @@ async function reportCheatingStatus() {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`,
-        "ngrok-skip-browser-warning": "true"
+        "ngrok-skip-browser-warning": "true",
       },
       body: JSON.stringify({
         tab_switches: tabSwitchCount,

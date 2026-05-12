@@ -95,6 +95,7 @@ const Dashboard = () => {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
+          
         },
       });
 
