@@ -1,7 +1,11 @@
+import logging
+
 import uvicorn  # ASGI server used to run FastAPI apps (like "npm start" for Node)
 from urllib.parse import urlparse
-from fastapi import FastAPI, Depends  # Main FastAPI class used to create the web application instance
+from fastapi import FastAPI, Depends, Request  # Main FastAPI class used to create the web application instance
 from fastapi.middleware.cors import CORSMiddleware  # Middleware to handle CORS (Cross-Origin Resource Sharing)
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from app.config.config import Settings # Import the settingsclass to access environment variables
 
 
@@ -27,6 +31,26 @@ from app.services import job_description, save_test, submit_test
 
 # Create FastAPI app instance
 app = FastAPI()
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Log request body for 422s to debug invalid client payloads."""
+    try:
+        body_bytes = await request.body()
+        body_text = body_bytes.decode("utf-8", errors="replace")
+    except Exception:
+        body_text = "<unavailable>"
+
+    logger = logging.getLogger("validation")
+    logger.warning(
+        "422 validation error on %s %s | body=%s | errors=%s",
+        request.method,
+        request.url.path,
+        body_text,
+        exc.errors(),
+    )
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
 def _origin(url: str | None) -> str | None:
     if not url:
@@ -54,6 +78,18 @@ origins = [
 ]
 origins = [o for o in origins if o]
 
+
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 # Include your endpoints
 app.include_router(rating_resume.router, prefix="/routes", tags=["rating"])
 app.include_router(dashboard_info_router, prefix="/routes/dashboard_essentials", tags=["database"])
@@ -69,16 +105,6 @@ app.include_router(submit_test.router, prefix="/services", tags=["submit_test"])
 app.include_router(interview_process_route.router, prefix="/routes", tags=["make_test"])
 app.include_router(app1, prefix="/ws", tags=["interview_websocket"])
 #app.mount("/ws", interview_ws_app)
-
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 #@app.on_event("startup")

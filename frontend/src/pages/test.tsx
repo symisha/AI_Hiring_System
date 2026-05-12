@@ -18,19 +18,25 @@ const AssessmentPage: React.FC = () => {
 
   // Helper to log violations to backend
   const reportViolation = useCallback(async (type: string) => {
-    console.warn("Anti-cheat trigger:", type);
-    try {
-      await fetch(`${import.meta.env.VITE_BACKEND_URL}/services/log-violation`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' ,
-          "ngrok-skip-browser-warning": "true"
-        },
-        body: JSON.stringify({ token, violation_type: type })
-      });
-    } catch (err) {
-      console.error("Failed to log violation", err);
-    }
-  }, [token]);
+  console.warn("Anti-cheat trigger:", type);
+  try {
+    await fetch(`${import.meta.env.VITE_BACKEND_URL}/services/log-violation`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        "ngrok-skip-browser-warning": "true" // Required for ngrok tunnels
+      },
+      body: JSON.stringify({ 
+        token: token,           // Matches submit_test.py
+        test_id: token,         // Matches telemetry.py expectations
+        violation_type: type, 
+        details: `Triggered by user action: ${type}` 
+      })
+    });
+  } catch (err) {
+    console.error("Failed to log violation", err);
+  }
+}, [token]);
 
   useEffect(() => {
     // 1. Detect Tab Switching
