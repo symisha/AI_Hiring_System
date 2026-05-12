@@ -1871,7 +1871,8 @@ async function callStopAndEvaluateAPI() {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        "ngrok-skip-browser-warning": "true"
       },
       body: JSON.stringify({ session_id: window.sessionInfo.session_id })
     });
@@ -2170,7 +2171,8 @@ async function reportCheatingStatus() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
+        'Authorization': `Bearer ${authToken}`,
+        "ngrok-skip-browser-warning": "true"
       },
       body: JSON.stringify({
         tab_switches: tabSwitchCount,

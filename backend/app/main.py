@@ -49,7 +49,7 @@ origins = [
     "http://localhost:8000",
     "http://0.0.0.0:8000",
     "https://ai-hiring-system-1trg.vercel.app",
-    "https://2da6-2400-adc1-19d-6500-514e-c5c1-aac3-2b44.ngrok-free.app/",
+    "https://2da6-2400-adc1-19d-6500-514e-c5c1-aac3-2b44.ngrok-free.app",
     "http://localhost:3000",  
 ]
 origins = [o for o in origins if o]

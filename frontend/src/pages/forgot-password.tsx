@@ -29,7 +29,7 @@ export default function ForgotPassword() {
     setMessage("");
 
     const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-      redirectTo: "http://localhost:8081/",
+      redirectTo: `${import.meta.env.VITE_FRONTEND_URL}/reset-password`,
     });
 
     if (error) {
