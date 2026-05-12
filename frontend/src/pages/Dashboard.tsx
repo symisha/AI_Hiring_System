@@ -95,7 +95,7 @@ const Dashboard = () => {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
-          
+          "ngrok-skip-browser-warning": "true",
         },
       });
 
