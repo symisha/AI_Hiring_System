@@ -1,0 +1,37 @@
+{
+  "session_id": "89c9f63b-2613-4ae4-940a-5430b5fcb04c_20260512_223129",
+  "candidate_id": "89c9f63b-2613-4ae4-940a-5430b5fcb04c",
+  "language": "en",
+  "started_at": "2026-05-12 22:31:29",
+  "conversations": [
+    {
+      "timestamp": "2026-05-12 22:32:05",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to Associate Data Scientist?",
+      "user_answer": "Okay, so I did my bachelor's in computer science  from Fast University Karachi,  and I liked working with data,  hence I decided to pursue data science.",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-12 22:32:18",
+      "ai_question": "Sorry, I'm having trouble processing your answer right now.",
+      "user_answer": "Till era era, kya era era?",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-12 22:32:37",
+      "ai_question": "Sorry, I'm having trouble processing your answer right now.",
+      "user_answer": "Bye guys.  Bye.  Bye.  Bye.  Bye.  Bye.",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-12 22:32:39",
+      "ai_question": "Sorry, I'm having trouble processing your answer right now.",
+      "user_answer": "I'll see you in a minute.",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    }
+  ],
+  "valid_question_count": 0
+}

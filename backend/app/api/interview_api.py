@@ -42,7 +42,7 @@ import traceback
 from fastapi import APIRouter
 
 # ----------------- Config -----------------
-GROQ_API_KEY = "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"  # keep env in prod
+GROQ_API_KEY = "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"  # keep env in prod
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 SAMPLE_RATE = 16000  # you confirmed 16kHz

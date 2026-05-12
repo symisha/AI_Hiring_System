@@ -686,7 +686,7 @@ def transcribe(audio_array, language="en"):
 
 # client = genai.Client(api_key=GEMINI_API_KEY)
 
-GROQ_API_KEY = "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"
+GROQ_API_KEY = "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"
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
 def _end_interview_tool(language: str) -> str:

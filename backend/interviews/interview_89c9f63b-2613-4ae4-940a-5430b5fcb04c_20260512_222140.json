@@ -1,0 +1,51 @@
+{
+  "session_id": "89c9f63b-2613-4ae4-940a-5430b5fcb04c_20260512_222140",
+  "candidate_id": "89c9f63b-2613-4ae4-940a-5430b5fcb04c",
+  "language": "en",
+  "started_at": "2026-05-12 22:21:40",
+  "conversations": [
+    {
+      "timestamp": "2026-05-12 22:22:18",
+      "ai_question": "Hello! Welcome to our interview. I am excited to learn about you. Could you start by telling me about your background and what brought you to Associate Data Scientist?",
+      "user_answer": "Okay, so I did my bachelor's in computer science from  Fast University Karachi and I liked working with data, hence I decided to pursue data science.",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-12 22:22:30",
+      "ai_question": "Sorry, I'm having trouble processing your answer right now.",
+      "user_answer": "API's issue is here",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-12 22:22:43",
+      "ai_question": "Sorry, I'm having trouble processing your answer right now.",
+      "user_answer": "What's the issue?",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-12 22:23:03",
+      "ai_question": "Sorry, I'm having trouble processing your answer right now.",
+      "user_answer": "Yes, but I think the error of the API is coming",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-12 22:23:16",
+      "ai_question": "Sorry, I'm having trouble processing your answer right now.",
+      "user_answer": "Logs major",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    },
+    {
+      "timestamp": "2026-05-12 22:23:45",
+      "ai_question": "Sorry, I'm having trouble processing your answer right now.",
+      "user_answer": "ecologies",
+      "status": "unknown",
+      "valid_count_at_time": 0
+    }
+  ],
+  "valid_question_count": 0
+}
