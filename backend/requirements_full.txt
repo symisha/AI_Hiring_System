@@ -53,9 +53,9 @@ PyMuPDF==1.26.4
 
 # --- Audio ---
 pydub==0.25.1
-#sounddevice==0.5.2
+sounddevice==0.5.2
 soundfile==0.13.1
-#PyAudio==0.2.14
+PyAudio==0.2.14
 edge-tts==7.2.7
 
 # --- Utilities ---
