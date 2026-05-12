@@ -1616,7 +1616,7 @@ async function captureFramesFromVideo(videoEl, count, intervalMs) {
 
   for (let i = 0; i < count; i++) {
     ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-    frames.push(canvas.toDataURL('image/jpeg', 0.9));
+    frames.push(canvas.toDataURL('image/png', 0.9));
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
   }
 
@@ -1686,10 +1686,10 @@ async function verifyCnicIdentity() {
 
   addMessage('system', 'Verifying identity. Hold still and look at the camera...');
 
-  let frames = await captureFramesFromVideo(liveVideo, 8, 250);
+  let frames = await captureFramesFromVideo(liveVideo, 12, 250);
   if (frames.length < 5) {
     await new Promise((r) => setTimeout(r, 500));
-    frames = await captureFramesFromVideo(liveVideo, 8, 250);
+    frames = await captureFramesFromVideo(liveVideo, 12, 250);
   }
 
   if (frames.length < 5) {

@@ -468,7 +468,13 @@ async def verify_cnic(request: Request, body: CnicVerifyBody):
             embeddings.append(emb)
         except ValueError:
             continue
-        except Exception:
+        except Exception as e:
+            print(f"ERROR extracting embedding from frame {id}:")
+            print(str(e))
+
+            import traceback
+            traceback.print_exc()
+
             continue
     
     
