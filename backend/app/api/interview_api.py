@@ -431,9 +431,11 @@ async def verify_cnic(request: Request, body: CnicVerifyBody):
     user_info = verify_token(authorization=authorization)
 
     candidate_id = user_info.get("candidate_id")
+    print(f"Candidate ID from token: {candidate_id}")
+    
     if not candidate_id:
         raise HTTPException(status_code=401, detail="Missing candidate_id")
-
+    print("Before SUPABASE CALL")
     app_res = (
         supabase.table("applications")
         .select("id,cnic_embedding,metadata")
@@ -441,6 +443,8 @@ async def verify_cnic(request: Request, body: CnicVerifyBody):
         .single()
         .execute()
     )
+    
+    print("AFTER SUPABASE CALL")
     if not app_res.data:
         raise HTTPException(status_code=404, detail="Candidate record not found")
 
