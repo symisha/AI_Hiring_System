@@ -426,7 +426,7 @@ async def verify_cnic(request: Request, body: CnicVerifyBody):
     # No need to manually parse request.json()
     user_info = verify_token(authorization=authorization)
 
-    candidate_id = user_info.get("candidate_id")
+    candidate_id = user_info.get("applicant_id")
     if not candidate_id:
         raise HTTPException(status_code=401, detail="Missing candidate_id")
 
