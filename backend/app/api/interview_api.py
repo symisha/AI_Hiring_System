@@ -165,8 +165,8 @@ def _extract_single_face_embedding(file_bytes: bytes, file_ext: str) -> list[flo
         reps = DeepFace.represent(
             img_path=str(tmp_path),
             model_name="ArcFace",
-            detector_backend="opencv",
-            enforce_detection=True,
+            detector_backend="retinaface",
+            enforce_detection=False,
         )
         if not reps:
             raise ValueError("no_face")
