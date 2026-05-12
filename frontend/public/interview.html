@@ -1171,7 +1171,7 @@
 
 <script type="module">
 
-const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
+const API_BASE_URL = "https://3876-2400-adc1-19d-6500-514e-c5c1-aac3-2b44.ngrok-free.app";
 
 // ✅ 1. AUTHENTICATION & USER SETUP
 function parseJwt(token) {
@@ -1189,7 +1189,6 @@ function initializeCandidate() {
   //   window.location.href = "/login_page.html";
   //   return;
   // }
-  const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
 
   // If user came from secure shortlist email link, validate token first
   if (interviewToken) {
