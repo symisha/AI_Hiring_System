@@ -1,6 +1,6 @@
 import os
 import json
-import google.generativeai as genai
+import langchain_google_genai as genai
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
