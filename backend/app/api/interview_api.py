@@ -212,8 +212,12 @@ def _verify_live_face_frames(frames: List[str], candidate_id: str) -> Dict[str, 
             emb = _extract_single_face_embedding(frame_bytes, frame_ext)
             embeddings.append(emb)
         except ValueError as e:
+            print("FRAME VALUE ERROR:", e)
             errors.append(str(e))
-        except Exception:
+            continue
+            
+        except Exception as e:
+            print("DEEPFACE ERROR:", e)
             continue
 
     if any(err == "multiple_faces" for err in errors):
@@ -419,7 +423,7 @@ def home(request: Request):
 
 @app1.post("/verify-cnic")
 async def verify_cnic(request: Request, body: CnicVerifyBody):
-
+    print("VERIFY ROUTE HIT")
     authorization = request.headers.get("Authorization", "")
     
     # Use 'body' directly. FastAPI handles the JSON parsing for you.
