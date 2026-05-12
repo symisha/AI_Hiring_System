@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # --- CONFIGURABLE THRESHOLDS ---
-RESUME_THRESHOLD = 70.0
-ASSESSMENT_THRESHOLD = 80.0
+RESUME_THRESHOLD = 60
+ASSESSMENT_THRESHOLD = 50
 
 # --- HELPER: CORE LOGIC ---
 
@@ -53,25 +53,21 @@ def _process_shortlisting(job_id: str, current_status: str, score_column: str):
 
 def _build_test_email(name, job_id, url):
     return f"""
-    <p>Good news, {name}!</p>
-    <p>Your resume has been <strong>shortlisted</strong> for the position (Job Ref: {job_id}).</p>
+    <p>Congratulations, {name}!</p>
+    <p>Your resume has been <strong>shortlisted</strong> for the position {supabase.table("jobs").select("title").eq("id", job_id).execute().data[0].get("title")}.</p>
     <p>To move forward in the hiring process, we invite you to complete a short AI-generated test.</p>
     <p>Please take the test within the next <strong>24 hours</strong> using the secure link below:</p>
-    <p><a href="{url}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Start Your Test</a></p>
-    <p>If the button does not work, copy this URL:</p>
-    <p style="word-break: break-all; color: #007bff;">{url}</p>
+    <p><a href="{url}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Test</a></p>
     <p><strong>Note:</strong> This test link expires automatically after 24 hours.</p>
     """
 
 def _build_interview_email(name, job_id, url):
     return f"""
     <p>Congratulations, {name}!</p>
-    <p>You have successfully passed the assessment for the position (Job Ref: {job_id}).</p>
+    <p>You have successfully passed the assessment for the position {supabase.table("jobs").select("title").eq("id", job_id).execute().data[0].get("title")}</p>
     <p>The final step in our process is an AI-powered video interview.</p>
     <p>Please complete this interview within the next <strong>24 hours</strong> using the secure link below:</p>
     <p><a href="{url}" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Start Your Interview</a></p>
-    <p>If the button does not work, copy this URL:</p>
-    <p style="word-break: break-all; color: #28a745;">{url}</p>
     <p><strong>Note:</strong> This interview link expires automatically after 24 hours.</p>
     """
 # --- EXPORTED FLOW FUNCTIONS (Scheduler looks for these) ---
@@ -124,7 +120,7 @@ def run_assessment_to_interview_flow(job_id: str):
     
     for entry in data["shortlisted"]:
         token = generate_interview_token({"purpose": "ai_interview", "job_id": job_id, "applicant_id": entry["applicant_id"], "email": entry["applications"].get("email")})
-        url = f"{Settings.FRONTEND_INTERVIEW_URL.rstrip('/')}?ivt={token}"
+        url = f"{Settings.FRONTEND_URL.rstrip('/')}?ivt={token}"
         send_email(to=entry["applications"].get("email"), subject="Next Step: Interview", body_html=_build_interview_email(entry["applications"].get("name"), job_id, url))
         supabase.table("job_applications").update({"status": AppStatus.INTERVIEW_SCHEDULED.value}).eq("id", entry["id"]).execute()
 
