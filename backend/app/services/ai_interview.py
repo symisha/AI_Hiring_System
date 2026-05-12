@@ -1,26 +1,19 @@
-from email.mime import message
-import io
+#from email.mime import message
 import torch
-import torchaudio
 import sounddevice as sd
 import numpy as np
 #from  transformers import WhisperProcessor, WhisperForConditionalGeneration,pipeline,AutoProcessor, AutoModelForTextToSpectrogram
 import sys
-import warnings
 import time
 import requests
 import json
-import edge_tts
-import asyncio
 #from pydub import AudioSegment
 #from pydub.playback import play
 from silero_vad import collect_chunks
 from threading import Thread, Event
-import math
 #from playsound import playsound
 import os
 import uuid
-import re
 from faster_whisper import WhisperModel
 from app.services.interview_scale import INTERVIEW_SYSTEM_PROMPT, fetch_job_details
 from app.services.skill_graph import build_skill_map, build_interview_flow
