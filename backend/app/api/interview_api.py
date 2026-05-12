@@ -452,6 +452,11 @@ async def verify_cnic(request: Request, body: CnicVerifyBody):
         raise HTTPException(status_code=400, detail="Not enough frames for verification")
 
     embeddings: List[List[float]] = []
+
+    # ✅ PUT IT HERE
+    print("Frames received:", len(body.frames))
+
+
     for frame in body.frames:
         try:
             frame_bytes, frame_ext = _decode_data_url(frame)
@@ -461,6 +466,9 @@ async def verify_cnic(request: Request, body: CnicVerifyBody):
             continue
         except Exception:
             continue
+    
+    
+    print("Embeddings generated:", len(embeddings))
 
     if len(embeddings) < max(3, CNIC_VERIFY_MIN_FRAMES // 2):
         _update_cnic_verification_metadata(app_res.data.get("id"), app_res.data.get("metadata"), "failed", None)
