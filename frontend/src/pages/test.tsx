@@ -64,9 +64,16 @@ const AssessmentPage: React.FC = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/services/get-test/${token}`);
-        if (!res.ok) throw new Error("Failed to fetch assessment");
-        const data = await res.json();
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/services/get-test/${token}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // CRITICAL: This header bypasses the ngrok browser warning
+            'ngrok-skip-browser-warning': 'true' 
+          },
+        });
+        if (!response.ok) throw new Error("Failed to fetch assessment");
+        const data = await response.json();
         setQuestions(data.questions || []);
       } catch (err) {
         console.error("Fetch error:", err);
