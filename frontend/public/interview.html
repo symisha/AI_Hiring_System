@@ -1189,7 +1189,7 @@ function initializeCandidate() {
 
   // If user came from secure shortlist email link, validate token first
   if (interviewToken) {
-    fetch(`${VITE_API_BASE_URL}/services/interview-link/validate?token=${encodeURIComponent(interviewToken)}`)
+    fetch(`${API_BASE_URL}/services/interview-link/validate?token=${encodeURIComponent(interviewToken)}`)
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok || !data.valid) {
@@ -1241,7 +1241,7 @@ const interviewToken = new URLSearchParams(window.location.search).get('ivt');
 // Keep `access_token` as a fallback for older builds.
 const localAccessToken = localStorage.getItem('token') || localStorage.getItem('access_token');
 const authToken = interviewToken || localAccessToken;
-const VITE_API_BASE_URL = "${import.meta.env.VITE_BACKEND_URL}";
+const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}`;
 
 console.log('🔐 Token source:', interviewToken ? '✅ Interview link token' : (localAccessToken ? '✅ localStorage token' : '❌ not found'));
 
@@ -1337,7 +1337,7 @@ document.getElementById('startBtn').onclick = async () => {
 
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 // Append the token as a query parameter so the backend can see it during the handshake
-const wsUrl = `https://2da6-2400-adc1-19d-6500-514e-c5c1-aac3-2b44.ngrok-free.app/ws/interview?token=${encodeURIComponent(authToken)}`;
+const wsUrl = `${API_BASE_URL}/ws/interview?token=${encodeURIComponent(authToken)}`;
   console.log('Connecting to WebSocket:', wsUrl);
   ws = new WebSocket(wsUrl);  
   ws.binaryType = 'arraybuffer';
@@ -1698,7 +1698,7 @@ async function verifyCnicIdentity() {
   }
 
   try {
-    const response = await fetch(`${VITE_API_BASE_URL}/ws/verify-cnic`, {
+    const response = await fetch(`${API_BASE_URL}/ws/verify-cnic`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1867,7 +1867,7 @@ async function callStopAndEvaluateAPI() {
   evalContent.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">🔄 Submitting your interview... Please wait.</div>';
   
   try {
-    const response = await fetch(`${VITE_API_BASE_URL}/ws/stop`, {
+    const response = await fetch(`${API_BASE_URL}/ws/stop`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken}`,
@@ -2167,7 +2167,7 @@ function updateTabSwitchBadge() {
 async function reportCheatingStatus() {
   if (!authToken) return;
   try {
-    await fetch(`${VITE_API_BASE_URL}/ws/flag-cheating`, {
+    await fetch(`${API_BASE_URL}/ws/flag-cheating`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
