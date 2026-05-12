@@ -1,6 +1,6 @@
 import json
 import traceback
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import numpy as np # Needed for telemetry analysis
@@ -21,9 +21,13 @@ class TestSubmission(BaseModel):
     solutions: List[Solution]
 
 class ViolationReport(BaseModel):
-    token: str
+    # Use 'token' as the primary identifier to match the frontend
+    token: Optional[str] = None
+    # Add test_id as an alias or optional field just in case
+    test_id: Optional[str] = None 
     violation_type: str
-    details: str
+    # Make details optional with a default value
+    details: Optional[str] = "No additional details"
 
 class TelemetryEvent(BaseModel):
     key: str
@@ -41,7 +45,7 @@ async def log_violation(report: ViolationReport):
 
         new_entry = {
             "type": report.violation_type,
-            "details": report.details,
+            "details": report.details or "",
             "timestamp": "now()"
         }
 
