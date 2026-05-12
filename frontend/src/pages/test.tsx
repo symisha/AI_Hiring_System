@@ -22,7 +22,9 @@ const AssessmentPage: React.FC = () => {
     try {
       await fetch(`${import.meta.env.VITE_BACKEND_URL}/services/log-violation`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' ,
+          "ngrok-skip-browser-warning": "true"
+        },
         body: JSON.stringify({ token, violation_type: type })
       });
     } catch (err) {
@@ -83,7 +85,9 @@ const AssessmentPage: React.FC = () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/services/submit-test`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' ,
+          "ngrok-skip-browser-warning": "true"
+        },
         body: JSON.stringify(payload)
       });
       if (res.ok) {

@@ -23,7 +23,11 @@ export const useSecurityShield = (token: string) => {
     try {
       await fetch('${import.meta.env.VITE_BACKEND_URL}/services/log-violation', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          "ngrok-skip-browser-warning": "true"
+        },
+        
         body: JSON.stringify({
           token: token,
           violation_type: log.type,
@@ -95,7 +99,9 @@ export const useSecurityShield = (token: string) => {
       try {
         await fetch('${import.meta.env.VITE_BACKEND_URL}/services/telemetry', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' ,
+            "ngrok-skip-browser-warning": "true"
+          },
           body: JSON.stringify(payload),
         });
       } catch (err) {

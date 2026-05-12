@@ -57,7 +57,8 @@ const CreateAssessment: React.FC<CreateAssessmentProps> = ({ jobId, jobTitle, on
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
+            'Authorization': `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true"
         },
         body: JSON.stringify({ role: jobTitle, num_questions: 3 })
       });
